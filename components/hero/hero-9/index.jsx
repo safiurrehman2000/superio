@@ -10,9 +10,9 @@ const index = () => {
       <div className="auto-container">
         <div className="cotnent-box">
           <div className="title-box" data-aso-delay="300" data-aos="fade-up">
-            <h3>15,000+ Browse Jobs</h3>
+            <h3>The online job site for flexi-jobbers in Flanders</h3>
             <div className="text">
-              Find Jobs, Employment & Career Opportunities
+              Find flexi-jobs and interesting career opportunities
             </div>
           </div>
 
