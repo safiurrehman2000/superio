@@ -4,8 +4,18 @@ import Link from "next/link";
 import Image from "next/image";
 import jobFeatured from "../../data/job-featured";
 import Slider from "react-slick";
+import { useState } from "react";
 
 const JobFeatured1 = () => {
+  const [bookmarkedJobs, setBookmarkedJobs] = useState({});
+
+  const toggleBookmark = (jobId) => {
+    setBookmarkedJobs((prev) => ({
+      ...prev,
+      [jobId]: !prev[jobId],
+    }));
+  };
+
   const settings = {
     dots: true,
     speed: 1000,
@@ -40,7 +50,6 @@ const JobFeatured1 = () => {
                     {item.jobTitle}
                   </Link>
                 </h4>
-
                 <ul className="job-info">
                   <li>
                     <span className="icon flaticon-briefcase"></span>
@@ -59,7 +68,6 @@ const JobFeatured1 = () => {
                     {item.salary}
                   </li>
                 </ul>
-
                 <ul className="job-other-info">
                   {item.jobType.map((val, i) => (
                     <li key={i} className={`${val.styleClass}`}>
@@ -67,8 +75,17 @@ const JobFeatured1 = () => {
                     </li>
                   ))}
                 </ul>
-
-                <button className="bookmark-btn">
+                {/* TODO: button color green has to be implemented when a job is
+                bookmarked */}
+                <button
+                  className={`bookmark-btn ${
+                    bookmarkedJobs[item.id] ? "bookmarked" : ""
+                  }`}
+                  onClick={() => toggleBookmark(item.id)}
+                  aria-label={
+                    bookmarkedJobs[item.id] ? "Remove bookmark" : "Add bookmark"
+                  }
+                >
                   <span className="flaticon-bookmark"></span>
                 </button>
               </div>
