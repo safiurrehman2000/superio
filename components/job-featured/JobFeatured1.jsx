@@ -18,8 +18,8 @@ const JobFeatured1 = () => {
 
   const settings = {
     dots: true,
-    speed: 1000,
-    slidesToShow: 3,
+    speed: 2000,
+    slidesToShow: 2,
     slidesToScroll: 1,
     autoplay: true,
     centerMode: true,
