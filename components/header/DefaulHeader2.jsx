@@ -1,10 +1,10 @@
-
-'use client'
+"use client";
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import HeaderNavContent from "./HeaderNavContent";
 import Image from "next/image";
+import { IoMdNotificationsOutline } from "react-icons/io";
 
 const DefaulHeader2 = () => {
   const [navbar, setNavbar] = useState(false);
@@ -51,7 +51,7 @@ const DefaulHeader2 = () => {
         </div>
         {/* End .nav-outer */}
 
-        <div className="outer-box">
+        <div className="outer-box gap-2">
           {/* <!-- Add Listing --> */}
           <Link href="/candidates-dashboard/cv-manager" className="upload-cv">
             Upload your CV
@@ -72,6 +72,9 @@ const DefaulHeader2 = () => {
             >
               Job Post
             </Link>
+          </div>
+          <div className="btn-box">
+            <IoMdNotificationsOutline fontSize={20} />
           </div>
         </div>
       </div>
