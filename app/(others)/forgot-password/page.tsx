@@ -1,4 +1,4 @@
-import FormContent2 from "../../common/form/login/FormContent2";
+import FormContent2 from "../../../components/common/form/forgot-password/FormContent";
 
 const index = () => {
   return (

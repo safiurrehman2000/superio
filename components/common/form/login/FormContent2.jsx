@@ -4,7 +4,7 @@ import LoginWithSocial from "./LoginWithSocial";
 const FormContent2 = () => {
   return (
     <div className="form-inner">
-      <h3>Login to Superio</h3>
+      <h3>Login to Flexijobber</h3>
 
       {/* <!--Login Form--> */}
       <form method="post">
@@ -33,7 +33,7 @@ const FormContent2 = () => {
                 <span className="custom-checkbox"></span> Remember me
               </label>
             </div>
-            <a href="#" className="pwd">
+            <a href="/forgot-password" className="pwd">
               Forgot password?
             </a>
           </div>
