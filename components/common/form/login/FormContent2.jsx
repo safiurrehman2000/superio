@@ -1,10 +1,19 @@
 import Link from "next/link";
 import LoginWithSocial from "./LoginWithSocial";
+import Image from "next/image";
 
 const FormContent2 = () => {
   return (
     <div className="form-inner">
-      <h3>Login to Flexijobber</h3>
+      <div className="text-center mb-5">
+        <Image
+          width={154}
+          height={50}
+          src="/images/logo-deflexijobber.png"
+          alt="De Flexijobber Logo"
+        />
+      </div>
+      <h3 className="text-center">Login to Flexijobber</h3>
 
       {/* <!--Login Form--> */}
       <form method="post">

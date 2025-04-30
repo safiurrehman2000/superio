@@ -11,7 +11,7 @@ const FormContent2 = () => {
           alt="De Flexijobber Logo"
         />
       </div>
-
+      <h3 className="text-center">Forgot Password</h3>
       {/* <!--Login Form--> */}
       <form method="post">
         <div className="form-group">
