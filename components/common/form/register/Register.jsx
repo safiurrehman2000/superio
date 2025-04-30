@@ -9,7 +9,7 @@ import Link from "next/link";
 const Register = () => {
   return (
     <div className="form-inner">
-      <h3>Create a Free Superio Account</h3>
+      <h3>Create your Flexijobber account</h3>
 
       <Tabs>
         <div className="form-group register-dual">
