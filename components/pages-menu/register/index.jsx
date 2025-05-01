@@ -1,16 +1,8 @@
-import Register2 from "../../common/form/register/Register2";
-import MobileMenu from "../../header/MobileMenu";
-import Header from "./Header";
+import Register from "../../common/form/register/Register";
 
 const index = () => {
   return (
     <>
-      <Header />
-      {/* <!--End Main Header -->  */}
-
-      <MobileMenu />
-      {/* End MobileMenu */}
-
       <div className="login-section">
         <div
           className="image-layer"
@@ -19,7 +11,7 @@ const index = () => {
         <div className="outer-box">
           {/* <!-- Login Form --> */}
           <div className="login-form default-form">
-            <Register2 />
+            <Register />
           </div>
           {/* <!--End Login Form --> */}
         </div>

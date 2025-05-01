@@ -1,22 +1,76 @@
+"use client";
 import Link from "next/link";
 import LoginWithSocial from "./LoginWithSocial";
+import Image from "next/image";
+import { useState } from "react";
+import { checkValidDetails } from "@/utils/validate";
 
 const FormContent = () => {
+  const [errors, setErrors] = useState({});
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleEmailChange = (e) => {
+    const newEmail = e.target.value;
+    setEmail(newEmail);
+    const validationErrors = checkValidDetails(newEmail, password);
+    setErrors(validationErrors || {});
+  };
+
+  const handlePasswordChange = (e) => {
+    const newPassword = e.target.value;
+    setPassword(newPassword);
+    const validationErrors = checkValidDetails(email, newPassword);
+    setErrors(validationErrors || {});
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const validationErrors = checkValidDetails(email, password);
+    if (validationErrors) {
+      setErrors(validationErrors);
+      return;
+    }
+  };
   return (
     <div className="form-inner">
-      <h3>Login to Flexijobber</h3>
+      <div className="text-center mb-5">
+        <Image
+          width={154}
+          height={50}
+          src="/images/logo-deflexijobber.png"
+          alt="De Flexijobber Logo"
+        />
+      </div>
+      <h3 className="text-center">Login to Flexijobber</h3>
 
       {/* <!--Login Form--> */}
-      <form method="post">
+      <form
+        onSubmit={(e) => {
+          handleSubmit(e);
+        }}
+        method="post"
+      >
         <div className="form-group">
-          <label>Username</label>
-          <input type="text" name="username" placeholder="Username" required />
+          <label>Email</label>
+          <input
+            onChange={(e) => {
+              handleEmailChange(e);
+            }}
+            type="email"
+            name="email"
+            placeholder="Email"
+            required
+          />
+          {errors.email && <p className="text-danger mt-2">{errors.email}</p>}
         </div>
-        {/* name */}
 
         <div className="form-group">
           <label>Password</label>
           <input
+            onChange={(e) => {
+              handlePasswordChange(e);
+            }}
             type="password"
             name="password"
             placeholder="Password"
@@ -33,7 +87,7 @@ const FormContent = () => {
                 <span className="custom-checkbox"></span> Remember me
               </label>
             </div>
-            <a href="#" className="pwd">
+            <a href="/forgot-password" className="pwd">
               Forgot password?
             </a>
           </div>
@@ -55,15 +109,7 @@ const FormContent = () => {
 
       <div className="bottom-box">
         <div className="text">
-          Don&apos;t have an account?{" "}
-          <Link
-            href="#"
-            className="call-modal signup"
-            data-bs-toggle="modal"
-            data-bs-target="#registerModal"
-          >
-            Signup
-          </Link>
+          Don&apos;t have an account? <Link href="/register">Signup</Link>
         </div>
 
         <div className="divider">
