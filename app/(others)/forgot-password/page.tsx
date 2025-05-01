@@ -1,4 +1,4 @@
-import FormContent2 from "../../../components/common/form/forgot-password/FormContent";
+import FormContent from "../../../components/common/form/forgot-password/FormContent";
 
 const index = () => {
   return (
@@ -11,7 +11,7 @@ const index = () => {
         <div className="outer-box">
           {/* <!-- Login Form --> */}
           <div className="login-form default-form">
-            <FormContent2 />
+            <FormContent />
           </div>
           {/* <!--End Login Form --> */}
         </div>
