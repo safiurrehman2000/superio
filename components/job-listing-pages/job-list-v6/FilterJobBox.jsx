@@ -1,12 +1,9 @@
+"use client";
 
-
-'use client'
-
+import Image from "next/image";
 import Link from "next/link";
-import jobs from "../../../data/job-featured";
-import ListingShowing from "../components/ListingShowing";
-import JobSelect from "../components/JobSelect";
 import { useDispatch, useSelector } from "react-redux";
+import jobs from "../../../data/job-featured";
 import {
   addCategory,
   addDatePosted,
@@ -18,7 +15,7 @@ import {
   addSalary,
   addSort,
 } from "../../../features/filter/filterSlice";
-import Image from "next/image";
+import ListingShowing from "../components/ListingShowing";
 
 const FilterJobBox = () => {
   const { jobList, jobSort } = useSelector((state) => state.filter);
@@ -114,7 +111,7 @@ const FilterJobBox = () => {
               <Image width={50} height={49} src={item.logo} alt="item brand" />
             </span>
             <h4>
-              <Link href={`/job-single-v1/${item.id}`}>{item.jobTitle}</Link>
+              <Link href={`/job-list/${item.id}`}>{item.jobTitle}</Link>
             </h4>
 
             <ul className="job-info">
