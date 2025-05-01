@@ -1,5 +1,6 @@
 "use client";
 
+import "./jobList.css";
 import Image from "next/image";
 import Link from "next/link";
 import { useDispatch, useSelector } from "react-redux";
@@ -105,7 +106,7 @@ const FilterJobBox = () => {
     .slice(perPage.start, perPage.end !== 0 ? perPage.end : 16)
     ?.map((item) => (
       <div className="job-block col-lg-6 col-md-12 col-sm-12" key={item.id}>
-        <div className="inner-box">
+        <div className="inner-box hover-effect">
           <div className="content">
             <span className="company-logo">
               <Image width={50} height={49} src={item.logo} alt="item brand" />
