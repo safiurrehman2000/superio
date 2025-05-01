@@ -1,21 +1,20 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   blogItems,
   candidateItems,
   employerItems,
   findJobItems,
-  homeItems,
   pageItems,
   shopItems,
 } from "../../data/mainMenuData";
 import {
-  isActiveParent,
   isActiveLink,
+  isActiveParent,
   isActiveParentChaild,
 } from "../../utils/linkActiveChecker";
-import { usePathname } from "next/navigation";
 
 const HeaderNavContent = () => {
   const pathname = usePathname(); // Get the current pathname
