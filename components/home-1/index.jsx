@@ -1,6 +1,4 @@
-import Link from "next/link";
 import RegBanner from "../block/RegBanner";
-import Blog from "../blog/Blog";
 import CallToAction2 from "../call-to-action/CallToAction2";
 import LoginPopup from "../common/form/login/LoginPopup";
 import FooterDefault from "../footer/common-footer";
@@ -57,9 +55,6 @@ const index = () => {
             </div>
           </div>
           {/* End ."sec-title */}
-          <div className="row" data-aos="fade-up">
-            <Blog />
-          </div>
         </div>
       </section>
 
