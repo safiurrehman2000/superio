@@ -5,6 +5,8 @@ import Image from "next/image";
 import jobFeatured from "../../data/job-featured";
 import Slider from "react-slick";
 import { useState } from "react";
+import "slick-carousel/slick/slick.css"; // Ensure slick CSS is imported
+import "slick-carousel/slick/slick-theme.css"; // Ensure slick theme CSS is imported
 
 const JobFeatured1 = () => {
   const [bookmarkedJobs, setBookmarkedJobs] = useState({});
@@ -22,16 +24,33 @@ const JobFeatured1 = () => {
     slidesToShow: 2,
     slidesToScroll: 1,
     autoplay: true,
-    centerMode: true,
-    centerPadding: "0px",
+    centerMode: false,
     arrows: false,
   };
 
   return (
     <div
-      className="testimonial-carousel gap-x25 center-item-active slick-list-visible"
+      className="testimonial-carousel gap-x25 slick-list-visible"
       data-aos="fade-up"
     >
+      <style jsx>{`
+        .job-block {
+          transition: transform 0.3s ease;
+        }
+        .job-block .inner-box {
+          transition: transform 0.3s ease;
+        }
+        .job-block:hover .inner-box {
+          transform: scale(1.1);
+          z-index: 10;
+          position: relative;
+          border: 1px solid #0074e1;
+        }
+        .bookmark-btn.bookmarked {
+          color: #fa5508;
+        }
+      `}</style>
+
       <Slider {...settings}>
         {jobFeatured.slice(0, 6).map((item) => (
           <div className="job-block" key={item.id}>
@@ -75,8 +94,6 @@ const JobFeatured1 = () => {
                     </li>
                   ))}
                 </ul>
-                {/* TODO: button color green has to be implemented when a job is
-                bookmarked */}
                 <button
                   className={`bookmark-btn ${
                     bookmarkedJobs[item.id] ? "bookmarked" : ""
