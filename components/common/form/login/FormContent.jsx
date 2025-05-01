@@ -5,16 +5,26 @@ import Image from "next/image";
 import { useState } from "react";
 import { checkValidDetails } from "@/utils/validate";
 
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "@/utils/firebase";
+import { useRouter } from "next/navigation";
+import { getFirebaseErrorMessage } from "@/utils/constants";
+
 const FormContent = () => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [apiError, setApiError] = useState("");
   const [errors, setErrors] = useState({});
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  const { push } = useRouter();
 
   const handleEmailChange = (e) => {
     const newEmail = e.target.value;
     setEmail(newEmail);
     const validationErrors = checkValidDetails(newEmail, password);
     setErrors(validationErrors || {});
+    setApiError("");
   };
 
   const handlePasswordChange = (e) => {
@@ -22,6 +32,7 @@ const FormContent = () => {
     setPassword(newPassword);
     const validationErrors = checkValidDetails(email, newPassword);
     setErrors(validationErrors || {});
+    setApiError("");
   };
 
   const handleSubmit = (e) => {
@@ -30,6 +41,29 @@ const FormContent = () => {
     if (validationErrors) {
       setErrors(validationErrors);
       return;
+    }
+    setIsLoading(true);
+    setApiError("");
+    try {
+      signInWithEmailAndPassword(auth, email, password).then(
+        (userCredential) => {
+          push("/");
+          // Signed in
+          const user = userCredential.user;
+          // ...
+        }
+      );
+    } catch {
+      (error) => {
+        setApiError(getFirebaseErrorMessage(error));
+      };
+    } finally {
+      setIsLoading(false);
+      if (apiError) {
+        setEmail("");
+        setPassword("");
+        setErrors({});
+      }
     }
   };
   return (
@@ -96,12 +130,17 @@ const FormContent = () => {
 
         <div className="form-group">
           <button
-            className="theme-btn btn-style-one"
+            className={`theme-btn btn-style-one btn ${
+              isLoading ? "btn-secondary disabled" : ""
+            }`}
             type="submit"
             name="log-in"
           >
-            Log In
+            {isLoading ? "Logging in..." : "Login"}
           </button>
+          {apiError != " " && (
+            <p className="text-center text-danger mt-2">{apiError}</p>
+          )}
         </div>
         {/* login */}
       </form>

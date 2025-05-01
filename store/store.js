@@ -9,15 +9,15 @@ import candidateFilterSlice from "../features/filter/candidateFilterSlice";
 import shopSlice from "../features/shop/shopSlice";
 
 export const store = configureStore({
-    reducer: {
-        job: jobSlice,
-        toggle: toggleSlice,
-        filter: filterSlice,
-        employer: employerSlice,
-        employerFilter: employerFilterSlice,
-        candidate: candidateSlice,
-        candidateFilter: candidateFilterSlice,
-        shop: shopSlice,
-    },
-    middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(),
+  reducer: {
+    job: jobSlice,
+    toggle: toggleSlice,
+    filter: filterSlice,
+    employer: employerSlice,
+    employerFilter: employerFilterSlice,
+    candidate: candidateSlice,
+    candidateFilter: candidateFilterSlice,
+    shop: shopSlice,
+  },
+  middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(),
 });

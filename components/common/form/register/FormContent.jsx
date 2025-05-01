@@ -1,16 +1,26 @@
+"use client";
 import { checkValidDetails } from "@/utils/validate";
 import { useState } from "react";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { auth } from "@/utils/firebase";
+import { useRouter } from "next/navigation";
+import { getFirebaseErrorMessage } from "@/utils/constants";
 
 const FormContent = () => {
   const [errors, setErrors] = useState({});
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [apiError, setApiError] = useState("");
+
+  const { push } = useRouter();
 
   const handleEmailChange = (e) => {
     const newEmail = e.target.value;
     setEmail(newEmail);
     const validationErrors = checkValidDetails(newEmail, password);
     setErrors(validationErrors || {});
+    setApiError("");
   };
 
   const handlePasswordChange = (e) => {
@@ -18,14 +28,35 @@ const FormContent = () => {
     setPassword(newPassword);
     const validationErrors = checkValidDetails(email, newPassword);
     setErrors(validationErrors || {});
+    setApiError("");
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const validationErrors = checkValidDetails(email, password);
     if (validationErrors) {
       setErrors(validationErrors);
       return;
+    }
+    setIsLoading(true); //loading state to disable button
+    setApiError("");
+    try {
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      push("/login");
+      const user = userCredential.user;
+    } catch (error) {
+      setApiError(getFirebaseErrorMessage(error));
+    } finally {
+      setIsLoading(false); //resetting loading state and forms
+      if (apiError) {
+        setEmail("");
+        setPassword("");
+        setErrors({});
+      }
     }
   };
   return (
@@ -69,9 +100,18 @@ const FormContent = () => {
       {/* password */}
 
       <div className="form-group">
-        <button className="theme-btn btn-style-one" type="submit">
-          Register
+        <button
+          disabled={isLoading}
+          className={`theme-btn btn-style-one btn ${
+            isLoading ? "btn-secondary disabled" : ""
+          }`}
+          type="submit"
+        >
+          {isLoading ? "Registering..." : "Register"}
         </button>
+        {apiError != " " && (
+          <p className="text-center text-danger mt-2">{apiError}</p>
+        )}
       </div>
       {/* login */}
     </form>
