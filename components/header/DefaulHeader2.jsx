@@ -7,27 +7,9 @@ import Image from "next/image";
 import { IoMdNotificationsOutline } from "react-icons/io";
 
 const DefaulHeader2 = () => {
-  const [navbar, setNavbar] = useState(false);
-
-  const changeBackground = () => {
-    if (window.scrollY >= 10) {
-      setNavbar(true);
-    } else {
-      setNavbar(false);
-    }
-  };
-
-  useEffect(() => {
-    window.addEventListener("scroll", changeBackground);
-  }, []);
-
   return (
     // <!-- Main Header-->
-    <header
-      className={`main-header  ${
-        navbar ? "fixed-header animated slideInDown" : ""
-      }`}
-    >
+    <header className="main-header bg-light">
       {/* <!-- Main box --> */}
       <div className="main-box">
         {/* <!--Nav Outer --> */}
