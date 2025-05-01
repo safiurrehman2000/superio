@@ -18,8 +18,8 @@ const FormContent2 = () => {
       {/* <!--Login Form--> */}
       <form method="post">
         <div className="form-group">
-          <label>Username</label>
-          <input type="text" name="username" placeholder="Username" required />
+          <label>Email</label>
+          <input type="text" name="email" placeholder="Email" required />
         </div>
         {/* name */}
 
