@@ -1,10 +1,9 @@
 "use client";
 
-import Link from "next/link";
-import { useEffect, useState } from "react";
-import HeaderNavContent from "./HeaderNavContent";
 import Image from "next/image";
+import Link from "next/link";
 import { IoMdNotificationsOutline } from "react-icons/io";
+import HeaderNavContent from "./HeaderNavContent";
 
 const DefaulHeader2 = () => {
   return (
