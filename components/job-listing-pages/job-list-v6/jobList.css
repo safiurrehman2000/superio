@@ -1,0 +1,9 @@
+.hover-effect {
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.hover-effect:hover {
+  transform: scale(1.05);
+  border: 1px solid;
+  border-color: #fa5508;
+}
