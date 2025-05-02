@@ -1,12 +1,13 @@
 "use client";
 import Aos from "aos";
 import "aos/dist/aos.css";
-import "../styles/index.scss";
 import { useEffect } from "react";
-import ScrollToTop from "../components/common/ScrollTop";
-import { Provider } from "react-redux";
-import { store } from "../store/store";
 import { Toaster } from "react-hot-toast";
+import { Provider } from "react-redux";
+import ScrollToTop from "../components/common/ScrollTop";
+import { store } from "../store/store";
+import "../styles/index.scss";
+import RouteGuard from "./RouteGuard";
 
 if (typeof window !== "undefined") {
   require("bootstrap/dist/js/bootstrap");
@@ -19,6 +20,7 @@ export default function RootLayout({ children }) {
       once: true,
     });
   }, []);
+
   return (
     <html lang="en">
       <head>
@@ -42,14 +44,14 @@ export default function RootLayout({ children }) {
 
       <body>
         <Provider store={store}>
-          <div className="page-wrapper">
-            {children}
+          <RouteGuard>
+            <div className="page-wrapper">
+              {children}
 
-            {/* Toastify */}
-
-            {/* <!-- Scroll To Top --> */}
-            <ScrollToTop />
-          </div>
+              {/* <!-- Scroll To Top --> */}
+              <ScrollToTop />
+            </div>
+          </RouteGuard>
           <Toaster />
         </Provider>
       </body>

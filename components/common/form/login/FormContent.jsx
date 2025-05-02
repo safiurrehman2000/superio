@@ -4,10 +4,9 @@ import Image from "next/image";
 import { useState } from "react";
 import LoginWithSocial from "./LoginWithSocial";
 
+import { useLogIn } from "@/APIs/auth/user";
 import CircularLoader from "@/components/circular-loading/CircularLoading";
-import { getFirebaseErrorMessage, LOGO } from "@/utils/constants";
-import { auth } from "@/utils/firebase";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { LOGO } from "@/utils/constants";
 import { useRouter } from "next/navigation";
 
 const FormContent = () => {
@@ -37,33 +36,26 @@ const FormContent = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const emailErrors = checkValidDetails(email, password, "email");
-    const passwordErrors = checkValidDetails(email, password, "password");
-    const validationErrors = { ...emailErrors, ...passwordErrors };
-
-    if (validationErrors && Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      return;
-    }
     setIsLoading(true);
     setApiError("");
-    try {
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
-      push("/");
-    } catch (error) {
-      setApiError(getFirebaseErrorMessage(error));
-    } finally {
-      setIsLoading(false);
-      if (apiError) {
+
+    const result = await useLogIn(email, password);
+
+    if (!result.success) {
+      if (result.errors) {
+        setErrors(result.errors);
+      } else if (result.apiError) {
+        setApiError(result.apiError);
         setEmail("");
         setPassword("");
         setErrors({});
       }
+      setIsLoading(false);
+      return;
     }
+
+    setIsLoading(false);
+    // push("/");
   };
 
   return (
