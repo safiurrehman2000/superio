@@ -6,8 +6,7 @@ import { useEffect } from "react";
 import ScrollToTop from "../components/common/ScrollTop";
 import { Provider } from "react-redux";
 import { store } from "../store/store";
-import "react-toastify/dist/ReactToastify.css";
-import { ToastContainer } from "react-toastify";
+import { Toaster } from "react-hot-toast";
 
 if (typeof window !== "undefined") {
   require("bootstrap/dist/js/bootstrap");
@@ -47,21 +46,11 @@ export default function RootLayout({ children }) {
             {children}
 
             {/* Toastify */}
-            <ToastContainer
-              position="bottom-right"
-              autoClose={500}
-              hideProgressBar={false}
-              newestOnTop={false}
-              closeOnClick
-              rtl={false}
-              pauseOnFocusLoss
-              draggable
-              pauseOnHover
-              theme="colored"
-            />
+
             {/* <!-- Scroll To Top --> */}
             <ScrollToTop />
           </div>
+          <Toaster />
         </Provider>
       </body>
     </html>
