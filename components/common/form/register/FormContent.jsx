@@ -1,10 +1,10 @@
 "use client";
-import { checkValidDetails } from "@/utils/validate";
-import { useState } from "react";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from "@/utils/firebase";
-import { useRouter } from "next/navigation";
+import CircularLoader from "@/components/circular-loading/CircularLoading";
 import { getFirebaseErrorMessage } from "@/utils/constants";
+import { auth } from "@/utils/firebase";
+import { checkValidDetails } from "@/utils/validate";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { useState } from "react";
 
 const FormContent = () => {
   const [errors, setErrors] = useState({});
@@ -12,8 +12,6 @@ const FormContent = () => {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState("");
-
-  const { push } = useRouter();
 
   const handleEmailChange = (e) => {
     const newEmail = e.target.value;
@@ -111,7 +109,16 @@ const FormContent = () => {
           }`}
           type="submit"
         >
-          {isLoading ? "Registering..." : "Register"}
+          {isLoading ? (
+            <div className="d-flex justify-content-center gap-2">
+              <CircularLoader />
+              <p className={`${isLoading ? "text-black" : "text-white"}`}>
+                Registering...
+              </p>
+            </div>
+          ) : (
+            "Register"
+          )}
         </button>
         {apiError != " " && (
           <p className="text-center text-danger mt-2">{apiError}</p>

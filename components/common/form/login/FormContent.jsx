@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useState } from "react";
 import LoginWithSocial from "./LoginWithSocial";
 
+import CircularLoader from "@/components/circular-loading/CircularLoading";
 import { getFirebaseErrorMessage, LOGO } from "@/utils/constants";
 import { auth } from "@/utils/firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
@@ -34,7 +35,7 @@ const FormContent = () => {
     setApiError("");
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const emailErrors = checkValidDetails(email, password, "email");
     const passwordErrors = checkValidDetails(email, password, "password");
@@ -47,18 +48,14 @@ const FormContent = () => {
     setIsLoading(true);
     setApiError("");
     try {
-      signInWithEmailAndPassword(auth, email, password).then(
-        (userCredential) => {
-          push("/");
-          // Signed in
-          const user = userCredential.user;
-          // ...
-        }
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
       );
-    } catch {
-      (error) => {
-        setApiError(getFirebaseErrorMessage(error));
-      };
+      push("/");
+    } catch (error) {
+      setApiError(getFirebaseErrorMessage(error));
     } finally {
       setIsLoading(false);
       if (apiError) {
@@ -68,6 +65,7 @@ const FormContent = () => {
       }
     }
   };
+
   return (
     <div className="form-inner">
       <div className="text-center mb-5">
@@ -127,13 +125,22 @@ const FormContent = () => {
 
         <div className="form-group">
           <button
+            disabled={isLoading}
             className={`theme-btn btn-style-one btn ${
               isLoading ? "btn-secondary disabled" : ""
             }`}
             type="submit"
-            name="log-in"
           >
-            {isLoading ? "Logging in..." : "Login"}
+            {isLoading ? (
+              <div className="d-flex justify-content-center gap-2">
+                <CircularLoader />
+                <p className={`${isLoading ? "text-black" : "text-white"}`}>
+                  Logging in...
+                </p>
+              </div>
+            ) : (
+              "Login"
+            )}
           </button>
           {apiError != " " && (
             <p className="text-center text-danger mt-2">{apiError}</p>
