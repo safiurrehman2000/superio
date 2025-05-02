@@ -18,3 +18,5 @@ export const getFirebaseErrorMessage = (error) => {
   }
   return errorMessage;
 };
+
+export const LOGO = "/images/logo-deflexijobber.png";

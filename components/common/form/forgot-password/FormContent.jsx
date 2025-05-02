@@ -1,15 +1,11 @@
+import { LOGO } from "@/utils/constants";
 import Image from "next/image";
 
 const FormContent2 = () => {
   return (
     <div className="form-inner">
       <div className="text-center mb-5">
-        <Image
-          width={154}
-          height={50}
-          src="/images/logo-deflexijobber.png"
-          alt="De Flexijobber Logo"
-        />
+        <Image width={154} height={50} src={LOGO} alt="De Flexijobber Logo" />
       </div>
       <h3 className="text-center">Forgot Password</h3>
       {/* <!--Login Form--> */}

@@ -1,15 +1,16 @@
 "use client";
-import { checkValidDetails } from "@/utils/validate";
+import Link from "next/link";
+import LoginWithSocial from "./LoginWithSocial";
 import Image from "next/image";
 import { useState } from "react";
-import LoginWithSocial from "./LoginWithSocial";
+import { checkValidDetails } from "@/utils/validate";
 
-import { getFirebaseErrorMessage, LOGO } from "@/utils/constants";
-import { auth } from "@/utils/firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "@/utils/firebase";
 import { useRouter } from "next/navigation";
+import { getFirebaseErrorMessage, LOGO } from "@/utils/constants";
 
-const FormContent = () => {
+const FormContentModal = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState("");
   const [errors, setErrors] = useState({});
@@ -68,12 +69,7 @@ const FormContent = () => {
   return (
     <div className="form-inner">
       <div className="text-center mb-5">
-        <Image
-          width={154}
-          height={50}
-          src={LOGO}
-          alt="De Flexijobber Logo"
-        />
+        <Image width={154} height={50} src={LOGO} alt="De Flexijobber Logo" />
       </div>
       <h3 className="text-center">Login to Flexijobber</h3>
 
@@ -146,15 +142,16 @@ const FormContent = () => {
       {/* End form */}
 
       <div className="bottom-box">
-        <div className="text d-flex justify-content-center">
-          Don&apos;t have an account?&nbsp;
+        <div className="text">
+          Don&apos;t have an account?{" "}
           <div
+            data-bs-dismiss="modal"
             style={{ cursor: "pointer" }}
             onClick={() => {
               push("/register");
             }}
           >
-            {""} Signup
+            Signup
           </div>
         </div>
 
@@ -169,4 +166,4 @@ const FormContent = () => {
   );
 };
 
-export default FormContent;
+export default FormContentModal;

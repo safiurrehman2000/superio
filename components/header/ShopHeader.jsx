@@ -6,6 +6,7 @@ import HeaderNavContent from "./HeaderNavContent";
 import { useDispatch, useSelector } from "react-redux";
 import { reloadCart } from "../../features/shop/shopSlice";
 import Image from "next/image";
+import { LOGO } from "@/utils/constants";
 
 const ShopHeader = () => {
   const { cart } = useSelector((state) => state.shop) || {};
@@ -47,7 +48,7 @@ const ShopHeader = () => {
                 <Image
                   width={154}
                   height={50}
-                  src="/images/logo-deflexijobber.png"
+                  src={LOGO}
                   alt="De Flexijobber Logo"
                 />
               </Link>

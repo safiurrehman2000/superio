@@ -1,10 +1,10 @@
-
-'use client'
+"use client";
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import HeaderNavContent from "./HeaderNavContent";
 import Image from "next/image";
+import { LOGO } from "@/utils/constants";
 
 const DefaulHeader = () => {
   const [navbar, setNavbar] = useState(false);
@@ -38,7 +38,7 @@ const DefaulHeader = () => {
                 <Image
                   width={154}
                   height={50}
-                  src="/images/logo-deflexijobber.png"
+                  src={LOGO}
                   alt="De Flexijobber Logo"
                 />
               </Link>

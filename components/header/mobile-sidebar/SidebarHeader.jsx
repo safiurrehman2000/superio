@@ -1,3 +1,4 @@
+import { LOGO } from "@/utils/constants";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -5,7 +6,7 @@ const SidebarHeader = () => {
   return (
     <div className="pro-header">
       <Link href="/">
-        <Image width={154} height={50} src="/images/logo-deflexijobber.png" alt="De Flexijobber Logo" />
+        <Image width={154} height={50} src={LOGO} alt="De Flexijobber Logo" />
       </Link>
       {/* End logo */}
 
