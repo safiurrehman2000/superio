@@ -148,7 +148,16 @@ const FormContent = () => {
 
       <div className="bottom-box">
         <div className="text">
-          Don&apos;t have an account? <Link href="/register">Signup</Link>
+          Don&apos;t have an account?{" "}
+          <div
+            data-bs-dismiss="modal"
+            style={{ cursor: "pointer" }}
+            onClick={() => {
+              push("/register");
+            }}
+          >
+            Signup
+          </div>
         </div>
 
         <div className="divider">
