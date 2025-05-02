@@ -18,7 +18,7 @@ const FormContent = () => {
   const handleEmailChange = (e) => {
     const newEmail = e.target.value;
     setEmail(newEmail);
-    const validationErrors = checkValidDetails(newEmail, password);
+    const validationErrors = checkValidDetails(newEmail, password, "email");
     setErrors(validationErrors || {});
     setApiError("");
   };
@@ -26,19 +26,24 @@ const FormContent = () => {
   const handlePasswordChange = (e) => {
     const newPassword = e.target.value;
     setPassword(newPassword);
-    const validationErrors = checkValidDetails(email, newPassword);
+    const validationErrors = checkValidDetails(email, newPassword, "password");
     setErrors(validationErrors || {});
     setApiError("");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const validationErrors = checkValidDetails(email, password);
-    if (validationErrors) {
+
+    const emailErrors = checkValidDetails(email, password, "email");
+    const passwordErrors = checkValidDetails(email, password, "password");
+    const validationErrors = { ...emailErrors, ...passwordErrors };
+
+    if (validationErrors && Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
     }
-    setIsLoading(true); //loading state to disable button
+
+    setIsLoading(true);
     setApiError("");
     try {
       const userCredential = await createUserWithEmailAndPassword(
@@ -47,11 +52,10 @@ const FormContent = () => {
         password
       );
       push("/login");
-      const user = userCredential.user;
     } catch (error) {
       setApiError(getFirebaseErrorMessage(error));
     } finally {
-      setIsLoading(false); //resetting loading state and forms
+      setIsLoading(false);
       if (apiError) {
         setEmail("");
         setPassword("");

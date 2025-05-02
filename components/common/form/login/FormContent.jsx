@@ -21,7 +21,7 @@ const FormContent = () => {
   const handleEmailChange = (e) => {
     const newEmail = e.target.value;
     setEmail(newEmail);
-    const validationErrors = checkValidDetails(newEmail, password);
+    const validationErrors = checkValidDetails(newEmail, password, "email");
     setErrors(validationErrors || {});
     setApiError("");
   };
@@ -29,15 +29,18 @@ const FormContent = () => {
   const handlePasswordChange = (e) => {
     const newPassword = e.target.value;
     setPassword(newPassword);
-    const validationErrors = checkValidDetails(email, newPassword);
+    const validationErrors = checkValidDetails(email, newPassword, "password");
     setErrors(validationErrors || {});
     setApiError("");
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const validationErrors = checkValidDetails(email, password);
-    if (validationErrors) {
+    const emailErrors = checkValidDetails(email, password, "email");
+    const passwordErrors = checkValidDetails(email, password, "password");
+    const validationErrors = { ...emailErrors, ...passwordErrors };
+
+    if (validationErrors && Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
     }
@@ -68,12 +71,7 @@ const FormContent = () => {
   return (
     <div className="form-inner">
       <div className="text-center mb-5">
-        <Image
-          width={154}
-          height={50}
-          src={LOGO}
-          alt="De Flexijobber Logo"
-        />
+        <Image width={154} height={50} src={LOGO} alt="De Flexijobber Logo" />
       </div>
       <h3 className="text-center">Login to Flexijobber</h3>
 
