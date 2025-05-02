@@ -18,6 +18,7 @@ const MobileMenu = () => {
                     height={100}
                     src="/images/logo-deflexijobber.png"
                     alt="De Flexijobber Logo"
+                    className="object-fit-contain"
                   />
                 </Link>
               </div>
