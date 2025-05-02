@@ -1,0 +1,28 @@
+import { getFirebaseErrorMessage } from "@/utils/constants";
+import { auth } from "@/utils/firebase";
+import { errorToast, successToast } from "@/utils/toast";
+import { checkValidDetails } from "@/utils/validate";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+
+export const signup = async (email, password) => {
+  const emailErrors = checkValidDetails(email, password, "email");
+  const passwordErrors = checkValidDetails(email, password, "password");
+  const validationErrors = { ...emailErrors, ...passwordErrors };
+
+  if (validationErrors && Object.keys(validationErrors).length > 0) {
+    return { success: false, errors: validationErrors };
+  }
+
+  try {
+    const userCredential = await createUserWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
+    successToast("User Successfully Registered!");
+    return { success: true, user: userCredential.user };
+  } catch (error) {
+    errorToast("Registration failed, Please try again");
+    return { success: false, apiError: getFirebaseErrorMessage(error) };
+  }
+};

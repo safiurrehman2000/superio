@@ -1,10 +1,9 @@
 "use client";
-import CircularLoader from "@/components/circular-loading/CircularLoading";
-import { getFirebaseErrorMessage } from "@/utils/constants";
-import { auth } from "@/utils/firebase";
 import { checkValidDetails } from "@/utils/validate";
-import { createUserWithEmailAndPassword } from "firebase/auth";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import CircularLoader from "@/components/circular-loading/CircularLoading";
+import { signup } from "@/APIs/auth/signup";
 
 const FormContent = () => {
   const [errors, setErrors] = useState({});
@@ -12,6 +11,8 @@ const FormContent = () => {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState("");
+
+  const { push } = useRouter();
 
   const handleEmailChange = (e) => {
     const newEmail = e.target.value;
@@ -31,75 +32,57 @@ const FormContent = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const emailErrors = checkValidDetails(email, password, "email");
-    const passwordErrors = checkValidDetails(email, password, "password");
-    const validationErrors = { ...emailErrors, ...passwordErrors };
-
-    if (validationErrors && Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      return;
-    }
-
     setIsLoading(true);
     setApiError("");
-    try {
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
-      push("/login");
-    } catch (error) {
-      setApiError(getFirebaseErrorMessage(error));
-    } finally {
-      setIsLoading(false);
-      if (apiError) {
+
+    const result = await signup(email, password);
+
+    if (!result.success) {
+      if (result.errors) {
+        setErrors(result.errors);
+      } else if (result.apiError) {
+        setApiError(result.apiError);
         setEmail("");
         setPassword("");
         setErrors({});
       }
+      setIsLoading(false);
+      return;
     }
+
+    setIsLoading(false);
+    push("/login");
   };
+
   return (
-    <form
-      onSubmit={(e) => {
-        handleSubmit(e);
-      }}
-      method="post"
-      action="add-parcel.html"
-    >
+    <form onSubmit={handleSubmit} method="post" action="add-parcel.html">
       <div className="form-group">
         <label>Email Address</label>
         <input
-          onChange={(e) => {
-            handleEmailChange(e);
-          }}
+          onChange={handleEmailChange}
           type="email"
           name="email"
           placeholder="Email"
+          value={email}
           required
         />
         {errors.email && <p className="text-danger mt-2">{errors.email}</p>}
       </div>
-      {/* name */}
 
       <div className="form-group">
         <label>Password</label>
         <input
-          onChange={(e) => {
-            handlePasswordChange(e);
-          }}
+          onChange={handlePasswordChange}
           id="password-field"
           type="password"
           name="password"
           placeholder="Password"
+          value={password}
         />
         {errors.password && (
           <p className="text-danger mt-2">{errors.password}</p>
         )}
       </div>
-      {/* password */}
 
       <div className="form-group">
         <button
@@ -110,9 +93,9 @@ const FormContent = () => {
           type="submit"
         >
           {isLoading ? (
-            <div className="d-flex justify-content-center gap-2">
-              <CircularLoader />
-              <p className={`${isLoading ? "text-black" : "text-white"}`}>
+            <div className="d-flex justify-content-center gap-2 align-items-center">
+              <CircularLoader size={24} strokeColor="#000" />
+              <p className={isLoading ? "text-black" : "text-white"}>
                 Registering...
               </p>
             </div>
@@ -120,11 +103,8 @@ const FormContent = () => {
             "Register"
           )}
         </button>
-        {apiError != " " && (
-          <p className="text-center text-danger mt-2">{apiError}</p>
-        )}
+        {apiError && <p className="text-center text-danger mt-2">{apiError}</p>}
       </div>
-      {/* login */}
     </form>
   );
 };
