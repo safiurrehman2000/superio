@@ -14,7 +14,7 @@ const Register = () => {
       <div className="text-center mb-5">
         <Image width={154} height={50} src={LOGO} alt="De Flexijobber Logo" />
       </div>
-      <h3>Create your Flexijobber account</h3>
+      <h3 className="text-center">Create your Flexijobber account</h3>
 
       <Tabs>
         <div className="form-group register-dual">
