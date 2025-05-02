@@ -1,9 +1,8 @@
 "use client";
+import { useSignUp } from "@/APIs/auth/user";
+import CircularLoader from "@/components/circular-loading/CircularLoading";
 import { checkValidDetails } from "@/utils/validate";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import CircularLoader from "@/components/circular-loading/CircularLoading";
-import { signup } from "@/APIs/auth/signup";
 
 const FormContent = () => {
   const [errors, setErrors] = useState({});
@@ -11,8 +10,6 @@ const FormContent = () => {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState("");
-
-  const { push } = useRouter();
 
   const handleEmailChange = (e) => {
     const newEmail = e.target.value;
@@ -35,7 +32,7 @@ const FormContent = () => {
     setIsLoading(true);
     setApiError("");
 
-    const result = await signup(email, password);
+    const result = await useSignUp(email, password);
 
     if (!result.success) {
       if (result.errors) {
@@ -51,7 +48,7 @@ const FormContent = () => {
     }
 
     setIsLoading(false);
-    push("/login");
+    // push("/login");
   };
 
   return (
