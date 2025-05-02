@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { IoMdNotificationsOutline } from "react-icons/io";
 import HeaderNavContent from "./HeaderNavContent";
+import { LOGO } from "@/utils/constants";
 
 const DefaulHeader2 = () => {
   return (
@@ -19,7 +20,7 @@ const DefaulHeader2 = () => {
                 <Image
                   width={154}
                   height={50}
-                  src="/images/logo-deflexijobber.png"
+                  src={LOGO}
                   alt="De Flexijobber Logo"
                 />
               </Link>

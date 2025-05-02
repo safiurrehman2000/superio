@@ -1,13 +1,19 @@
 "use client";
 
-import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
-import LoginWithSocial from "./LoginWithSocial";
+import { useRouter } from "next/navigation";
+import { Tab, TabList, TabPanel, Tabs } from "react-tabs";
 import Form from "./FormContent";
-import Link from "next/link";
+import LoginWithSocial from "./LoginWithSocial";
+import Image from "next/image";
+import { LOGO } from "@/utils/constants";
 
 const Register = () => {
+  const { push } = useRouter();
   return (
     <div className="form-inner">
+      <div className="text-center mb-5">
+        <Image width={154} height={50} src={LOGO} alt="De Flexijobber Logo" />
+      </div>
       <h3>Create your Flexijobber account</h3>
 
       <Tabs>
@@ -41,8 +47,16 @@ const Register = () => {
       {/* End form-group */}
 
       <div className="bottom-box">
-        <div className="text">
-          Already have an account? <Link href="/login">LogIn</Link>
+        <div className="text d-flex justify-content-center">
+          Already have an account?&nbsp;
+          <div
+            style={{ cursor: "pointer" }}
+            onClick={() => {
+              push("/login");
+            }}
+          >
+            Login
+          </div>
         </div>
         <div className="divider">
           <span>or</span>

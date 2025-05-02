@@ -1,6 +1,7 @@
 import Link from "next/link";
 import MobileSidebar from "./mobile-sidebar";
 import Image from "next/image";
+import { LOGO } from "@/utils/constants";
 
 const MobileMenu = () => {
   return (
@@ -16,7 +17,7 @@ const MobileMenu = () => {
                   <Image
                     width={100}
                     height={100}
-                    src="/images/logo-deflexijobber.png"
+                    src={LOGO}
                     alt="De Flexijobber Logo"
                     className="object-fit-contain"
                   />

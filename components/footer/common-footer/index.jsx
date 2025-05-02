@@ -1,6 +1,7 @@
 import Image from "next/image";
 import CopyrightFooter from "./CopyrightFooter";
 import FooterContent from "./FooterContent";
+import { LOGO } from "@/utils/constants";
 
 const index = ({ footerStyle = "" }) => {
   return (
@@ -16,7 +17,7 @@ const index = ({ footerStyle = "" }) => {
                     <Image
                       width={154}
                       height={50}
-                      src="/images/logo-deflexijobber.png"
+                      src={LOGO}
                       alt="De Flexijobber Logo"
                     />
                   </a>
