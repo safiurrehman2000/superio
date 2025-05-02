@@ -42,16 +42,7 @@ const Register = () => {
 
       <div className="bottom-box">
         <div className="text">
-          Already have an account?{" "}
-          <Link
-            href="#"
-            className="call-modal login"
-            data-bs-toggle="modal"
-            data-bs-dismiss="modal"
-            data-bs-target="#loginPopupModal"
-          >
-            LogIn
-          </Link>
+          Already have an account? <Link href="/login">LogIn</Link>
         </div>
         <div className="divider">
           <span>or</span>
