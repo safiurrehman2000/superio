@@ -1,28 +1,20 @@
 "use client";
-import { Controller, useFormContext, useWatch } from "react-hook-form";
-import { useEffect } from "react";
+import { Controller, useFormContext } from "react-hook-form";
+import { FormProvider, useForm } from "react-hook-form";
 
-export const InputField = ({
+export const TextAreaField = ({
   label,
   name,
-  type = "text",
   placeholder,
   required,
-  fieldType,
   className = "",
+  minLength,
+  maxLength,
 }) => {
-  const { control, setValue, clearErrors } = useFormContext();
+  const { control, clearErrors } = useFormContext();
   const {
     formState: { errors },
   } = useFormContext();
-
-  const fieldValue = useWatch({ name, control });
-
-  useEffect(() => {
-    if (!required && fieldValue === "") {
-      setValue(name, undefined);
-    }
-  }, [fieldValue, name, required, setValue]);
 
   const getError = () => {
     try {
@@ -36,20 +28,12 @@ export const InputField = ({
   const validateField = (value) => {
     if (!value && !required) return undefined;
 
-    if (fieldType === "Email") {
-      const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-      if (!emailPattern.test(value)) {
-        return "Please enter a valid email address";
-      }
-    } else if (fieldType === "Password") {
-      const passwordPattern =
-        /^(?=.*[a-zA-Z])(?=.*\d)[A-Za-z\d!@#$%^&*(),.?":{}|<>]*$/;
-      if (!passwordPattern.test(value)) {
-        return "Password must include at least one letter and one number";
-      }
-      if (value.length < 8) {
-        return "Password must be at least 8 characters long";
-      }
+    if (minLength && value && value.length < minLength) {
+      return `This field must be at least ${minLength} characters long`;
+    }
+
+    if (maxLength && value && value.length > maxLength) {
+      return `This field must not exceed ${maxLength} characters`;
     }
 
     return undefined;
@@ -60,11 +44,7 @@ export const InputField = ({
       {label && (
         <label style={{ display: "flex", alignItems: "center" }}>
           {label}
-          {required ? (
-            <p style={{ color: "#FA5508", margin: 0 }}>*</p>
-          ) : (
-            <p></p>
-          )}
+          {required ? <p style={{ color: "#FA5508", margin: 0 }}>*</p> : ""}
         </label>
       )}
       <Controller
@@ -75,9 +55,8 @@ export const InputField = ({
           validate: validateField,
         }}
         render={({ field }) => (
-          <input
+          <textarea
             {...field}
-            type={type}
             placeholder={placeholder}
             required={required}
             className={`form-control ${className} ${

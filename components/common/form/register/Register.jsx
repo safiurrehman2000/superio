@@ -6,9 +6,15 @@ import Form from "./FormContent";
 import LoginWithSocial from "./LoginWithSocial";
 import Image from "next/image";
 import { LOGO } from "@/utils/constants";
+import { useDispatch } from "react-redux";
+import { userType } from "@/slices/userSlice";
 
 const Register = () => {
   const { push } = useRouter();
+  const dispatch = useDispatch();
+  const handleButtonClick = (user) => {
+    dispatch(userType(user));
+  };
   return (
     <div className="form-inner">
       <div className="text-center mb-5">
@@ -20,13 +26,23 @@ const Register = () => {
         <div className="form-group register-dual">
           <TabList className="btn-box row">
             <Tab className="col-lg-6 col-md-12">
-              <button className="theme-btn btn-style-four">
+              <button
+                onClick={() => {
+                  handleButtonClick("Candidate");
+                }}
+                className="theme-btn btn-style-four"
+              >
                 <i className="la la-user"></i> Candidate
               </button>
             </Tab>
 
             <Tab className="col-lg-6 col-md-12">
-              <button className="theme-btn btn-style-four">
+              <button
+                onClick={() => {
+                  handleButtonClick("Employer");
+                }}
+                className="theme-btn btn-style-four"
+              >
                 <i className="la la-briefcase"></i> Employer
               </button>
             </Tab>

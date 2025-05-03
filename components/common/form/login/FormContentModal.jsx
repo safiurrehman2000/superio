@@ -23,15 +23,6 @@ const FormContentModal = () => {
   const [apiError, setApiError] = useState("");
   const { push } = useRouter();
 
-  const closeModal = () => {
-    const modalElement = document.getElementById("loginPopupModal");
-    if (modalElement) {
-      const bootstrapModal =
-        window.bootstrap.Modal.getOrCreateInstance(modalElement);
-      bootstrapModal.hide();
-    }
-  };
-
   const onSubmit = async (data) => {
     setIsLoading(true);
     setApiError("");
@@ -54,7 +45,6 @@ const FormContentModal = () => {
     }
 
     setIsLoading(false);
-    closeModal();
   };
 
   return (
@@ -97,10 +87,11 @@ const FormContentModal = () => {
           </div>
           <div className="form-group">
             <button
+              data-bs-dismiss="modal"
               disabled={isLoading || !isValid}
               className={`theme-btn btn-style-one btn ${
                 isLoading ? "btn-secondary disabled" : ""
-              }`}
+              } `}
               type="submit"
             >
               {isLoading ? (
@@ -125,6 +116,7 @@ const FormContentModal = () => {
         <div className="text d-flex justify-content-center">
           Don't have an account? 
           <div
+            data-bs-dismiss="modal"
             style={{ cursor: "pointer" }}
             onClick={() => {
               push("/register");
