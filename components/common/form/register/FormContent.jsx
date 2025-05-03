@@ -1,108 +1,94 @@
 "use client";
 import { useSignUp } from "@/APIs/auth/user";
 import CircularLoader from "@/components/circular-loading/CircularLoading";
-import { checkValidDetails } from "@/utils/validate";
+import { InputField } from "@/components/inputfield/InputField";
 import { useState } from "react";
+import { useForm, FormProvider } from "react-hook-form";
 
 const FormContent = () => {
-  const [errors, setErrors] = useState({});
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const methods = useForm({
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+    mode: "onChange",
+  });
+  const { handleSubmit, setValue, formState: isValid } = methods;
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState("");
 
-  const handleEmailChange = (e) => {
-    const newEmail = e.target.value;
-    setEmail(newEmail);
-    const validationErrors = checkValidDetails(newEmail, password, "email");
-    setErrors(validationErrors || {});
-    setApiError("");
-  };
-
-  const handlePasswordChange = (e) => {
-    const newPassword = e.target.value;
-    setPassword(newPassword);
-    const validationErrors = checkValidDetails(email, newPassword, "password");
-    setErrors(validationErrors || {});
-    setApiError("");
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const onSubmit = async (data) => {
     setIsLoading(true);
     setApiError("");
 
-    const result = await useSignUp(email, password);
+    const result = await useSignUp(data.email, data.password);
 
     if (!result.success) {
       if (result.errors) {
-        setErrors(result.errors);
+        Object.keys(result.errors).forEach((key) => {
+          methods.setError(key, { message: result.errors[key] });
+        });
       } else if (result.apiError) {
         setApiError(result.apiError);
-        setEmail("");
-        setPassword("");
-        setErrors({});
+        setValue("email", "");
+        setValue("password", "");
+        methods.reset();
       }
       setIsLoading(false);
       return;
     }
 
     setIsLoading(false);
-    // push("/login");
   };
 
   return (
-    <form onSubmit={handleSubmit} method="post" action="add-parcel.html">
-      <div className="form-group">
-        <label>Email Address</label>
-        <input
-          onChange={handleEmailChange}
-          type="email"
+    <FormProvider {...methods}>
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        method="post"
+        action="add-parcel.html"
+      >
+        <InputField
+          label="Email Address"
           name="email"
+          type="email"
           placeholder="Email"
-          value={email}
           required
+          fieldType="Email"
         />
-        {errors.email && <p className="text-danger mt-2">{errors.email}</p>}
-      </div>
-
-      <div className="form-group">
-        <label>Password</label>
-        <input
-          onChange={handlePasswordChange}
-          id="password-field"
-          type="password"
+        <InputField
+          label="Password"
           name="password"
+          type="password"
           placeholder="Password"
-          value={password}
+          required
+          fieldType="Password"
         />
-        {errors.password && (
-          <p className="text-danger mt-2">{errors.password}</p>
-        )}
-      </div>
-
-      <div className="form-group">
-        <button
-          disabled={isLoading}
-          className={`theme-btn btn-style-one btn ${
-            isLoading ? "btn-secondary disabled" : ""
-          }`}
-          type="submit"
-        >
-          {isLoading ? (
-            <div className="d-flex justify-content-center gap-2 align-items-center">
-              <CircularLoader size={24} strokeColor="#000" />
-              <p className={isLoading ? "text-black" : "text-white"}>
-                Registering...
-              </p>
-            </div>
-          ) : (
-            "Register"
+        <div className="form-group">
+          <button
+            disabled={isLoading || !isValid}
+            className={`theme-btn btn-style-one btn ${
+              isLoading ? "btn-secondary disabled" : ""
+            }`}
+            type="submit"
+          >
+            {isLoading ? (
+              <div className="d-flex justify-content-center gap-2 align-items-center">
+                <CircularLoader size={24} strokeColor="#000" />
+                <p className={isLoading ? "text-black" : "text-white"}>
+                  Registering...
+                </p>
+              </div>
+            ) : (
+              "Register"
+            )}
+          </button>
+          {apiError && (
+            <p className="text-center text-danger mt-2">{apiError}</p>
           )}
-        </button>
-        {apiError && <p className="text-center text-danger mt-2">{apiError}</p>}
-      </div>
-    </form>
+        </div>
+      </form>
+    </FormProvider>
   );
 };
 
