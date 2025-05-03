@@ -9,13 +9,27 @@ import {
   GENDERS,
   PROFILE_VISIBILITY_OPTIONS,
 } from "@/utils/constants";
+import { useFormContext } from "react-hook-form";
 import { useDispatch } from "react-redux";
 
 const FormInfoBox = () => {
   const dispatch = useDispatch();
 
-  const handleStep = () => {
-    dispatch(nextStep());
+  const { trigger } = useFormContext();
+
+  const handleStep = async () => {
+    const isValidSection = await trigger([
+      "name",
+      "phone_number",
+      "email",
+      "gender",
+      "age",
+      "profile_visibility",
+    ]);
+
+    if (isValidSection) {
+      dispatch(nextStep());
+    }
   };
 
   return (
@@ -97,15 +111,7 @@ const FormInfoBox = () => {
           className="form-group col-md-12"
           style={{ display: "flex", justifyContent: "space-between" }}
         >
-          <button type="submit" className="theme-btn btn-style-three">
-            Back
-          </button>
-
-          <button
-            onClick={handleStep}
-            type="submit"
-            className="theme-btn btn-style-one"
-          >
+          <button onClick={handleStep} className="theme-btn btn-style-one">
             Next
           </button>
         </div>
