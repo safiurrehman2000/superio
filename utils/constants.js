@@ -131,3 +131,26 @@ export const menuData = [
     active: "",
   },
 ];
+
+export const GENDERS = [
+  { value: "male", label: "Male" },
+  { value: "female", label: "Female" },
+  { value: "other", label: "Other" },
+];
+
+export const AGE_OPTIONS = [
+  { value: "18-25", label: "18-25" },
+  { value: "26-35", label: "26-35" },
+  { value: "36-45", label: "36-45" },
+  { value: "46-55", label: "46-55" },
+  { value: "56+", label: "56+" },
+];
+
+export const PROFILE_VISIBILITY_OPTIONS = [
+  { value: "yes", label: "Yes" },
+  { value: "no", label: "No" },
+];
+
+// Flex Orange – #FA5508
+// Bright Aqua – #10E7DC
+// Deep Blue – #0074E1

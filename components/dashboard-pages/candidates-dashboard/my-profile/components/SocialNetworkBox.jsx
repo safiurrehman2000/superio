@@ -1,4 +1,12 @@
+import { nextStep } from "@/slices/stepperSlice";
+import { useDispatch } from "react-redux";
+
 const SocialNetworkBox = () => {
+  const dispatch = useDispatch();
+
+  const handleStep = () => {
+    dispatch(nextStep());
+  };
   return (
     <form className="default-form">
       <div className="row">
@@ -33,8 +41,8 @@ const SocialNetworkBox = () => {
 
         {/* <!-- Input --> */}
         <div className="form-group col-lg-6 col-md-12">
-          <button type="submit" className="theme-btn btn-style-one">
-            Save
+          <button onClick={handleStep} className="theme-btn btn-style-one">
+            Next
           </button>
         </div>
       </div>
