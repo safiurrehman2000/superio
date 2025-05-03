@@ -1,34 +1,17 @@
 "use client";
 
+import { LOGO, menuData } from "@/utils/constants";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import employerMenuData from "../../data/employerMenuData";
-import HeaderNavContent from "./HeaderNavContent";
-import { isActiveLink } from "../../utils/linkActiveChecker";
 import { usePathname } from "next/navigation";
-import { LOGO } from "@/utils/constants";
+
+import { isActiveLink } from "../../utils/linkActiveChecker";
+import HeaderNavContent from "./HeaderNavContent";
 
 const DashboardHeader = () => {
-  const [navbar, setNavbar] = useState(false);
-
-  const changeBackground = () => {
-    if (window.scrollY >= 0) {
-      setNavbar(true);
-    } else {
-      setNavbar(false);
-    }
-  };
-
-  useEffect(() => {
-    window.addEventListener("scroll", changeBackground);
-  }, []);
-
   return (
     // <!-- Main Header-->
-    <header
-      className={`main-header header-shaddow  ${navbar ? "fixed-header " : ""}`}
-    >
+    <header className={`main-header header-shaddow `}>
       <div className="container-fluid">
         {/* <!-- Main box --> */}
         <div className="main-box">
@@ -85,7 +68,7 @@ const DashboardHeader = () => {
               </a>
 
               <ul className="dropdown-menu">
-                {employerMenuData.map((item) => (
+                {menuData.map((item) => (
                   <li
                     className={`${
                       isActiveLink(item.routePath, usePathname())

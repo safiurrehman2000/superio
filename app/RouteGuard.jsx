@@ -7,6 +7,8 @@ import { auth } from "@/utils/firebase";
 import { addUser, removeUser } from "@/slices/userSlice";
 import CircularLoader from "@/components/circular-loading/CircularLoading";
 import { privateRoutes, publicRoutes } from "@/utils/routes";
+import Image from "next/image";
+import { LOGO } from "@/utils/constants";
 const RouteGuard = ({ children }) => {
   const dispatch = useDispatch();
   const { push } = useRouter();
@@ -16,6 +18,7 @@ const RouteGuard = ({ children }) => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
+        console.log("user :>> ", user);
         const { uid, email, displayName } = user;
         dispatch(addUser({ uid, email, displayName }));
 
@@ -46,7 +49,7 @@ const RouteGuard = ({ children }) => {
         className="d-flex justify-content-center align-items-center"
         style={{ height: "100vh" }}
       >
-        <CircularLoader size={48} strokeColor="#000" />
+        <Image src={LOGO} width={250} height={250} />
       </div>
     );
   }
