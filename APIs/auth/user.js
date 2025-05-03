@@ -38,7 +38,7 @@ export const useLogIn = async (email, password) => {
   }
 };
 
-export const signOutUser = async () => {
+export const useSignOut = async () => {
   try {
     await signOut(auth);
     successToast("Signout Successful");

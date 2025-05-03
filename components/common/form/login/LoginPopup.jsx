@@ -1,5 +1,4 @@
 import Register from "../register/Register";
-import FormContent from "./FormContent";
 import FormContentModal from "./FormContentModal";
 
 const LoginPopup = () => {
