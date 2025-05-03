@@ -1,4 +1,4 @@
-import { nextStep } from "@/slices/stepperSlice";
+import { nextStep, prevStep } from "@/slices/stepperSlice";
 import { useDispatch } from "react-redux";
 
 const SocialNetworkBox = () => {
@@ -6,6 +6,9 @@ const SocialNetworkBox = () => {
 
   const handleStep = () => {
     dispatch(nextStep());
+  };
+  const handleBack = () => {
+    dispatch(prevStep());
   };
   return (
     <form className="default-form">
@@ -40,7 +43,13 @@ const SocialNetworkBox = () => {
         </div>
 
         {/* <!-- Input --> */}
-        <div className="form-group col-lg-6 col-md-12">
+        <div
+          className="form-group col-md-12"
+          style={{ display: "flex", justifyContent: "space-between" }}
+        >
+          <button onClick={handleBack} className="theme-btn btn-style-three">
+            Back
+          </button>
           <button onClick={handleStep} className="theme-btn btn-style-one">
             Next
           </button>
