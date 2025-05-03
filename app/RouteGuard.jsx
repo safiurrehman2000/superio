@@ -17,8 +17,8 @@ const RouteGuard = ({ children }) => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
+      console.log("user :>> ", user);
       if (user) {
-        console.log("user :>> ", user);
         const { uid, email, displayName } = user;
         dispatch(addUser({ uid, email, displayName }));
 

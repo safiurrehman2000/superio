@@ -7,6 +7,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSelector } from "react-redux";
 import HeaderNavContent from "./HeaderNavContent";
+import { useSignOut } from "@/APIs/auth/user";
 
 const DefaulHeader2 = () => {
   const selector = useSelector((store) => store.user);
@@ -83,9 +84,21 @@ const DefaulHeader2 = () => {
                   } mb-1`}
                   key={item.id}
                 >
-                  <Link href={item.routePath}>
-                    <i className={`la ${item.icon}`}></i> {item.name}
-                  </Link>
+                  {item.routePath === "/login" ? (
+                    <Link
+                      href={item.routePath}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        useSignOut();
+                      }}
+                    >
+                      <i className={`la ${item.icon}`}></i> {item.name}
+                    </Link>
+                  ) : (
+                    <Link href={item.routePath}>
+                      <i className={`la ${item.icon}`}></i> {item.name}
+                    </Link>
+                  )}
                 </li>
               ))}
             </ul>

@@ -23,6 +23,15 @@ const FormContentModal = () => {
   const [apiError, setApiError] = useState("");
   const { push } = useRouter();
 
+  const closeModal = () => {
+    const modalElement = document.getElementById("loginPopupModal");
+    if (modalElement) {
+      const bootstrapModal =
+        window.bootstrap.Modal.getOrCreateInstance(modalElement);
+      bootstrapModal.hide();
+    }
+  };
+
   const onSubmit = async (data) => {
     setIsLoading(true);
     setApiError("");
@@ -45,7 +54,7 @@ const FormContentModal = () => {
     }
 
     setIsLoading(false);
-    push("/");
+    closeModal();
   };
 
   return (
