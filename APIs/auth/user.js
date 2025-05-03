@@ -5,6 +5,7 @@ import { checkValidDetails } from "@/utils/validate";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  signOut,
 } from "firebase/auth";
 
 export const useSignUp = async (email, password) => {
@@ -46,6 +47,15 @@ export const useLogIn = async (email, password) => {
       password
     );
     return { success: true, user: userCredential.user };
+  } catch (error) {
+    return { success: false, apiError: getFirebaseErrorMessage(error) };
+  }
+};
+
+export const signOutUser = async () => {
+  try {
+    await signOut(auth);
+    return { success: true };
   } catch (error) {
     return { success: false, apiError: getFirebaseErrorMessage(error) };
   }
