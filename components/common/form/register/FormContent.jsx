@@ -3,11 +3,7 @@ import { useSignUp } from "@/APIs/auth/user";
 import CircularLoader from "@/components/circular-loading/CircularLoading";
 import { InputField } from "@/components/inputfield/InputField";
 import { useState } from "react";
-import { useForm, FormProvider } from "react-hook-form";
-
-import { collection, addDoc } from "firebase/firestore";
-import { db } from "@/utils/firebase";
-import { errorToast, successToast } from "@/utils/toast";
+import { FormProvider, useForm } from "react-hook-form";
 import { useSelector } from "react-redux";
 
 const FormContent = () => {
