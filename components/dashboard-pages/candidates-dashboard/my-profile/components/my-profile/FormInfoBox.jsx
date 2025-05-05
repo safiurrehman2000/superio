@@ -3,18 +3,14 @@
 import { InputField } from "@/components/inputfield/InputField";
 import { SelectField } from "@/components/selectfield/SelectField";
 import { TextAreaField } from "@/components/textarea/TextArea";
-import { nextStep } from "@/slices/stepperSlice";
 import {
   AGE_OPTIONS,
   GENDERS,
   PROFILE_VISIBILITY_OPTIONS,
 } from "@/utils/constants";
 import { useFormContext } from "react-hook-form";
-import { useDispatch } from "react-redux";
 
 const FormInfoBox = () => {
-  const dispatch = useDispatch();
-
   const { trigger } = useFormContext();
 
   const handleStep = async () => {
@@ -26,10 +22,6 @@ const FormInfoBox = () => {
       "age",
       "profile_visibility",
     ]);
-
-    if (isValidSection) {
-      dispatch(nextStep());
-    }
   };
 
   return (
@@ -56,7 +48,6 @@ const FormInfoBox = () => {
             label="Phone"
             name="phone_number"
             placeholder="111222333444"
-            required
           />
         </div>
 
@@ -66,7 +57,6 @@ const FormInfoBox = () => {
             label="Email"
             name="email"
             placeholder="candidate@gmail.com"
-            required
           />
         </div>
 
@@ -77,7 +67,6 @@ const FormInfoBox = () => {
             name="gender"
             options={GENDERS}
             placeholder="Select a gender"
-            required
           />
         </div>
         <div className="form-group col-lg-6 col-md-12">
@@ -86,7 +75,6 @@ const FormInfoBox = () => {
             name="age"
             options={AGE_OPTIONS}
             placeholder="Age"
-            required
           />
         </div>
 
@@ -97,7 +85,6 @@ const FormInfoBox = () => {
             name="profile_visibility"
             options={PROFILE_VISIBILITY_OPTIONS}
             placeholder=""
-            required
           />
         </div>
 
