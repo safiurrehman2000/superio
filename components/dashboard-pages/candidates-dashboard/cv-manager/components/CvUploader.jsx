@@ -1,7 +1,15 @@
 "use client";
 
 import { auth, db } from "@/utils/firebase"; // Adjust path to your Firebase config
-import { addDoc, collection, doc, getDoc, updateDoc } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  getDocs,
+  updateDoc,
+} from "firebase/firestore";
 import { useEffect, useState } from "react";
 
 // Validation function for file types
@@ -28,6 +36,15 @@ function fileToBase64(file) {
     reader.onerror = (error) => reject(error);
     reader.readAsDataURL(file);
   });
+}
+
+function resumeToFile(resume) {
+  const byteString = atob(resume.fileData);
+  const byteArray = new Uint8Array(byteString.length);
+  for (let i = 0; i < byteString.length; i++) {
+    byteArray[i] = byteString.charCodeAt(i);
+  }
+  return new File([byteArray], resume.fileName, { type: resume.fileType });
 }
 
 const CvUploader = () => {
@@ -127,6 +144,33 @@ const CvUploader = () => {
       setError("Failed to delete resume. Please try again.");
     }
   };
+
+  useEffect(() => {
+    const fetchResumes = async () => {
+      if (!user?.uid) {
+        setError("Please log in to upload a resume");
+        return;
+      }
+
+      try {
+        const resumesSnapshot = await getDocs(
+          collection(db, "users", user.uid, "resumes")
+        );
+        const resumes = resumesSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        const files = resumes.map(resumeToFile);
+        setManager(files);
+        setError("");
+      } catch (error) {
+        console.error("Error fetching resumes:", error);
+        setError("Failed to load resumes. Please try again.");
+      }
+    };
+
+    fetchResumes();
+  }, [user?.uid]);
 
   return (
     <>
