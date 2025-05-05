@@ -23,6 +23,13 @@ const index = () => {
 
       <Hero9 />
       {/* End Hero Section */}
+      <section className="layout-pt-60 layout-pb-60">
+        <div className="auto-container">
+          <div className="row" data-aos="fade-up">
+            <RegBanner />
+          </div>
+        </div>
+      </section>
 
       <section className="job-section">
         <div className="auto-container">
@@ -40,13 +47,7 @@ const index = () => {
       </section>
       {/* End Job Featured Section */}
       <CallToAction2 />
-      <section className="layout-pt-60 layout-pb-60">
-        <div className="auto-container">
-          <div className="row" data-aos="fade-up">
-            <RegBanner />
-          </div>
-        </div>
-      </section>
+
       <section className="news-section-two style-two">
         <div className="auto-container">
           <div className="sec-title text-center">

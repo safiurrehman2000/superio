@@ -5,6 +5,11 @@ import { InputField } from "@/components/inputfield/InputField";
 import { useState } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 
+import { collection, addDoc } from "firebase/firestore";
+import { db } from "@/utils/firebase";
+import { errorToast, successToast } from "@/utils/toast";
+import { useSelector } from "react-redux";
+
 const FormContent = () => {
   const methods = useForm({
     defaultValues: {
@@ -16,12 +21,17 @@ const FormContent = () => {
   const { handleSubmit, setValue, formState: isValid } = methods;
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState("");
+  const selector = useSelector((store) => store.user);
 
   const onSubmit = async (data) => {
     setIsLoading(true);
     setApiError("");
 
-    const result = await useSignUp(data.email, data.password);
+    const result = await useSignUp(
+      data.email,
+      data.password,
+      selector.userType
+    );
 
     if (!result.success) {
       if (result.errors) {

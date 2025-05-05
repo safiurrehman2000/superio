@@ -1,15 +1,4 @@
-import { nextStep, prevStep } from "@/slices/stepperSlice";
-import { useDispatch } from "react-redux";
-
 const SocialNetworkBox = () => {
-  const dispatch = useDispatch();
-
-  const handleStep = () => {
-    dispatch(nextStep());
-  };
-  const handleBack = () => {
-    dispatch(prevStep());
-  };
   return (
     <form className="default-form">
       <div className="row">
@@ -47,12 +36,7 @@ const SocialNetworkBox = () => {
           className="form-group col-md-12"
           style={{ display: "flex", justifyContent: "space-between" }}
         >
-          <button onClick={handleBack} className="theme-btn btn-style-three">
-            Back
-          </button>
-          <button onClick={handleStep} className="theme-btn btn-style-one">
-            Next
-          </button>
+          <button className="theme-btn btn-style-one">Next</button>
         </div>
       </div>
     </form>

@@ -4,8 +4,8 @@ const BreadCrumb = ({ title = "" }) => {
       <h3>{title}</h3>
       <div className="text">
         {" "}
-        Just a moment, we need to create your profile before you can access our
-        cool website :)
+        Just a moment, we need your CV/Resume before you can access our cool
+        website :)
       </div>
     </div>
   );

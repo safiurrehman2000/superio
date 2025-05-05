@@ -1,20 +1,26 @@
 import { getFirebaseErrorMessage } from "@/utils/constants";
-import { auth } from "@/utils/firebase";
+import { auth, db } from "@/utils/firebase";
 import { errorToast, successToast } from "@/utils/toast";
-
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
 } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
 
-export const useSignUp = async (email, password) => {
+export const useSignUp = async (email, password, userType) => {
   try {
     const userCredential = await createUserWithEmailAndPassword(
       auth,
       email,
       password
     );
+    const user = userCredential.user;
+    await setDoc(doc(db, "users", user.uid), {
+      email: user.email,
+      userType: userType,
+      createdAt: new Date(),
+    });
     successToast("User Successfully Registered!");
     return { success: true, user: userCredential.user };
   } catch (error) {
