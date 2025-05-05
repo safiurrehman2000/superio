@@ -44,14 +44,16 @@ export default function RootLayout({ children }) {
 
       <body>
         <Provider store={store}>
-          <div className="page-wrapper">
-            {children}
+          <RouteGuard>
+            <div className="page-wrapper">
+              {children}
 
-            {/* <!-- Scroll To Top --> */}
-            <ScrollToTop />
-          </div>
+              {/* <!-- Scroll To Top --> */}
+              <ScrollToTop />
+            </div>
 
-          <Toaster />
+            <Toaster />
+          </RouteGuard>
         </Provider>
       </body>
     </html>

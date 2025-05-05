@@ -1,14 +1,10 @@
 "use client";
 import { LOGO } from "@/utils/constants";
 import Image from "next/image";
-import { FormProvider, useForm } from "react-hook-form";
-import { useSelector } from "react-redux";
 import BreadCrumb from "../../BreadCrumb";
-import MyProfile from "./components/my-profile";
 import CvUploader from "../cv-manager/components/CvUploader";
 
 const index = () => {
-  const methods = useForm({ mode: "all" });
   return (
     <div
       style={{
@@ -71,6 +67,9 @@ const index = () => {
           {/* End .row */}
         </div>
         {/* End dashboard-outer */}
+        <button className={`theme-btn btn-style-one btn `}>
+          Go to Job Apply
+        </button>
       </section>
       {/* <!-- End Dashboard --> */}
     </div>
