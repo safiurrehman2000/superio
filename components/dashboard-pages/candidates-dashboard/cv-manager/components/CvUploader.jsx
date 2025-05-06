@@ -1,6 +1,7 @@
 "use client";
 
 import { useGetUploadedResumes } from "@/APIs/auth/resume";
+import { isFirstTime } from "@/slices/userSlice";
 
 import { auth, db } from "@/utils/firebase";
 import {
@@ -8,6 +9,7 @@ import {
   checkFileTypes,
   fileToBase64,
 } from "@/utils/resumeHelperFunctions";
+import { successToast } from "@/utils/toast";
 import {
   addDoc,
   collection,
@@ -16,6 +18,7 @@ import {
   getDoc,
   getDocs,
   query,
+  setDoc,
   updateDoc,
   where,
 } from "firebase/firestore";
@@ -26,7 +29,7 @@ const CvUploader = () => {
   const [getManager, setManager] = useState([]);
   const [getError, setError] = useState("");
   const user = auth.currentUser;
-  const dispatch = useDispatch();
+
   const { resumes, loading, error: fetchError } = useGetUploadedResumes();
 
   // Sync getManager with fetched resumes
@@ -34,7 +37,7 @@ const CvUploader = () => {
     if (resumes && resumes.length > 0) {
       setManager(resumes);
     }
-  }, [resumes, dispatch]);
+  }, [resumes]);
 
   // Handle fetch errors
   useEffect(() => {
@@ -105,8 +108,13 @@ const CvUploader = () => {
           uploadedAt: new Date(),
         });
       }
-
+      await setDoc(
+        doc(db, "users", uid),
+        { isFirstTime: false },
+        { merge: true }
+      );
       setManager((prev) => [...prev, ...data]);
+      successToast("Resume uploaded successfully");
       setError("");
     } catch (error) {
       console.error("Error uploading resume:", error);
@@ -129,7 +137,7 @@ const CvUploader = () => {
 
       const deleted = getManager.filter((file) => file.name !== name);
       setManager(deleted);
-
+      successToast("Resume deleted successfully");
       setError("");
     } catch (error) {
       console.error("Error deleting resume:", error);

@@ -1,10 +1,15 @@
 "use client";
 import { LOGO } from "@/utils/constants";
 import Image from "next/image";
+import { useDispatch, useSelector } from "react-redux";
 import BreadCrumb from "../../BreadCrumb";
 import CvUploader from "../cv-manager/components/CvUploader";
+import { errorToast } from "@/utils/toast";
+import { useRouter } from "next/navigation";
 
 const index = () => {
+  const { push } = useRouter();
+  const selector = useSelector((store) => store.user);
   return (
     <div
       style={{
@@ -67,7 +72,18 @@ const index = () => {
           {/* End .row */}
         </div>
         {/* End dashboard-outer */}
-        <button className={`theme-btn btn-style-one btn `}>
+        <button
+          disabled={selector.isFirstTime}
+          onClick={() => {
+            if (!selector.isFirstTime) {
+              push("/job-list");
+            } else {
+              errorToast("Please upload your CV/Resume");
+              return;
+            }
+          }}
+          className={`theme-btn btn-style-one btn `}
+        >
           Go to Job Apply
         </button>
       </section>
