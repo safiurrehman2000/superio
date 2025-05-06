@@ -1,3 +1,4 @@
+import { isFirstTime } from "@/slices/userSlice";
 import { getFirebaseErrorMessage } from "@/utils/constants";
 import { auth, db } from "@/utils/firebase";
 import { errorToast, successToast } from "@/utils/toast";
@@ -20,6 +21,7 @@ export const useSignUp = async (email, password, userType) => {
       email: user.email,
       userType: userType,
       createdAt: new Date(),
+      isFirstTime: true,
     });
     successToast("User Successfully Registered!");
     return { success: true, user: userCredential.user };

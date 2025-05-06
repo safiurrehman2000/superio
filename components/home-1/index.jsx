@@ -23,6 +23,7 @@ const index = () => {
 
       <Hero9 />
       {/* End Hero Section */}
+
       <section className="layout-pt-60 layout-pb-60">
         <div className="auto-container">
           <div className="row" data-aos="fade-up">

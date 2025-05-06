@@ -1,14 +1,18 @@
+import { isFirstTime } from "@/slices/userSlice";
 import { auth, db } from "@/utils/firebase";
 import { resumeToFile } from "@/utils/resumeHelperFunctions";
 import { errorToast, successToast } from "@/utils/toast";
 import { collection, getDocs } from "firebase/firestore";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
 
 export const useGetUploadedResumes = () => {
   const [resumes, setResumes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
+  const dispatch = useDispatch();
+  const { push } = useRouter();
   useEffect(() => {
     const fetchResumes = async () => {
       const user = auth.currentUser;
@@ -17,7 +21,6 @@ export const useGetUploadedResumes = () => {
         errorToast("Please login first to view resumes");
         return;
       }
-
       setLoading(true);
       try {
         const resumesSnapshot = await getDocs(
@@ -29,6 +32,10 @@ export const useGetUploadedResumes = () => {
         }));
         const files = resumeData.map(resumeToFile);
         setResumes(files);
+        // if (files.length > 0) {
+        //   dispatch(isFirstTime());
+        //   push("/job-list");
+        // }
         successToast("Resumes fetched successfully");
       } catch (error) {
         console.error("Error fetching resumes:", error);

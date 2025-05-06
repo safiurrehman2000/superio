@@ -38,7 +38,7 @@ const DefaulHeader2 = () => {
         </div>
         {/* End .nav-outer */}
         {/* conditional rendering for if user is logged in or not */}
-        {!selector?.uid ? (
+        {!selector?.user?.uid ? (
           <div className="outer-box gap-2">
             {/* <!-- Login/Register --> */}
             <div className="btn-box">
@@ -73,7 +73,9 @@ const DefaulHeader2 = () => {
                 width={50}
                 height={50}
               />
-              <span className="name">My Account</span>
+              <span className="name">
+                {selector?.user?.email?.split("@")[0]}
+              </span>
             </a>
 
             <ul className="dropdown-menu">
