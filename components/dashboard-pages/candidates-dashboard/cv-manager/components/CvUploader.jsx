@@ -1,6 +1,13 @@
 "use client";
 
-import { auth, db } from "@/utils/firebase"; // Adjust path to your Firebase config
+import { useGetUploadedResumes } from "@/APIs/auth/resume";
+
+import { auth, db } from "@/utils/firebase";
+import {
+  checkFileSize,
+  checkFileTypes,
+  fileToBase64,
+} from "@/utils/resumeHelperFunctions";
 import {
   addDoc,
   collection,
@@ -8,54 +15,38 @@ import {
   doc,
   getDoc,
   getDocs,
+  query,
   updateDoc,
+  where,
 } from "firebase/firestore";
 import { useEffect, useState } from "react";
-
-// Validation function for file types
-function checkFileTypes(files) {
-  const allowedTypes = [
-    "application/pdf",
-    "application/msword",
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  ];
-  return Array.from(files).every((file) => allowedTypes.includes(file.type));
-}
-
-// Validation function for file size (max 500 KB)
-function checkFileSize(files) {
-  const maxSize = 500 * 1024; // 500 KB in bytes
-  return Array.from(files).every((file) => file.size <= maxSize);
-}
-
-// Convert file to base64
-function fileToBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result.split(",")[1]); // Extract base64 data
-    reader.onerror = (error) => reject(error);
-    reader.readAsDataURL(file);
-  });
-}
-
-function resumeToFile(resume) {
-  const byteString = atob(resume.fileData);
-  const byteArray = new Uint8Array(byteString.length);
-  for (let i = 0; i < byteString.length; i++) {
-    byteArray[i] = byteString.charCodeAt(i);
-  }
-  return new File([byteArray], resume.fileName, { type: resume.fileType });
-}
+import { useDispatch } from "react-redux";
 
 const CvUploader = () => {
   const [getManager, setManager] = useState([]);
   const [getError, setError] = useState("");
   const user = auth.currentUser;
+  const dispatch = useDispatch();
+  const { resumes, loading, error: fetchError } = useGetUploadedResumes();
+
+  // Sync getManager with fetched resumes
+  useEffect(() => {
+    if (resumes && resumes.length > 0) {
+      setManager(resumes);
+    }
+  }, [resumes, dispatch]);
+
+  // Handle fetch errors
+  useEffect(() => {
+    if (fetchError) {
+      setError(fetchError);
+    }
+  }, [fetchError]);
 
   // Ensure userType is "Candidate" before allowing upload
   useEffect(() => {
     const checkUserType = async () => {
-      if (!user.uid) {
+      if (!user?.uid) {
         setError("Please log in to upload a resume");
         return;
       }
@@ -77,7 +68,7 @@ const CvUploader = () => {
     };
 
     checkUserType();
-  }, [user.uid]);
+  }, [user?.uid]);
 
   const cvManagerHandler = async (e) => {
     const files = e.target.files;
@@ -126,7 +117,7 @@ const CvUploader = () => {
   // Delete resume from Firestore and local state
   const deleteHandler = async (name) => {
     try {
-      // Find and delete the resume document (assumes fileName is unique)
+      // Find and delete the resume document
       const resumesQuery = query(
         collection(db, "users", user.uid, "resumes"),
         where("fileName", "==", name)
@@ -138,39 +129,13 @@ const CvUploader = () => {
 
       const deleted = getManager.filter((file) => file.name !== name);
       setManager(deleted);
+
       setError("");
     } catch (error) {
       console.error("Error deleting resume:", error);
       setError("Failed to delete resume. Please try again.");
     }
   };
-
-  useEffect(() => {
-    const fetchResumes = async () => {
-      if (!user?.uid) {
-        setError("Please log in to upload a resume");
-        return;
-      }
-
-      try {
-        const resumesSnapshot = await getDocs(
-          collection(db, "users", user.uid, "resumes")
-        );
-        const resumes = resumesSnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        const files = resumes.map(resumeToFile);
-        setManager(files);
-        setError("");
-      } catch (error) {
-        console.error("Error fetching resumes:", error);
-        setError("Failed to load resumes. Please try again.");
-      }
-    };
-
-    fetchResumes();
-  }, [user?.uid]);
 
   return (
     <>
@@ -186,7 +151,9 @@ const CvUploader = () => {
             multiple
             onChange={cvManagerHandler}
             disabled={
-              !user.uid || getError === "Only Candidates can upload resumes"
+              loading ||
+              !user?.uid ||
+              getError === "Only Candidates can upload resumes"
             }
           />
           <label className="cv-uploadButton" htmlFor="upload">
