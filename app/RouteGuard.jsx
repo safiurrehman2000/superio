@@ -1,9 +1,10 @@
 "use client";
 import { addUser, removeUser } from "@/slices/userSlice";
 import { LOGO } from "@/utils/constants";
-import { auth } from "@/utils/firebase";
+import { auth, db } from "@/utils/firebase";
 import { privateRoutes, publicRoutes } from "@/utils/routes";
 import { onAuthStateChanged } from "firebase/auth";
+import { collection, doc, getDoc, getDocs } from "firebase/firestore";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -17,10 +18,26 @@ const RouteGuard = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         const { uid, email, displayName } = user;
-        dispatch(addUser({ uid, email, displayName }));
+        const userDoc = await getDoc(doc(db, "users", uid));
+        const userData = userDoc.exists() ? userDoc.data() : {};
+
+        // Check if user has any resumes
+        const resumesSnapshot = await getDocs(
+          collection(db, "users", uid, "resumes")
+        );
+        const hasResumes = !resumesSnapshot.empty;
+
+        dispatch(
+          addUser({
+            uid,
+            email,
+            userType: userData.userType || null,
+            displayName,
+          })
+        );
 
         // If user has no displayName, redirect to create-profile based on userType
         if (!displayName) {
