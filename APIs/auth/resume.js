@@ -5,22 +5,28 @@ import { addDoc, collection, doc, getDocs, setDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
+import { getUserData } from "./user";
 
 export const useGetUploadedResumes = () => {
   const [resumes, setResumes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const dispatch = useDispatch();
-  const { push } = useRouter();
+
   useEffect(() => {
+    let isMounted = true; // Flag to track component mount status
+
     const fetchResumes = async () => {
       const user = auth.currentUser;
       if (!user?.uid) {
-        setError("Please login first to view resumes");
-        errorToast("Please login first to view resumes");
+        if (isMounted) {
+          setError("Please login first to view resumes");
+          errorToast("Please login first to view resumes");
+        }
         return;
       }
-      setLoading(true);
+
+      if (isMounted) setLoading(true);
+
       try {
         const resumesSnapshot = await getDocs(
           collection(db, "users", user.uid, "resumes")
@@ -30,22 +36,27 @@ export const useGetUploadedResumes = () => {
           ...doc.data(),
         }));
         const files = resumeData.map(resumeToFile);
-        setResumes(files);
-        // if (files.length > 0) {
-        //   dispatch(isFirstTime());
-        //   push("/job-list");
-        // }
-        successToast("Resumes fetched successfully");
+
+        if (isMounted) {
+          setResumes(files);
+          successToast("Resumes fetched successfully");
+        }
       } catch (error) {
         console.error("Error fetching resumes:", error);
-        setError("Failed to load resumes. Please try again.");
-        errorToast("Failed to load resumes. Please try again.");
+        if (isMounted) {
+          setError("Failed to load resumes. Please try again.");
+          errorToast("Failed to load resumes. Please try again.");
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
 
     fetchResumes();
+
+    return () => {
+      isMounted = false; // Cleanup function to set flag false when unmounted
+    };
   }, []);
 
   return { resumes, loading, error };
@@ -74,7 +85,7 @@ export const useUploadResume = async (data, setManager, setError) => {
     setManager((prev) => [...prev, ...data]);
     successToast("Resume uploaded successfully");
     setError("");
-   
+
     return { success: true };
   } catch (error) {
     console.error("Error uploading resume:", error);
