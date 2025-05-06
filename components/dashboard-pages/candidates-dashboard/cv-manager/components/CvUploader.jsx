@@ -91,7 +91,6 @@ const CvUploader = () => {
     }
 
     const { success } = await useUploadResume(data, setManager, setError);
-    console.log("success :>> ", success);
     if (success) {
       push("/job-list");
     }
