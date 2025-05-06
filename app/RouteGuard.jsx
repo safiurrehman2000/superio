@@ -23,7 +23,6 @@ const RouteGuard = ({ children }) => {
         const { uid, email, displayName } = user;
         const userDoc = await getDoc(doc(db, "users", uid));
         const userData = userDoc.exists() ? userDoc.data() : {};
-        console.log("userData.isFirstTime :>> ", userData.isFirstTime);
         dispatch(
           addUser({
             uid,

@@ -1,8 +1,8 @@
 import { isFirstTime } from "@/slices/userSlice";
 import { auth, db } from "@/utils/firebase";
-import { resumeToFile } from "@/utils/resumeHelperFunctions";
+import { fileToBase64, resumeToFile } from "@/utils/resumeHelperFunctions";
 import { errorToast, successToast } from "@/utils/toast";
-import { collection, getDocs } from "firebase/firestore";
+import { addDoc, collection, doc, getDocs, setDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
@@ -50,4 +50,32 @@ export const useGetUploadedResumes = () => {
   }, []);
 
   return { resumes, loading, error };
+};
+
+export const useUploadResume = async (data, setManager, setError) => {
+  const user = auth.currentUser;
+  try {
+    // Convert files to base64 and upload to Firestore
+    for (const file of data) {
+      const base64Data = await fileToBase64(file);
+      await addDoc(collection(db, "users", user.uid, "resumes"), {
+        fileName: file.name,
+        fileData: base64Data,
+        fileType: file.type,
+        size: file.size,
+        uploadedAt: new Date(),
+      });
+    }
+    await setDoc(
+      doc(db, "users", user.uid),
+      { isFirstTime: false },
+      { merge: true }
+    );
+    setManager((prev) => [...prev, ...data]);
+    successToast("Resume uploaded successfully");
+    setError("");
+  } catch (error) {
+    console.error("Error uploading resume:", error);
+    setError("Failed to upload resume. Please try again.");
+  }
 };

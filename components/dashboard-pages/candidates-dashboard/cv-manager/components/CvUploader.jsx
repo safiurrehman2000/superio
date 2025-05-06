@@ -1,29 +1,21 @@
 "use client";
 
-import { useGetUploadedResumes } from "@/APIs/auth/resume";
-import { isFirstTime } from "@/slices/userSlice";
+import { useGetUploadedResumes, useUploadResume } from "@/APIs/auth/resume";
 
 import { auth, db } from "@/utils/firebase";
-import {
-  checkFileSize,
-  checkFileTypes,
-  fileToBase64,
-} from "@/utils/resumeHelperFunctions";
+import { checkFileSize, checkFileTypes } from "@/utils/resumeHelperFunctions";
 import { successToast } from "@/utils/toast";
 import {
-  addDoc,
   collection,
   deleteDoc,
   doc,
   getDoc,
   getDocs,
   query,
-  setDoc,
   updateDoc,
   where,
 } from "firebase/firestore";
 import { useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
 
 const CvUploader = () => {
   const [getManager, setManager] = useState([]);
@@ -96,30 +88,7 @@ const CvUploader = () => {
       return;
     }
 
-    try {
-      // Convert files to base64 and upload to Firestore
-      for (const file of data) {
-        const base64Data = await fileToBase64(file);
-        await addDoc(collection(db, "users", user.uid, "resumes"), {
-          fileName: file.name,
-          fileData: base64Data,
-          fileType: file.type,
-          size: file.size,
-          uploadedAt: new Date(),
-        });
-      }
-      await setDoc(
-        doc(db, "users", uid),
-        { isFirstTime: false },
-        { merge: true }
-      );
-      setManager((prev) => [...prev, ...data]);
-      successToast("Resume uploaded successfully");
-      setError("");
-    } catch (error) {
-      console.error("Error uploading resume:", error);
-      setError("Failed to upload resume. Please try again.");
-    }
+    useUploadResume(data, setManager, setError);
   };
 
   // Delete resume from Firestore and local state
