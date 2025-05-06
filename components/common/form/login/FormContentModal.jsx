@@ -1,5 +1,5 @@
 "use client";
-import { useLogIn } from "@/APIs/auth/user";
+import { useLogIn } from "@/APIs/auth/auth";
 import CircularLoader from "@/components/circular-loading/CircularLoading";
 import { useState } from "react";
 import { useForm, FormProvider } from "react-hook-form";

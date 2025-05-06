@@ -1,5 +1,5 @@
 "use client";
-import { useSignUp } from "@/APIs/auth/user";
+import { useSignUp } from "@/APIs/auth/auth";
 import CircularLoader from "@/components/circular-loading/CircularLoading";
 import { InputField } from "@/components/inputfield/InputField";
 import { useState } from "react";

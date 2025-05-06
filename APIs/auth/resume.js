@@ -1,4 +1,3 @@
-import { isFirstTime } from "@/slices/userSlice";
 import { auth, db } from "@/utils/firebase";
 import { fileToBase64, resumeToFile } from "@/utils/resumeHelperFunctions";
 import { errorToast, successToast } from "@/utils/toast";
@@ -54,6 +53,7 @@ export const useGetUploadedResumes = () => {
 
 export const useUploadResume = async (data, setManager, setError) => {
   const user = auth.currentUser;
+
   try {
     // Convert files to base64 and upload to Firestore
     for (const file of data) {
@@ -74,8 +74,11 @@ export const useUploadResume = async (data, setManager, setError) => {
     setManager((prev) => [...prev, ...data]);
     successToast("Resume uploaded successfully");
     setError("");
+   
+    return { success: true };
   } catch (error) {
     console.error("Error uploading resume:", error);
     setError("Failed to upload resume. Please try again.");
+    return { success: false };
   }
 };
