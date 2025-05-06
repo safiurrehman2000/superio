@@ -1,8 +1,12 @@
 "use client";
-import { addUser, isFirstTime, removeUser } from "@/slices/userSlice";
+import { addUser, removeUser } from "@/slices/userSlice";
 import { LOGO } from "@/utils/constants";
 import { auth, db } from "@/utils/firebase";
-import { privateRoutes } from "@/utils/routes";
+import {
+  authProtectedPublicRoutes,
+  privateRoutes,
+  publicRoutes,
+} from "@/utils/routes";
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import Image from "next/image";
@@ -23,6 +27,7 @@ const RouteGuard = ({ children }) => {
         const { uid, email, displayName } = user;
         const userDoc = await getDoc(doc(db, "users", uid));
         const userData = userDoc.exists() ? userDoc.data() : {};
+
         dispatch(
           addUser({
             uid,
@@ -32,33 +37,58 @@ const RouteGuard = ({ children }) => {
           })
         );
 
+        // Handle first-time users
         if (userData.isFirstTime) {
-          push("/create-profile-candidate");
+          if (pathname !== "/create-profile-candidate") {
+            push("/create-profile-candidate");
+            setLoading(false);
+            return;
+          }
+        } else {
+          // Prevent non-first-time users from accessing create-profile routes
+          if (
+            pathname.startsWith("/create-profile") ||
+            pathname === "/create-profile-candidate" ||
+            pathname === "/create-profile-employer"
+          ) {
+            push("/");
+            setLoading(false);
+            return;
+          }
+        }
+
+        // Redirect authenticated users away from auth-protected public routes
+        if (authProtectedPublicRoutes.includes(pathname)) {
+          push("/");
+          setLoading(false);
+          return;
         }
       } else {
         dispatch(removeUser());
-        // Redirect to /login for protected routes
-        if (
-          privateRoutes.some(
-            (route) => pathname === route || pathname.startsWith(route)
-          )
-        ) {
+
+        // Redirect unauthenticated users from private routes to login
+        if (privateRoutes.some((route) => pathname.includes(route))) {
           push("/login");
+          setLoading(false);
+          return;
         }
+
         // Prevent unauthenticated users from accessing create-profile routes
         if (
-          pathname === "/create-profile" ||
+          pathname.startsWith("/create-profile") ||
           pathname === "/create-profile-candidate" ||
           pathname === "/create-profile-employer"
         ) {
           push("/login");
+          setLoading(false);
+          return;
         }
       }
       setLoading(false);
     });
 
     return () => unsubscribe();
-  }, [dispatch, push, pathname, selector.userType]);
+  }, [dispatch, push, pathname, selector?.userType]);
 
   if (loading) {
     return (

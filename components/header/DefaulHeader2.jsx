@@ -7,7 +7,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSelector } from "react-redux";
 import HeaderNavContent from "./HeaderNavContent";
-import { useSignOut } from "@/APIs/auth/user";
+import { useSignOut } from "@/APIs/auth/auth";
 
 const DefaulHeader2 = () => {
   const selector = useSelector((store) => store.user);

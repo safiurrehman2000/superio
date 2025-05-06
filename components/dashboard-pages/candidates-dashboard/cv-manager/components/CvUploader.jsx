@@ -15,11 +15,13 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const CvUploader = () => {
   const [getManager, setManager] = useState([]);
   const [getError, setError] = useState("");
+  const { push } = useRouter();
   const user = auth.currentUser;
 
   const { resumes, loading, error: fetchError } = useGetUploadedResumes();
@@ -88,7 +90,11 @@ const CvUploader = () => {
       return;
     }
 
-    useUploadResume(data, setManager, setError);
+    const { success } = await useUploadResume(data, setManager, setError);
+    console.log("success :>> ", success);
+    if (success) {
+      push("/job-list");
+    }
   };
 
   // Delete resume from Firestore and local state
