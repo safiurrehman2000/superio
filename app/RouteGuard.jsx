@@ -1,12 +1,12 @@
 "use client";
-import { addUser, removeUser } from "@/slices/userSlice";
+import { addJobId, addUser, removeUser } from "@/slices/userSlice";
 import { LOGO } from "@/utils/constants";
 import { auth, db } from "@/utils/firebase";
 import { authProtectedPublicRoutes, privateRoutes } from "@/utils/routes";
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -16,11 +16,13 @@ const RouteGuard = ({ children }) => {
   const { push } = useRouter();
   const pathname = usePathname();
   const [loading, setLoading] = useState(true);
+  const searchParams = useSearchParams();
+
+  console.log('searchParams.get("id") :>> ', searchParams.get("id"));
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        console.log("loggedin :>> ");
         const { uid, email, displayName } = user;
         const userDoc = await getDoc(doc(db, "users", uid));
         const userData = userDoc.exists() ? userDoc.data() : {};
@@ -34,14 +36,23 @@ const RouteGuard = ({ children }) => {
           })
         );
 
-        // Handle first-time users
+        if (searchParams.get("id")) {
+          dispatch(addJobId(searchParams.get("id")));
+        }
         if (userData.isFirstTime) {
+          // Handle first-time users
           if (pathname !== "/create-profile-candidate") {
             push("/create-profile-candidate");
             setLoading(false);
             return;
           }
         } else {
+          if (searchParams.get("id")) {
+            // Redirect to /job-list/:id if id exists
+            push(`/job-list/${searchParams.get("id")}`);
+            setLoading(false);
+            return;
+          }
           // Prevent non-first-time users from accessing create-profile routes
           if (
             pathname.startsWith("/create-profile") ||
@@ -61,7 +72,6 @@ const RouteGuard = ({ children }) => {
           return;
         }
       } else {
-        console.log("loggedout :>> ");
         dispatch(removeUser());
 
         // Redirect unauthenticated users from private routes to login

@@ -5,6 +5,7 @@ const userSlice = createSlice({
   initialState: {
     user: null,
     userType: "Candidate",
+    jobId: null,
   },
   reducers: {
     addUser: (state, action) => {
@@ -14,6 +15,7 @@ const userSlice = createSlice({
     removeUser: (state) => {
       state.user = null;
       state.userType = "Candidate";
+      state.jobId = null;
     },
     userType: (state, action) => {
       state.userType = action.payload;
@@ -21,8 +23,15 @@ const userSlice = createSlice({
         state.user.userType = action.payload;
       }
     },
+    addJobId: (state, action) => {
+      state.jobId = action.payload;
+    },
+    removeJobId: (state, action) => {
+      state.jobId = null;
+    },
   },
 });
 
-export const { addUser, removeUser, userType } = userSlice.actions;
+export const { addUser, removeUser, userType, addJobId, removeJobId } =
+  userSlice.actions;
 export default userSlice.reducer;

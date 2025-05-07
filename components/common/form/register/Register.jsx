@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Tab, TabList, TabPanel, Tabs } from "react-tabs";
 import Form from "./FormContent";
 import LoginWithSocial from "./LoginWithSocial";
@@ -12,6 +12,7 @@ import { userType } from "@/slices/userSlice";
 const Register = () => {
   const { push } = useRouter();
   const dispatch = useDispatch();
+  const searchParams = useSearchParams();
   const handleButtonClick = (user) => {
     dispatch(userType(user));
   };
@@ -68,7 +69,9 @@ const Register = () => {
           <div
             style={{ cursor: "pointer" }}
             onClick={() => {
-              push("/login");
+              if (searchParams.get("id")) {
+                push(`/login?id=${searchParams.get("id")}`);
+              } else push("/login");
             }}
           >
             Login
