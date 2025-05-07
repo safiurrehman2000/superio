@@ -1,16 +1,16 @@
-import dynamic from "next/dynamic";
-import jobs from "@/data/job-featured";
 import LoginPopup from "@/components/common/form/login/LoginPopup";
 import FooterDefault from "@/components/footer/common-footer";
-import DefaulHeader from "@/components/header/DefaulHeader";
+import DefaulHeader2 from "@/components/header/DefaulHeader2";
 import MobileMenu from "@/components/header/MobileMenu";
+import JobOverView2 from "@/components/job-single-pages/job-overview/JobOverView2";
+import RelatedJobs2 from "@/components/job-single-pages/related-jobs/RelatedJobs2";
+import ApplyJobModalContent from "@/components/job-single-pages/shared-components/ApplyJobModalContent";
 import CompnayInfo from "@/components/job-single-pages/shared-components/CompanyInfo";
-import SocialTwo from "@/components/job-single-pages/social/SocialTwo";
 import Contact from "@/components/job-single-pages/shared-components/Contact";
 import JobDetailsDescriptions from "@/components/job-single-pages/shared-components/JobDetailsDescriptions";
-import RelatedJobs2 from "@/components/job-single-pages/related-jobs/RelatedJobs2";
-import JobOverView2 from "@/components/job-single-pages/job-overview/JobOverView2";
-import ApplyJobModalContent from "@/components/job-single-pages/shared-components/ApplyJobModalContent";
+import SocialTwo from "@/components/job-single-pages/social/SocialTwo";
+import jobs from "@/data/job-featured";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 
 export const metadata = {
@@ -30,7 +30,7 @@ const JobSingleDynamicV3 = ({ params }) => {
       <LoginPopup />
       {/* End Login Popup Modal */}
 
-      <DefaulHeader />
+      <DefaulHeader2 />
       {/* <!--End Main Header --> */}
 
       <MobileMenu />

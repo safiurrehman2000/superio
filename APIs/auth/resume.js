@@ -2,12 +2,13 @@ import { auth, db } from "@/utils/firebase";
 import { fileToBase64, resumeToFile } from "@/utils/resumeHelperFunctions";
 import { errorToast, successToast } from "@/utils/toast";
 import { addDoc, collection, doc, getDocs, setDoc } from "firebase/firestore";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
-import { getUserData } from "./user";
 
-export const useGetUploadedResumes = () => {
+export const useGetUploadedResumes = (user) => {
+  if (!user) {
+    errorToast("User is not authenticated");
+    return;
+  }
   const [resumes, setResumes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -16,7 +17,6 @@ export const useGetUploadedResumes = () => {
     let isMounted = true; // Flag to track component mount status
 
     const fetchResumes = async () => {
-      const user = auth.currentUser;
       if (!user?.uid) {
         if (isMounted) {
           setError("Please login first to view resumes");
@@ -36,6 +36,10 @@ export const useGetUploadedResumes = () => {
           ...doc.data(),
         }));
         const files = resumeData.map(resumeToFile);
+
+        if (files.length === 0) {
+          return;
+        }
 
         if (isMounted) {
           setResumes(files);
@@ -62,9 +66,7 @@ export const useGetUploadedResumes = () => {
   return { resumes, loading, error };
 };
 
-export const useUploadResume = async (data, setManager, setError) => {
-  const user = auth.currentUser;
-
+export const useUploadResume = async (user, data, setManager, setError) => {
   try {
     // Convert files to base64 and upload to Firestore
     for (const file of data) {

@@ -17,14 +17,16 @@ import {
 } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 
 const CvUploader = () => {
   const [getManager, setManager] = useState([]);
   const [getError, setError] = useState("");
   const { push } = useRouter();
-  const user = auth.currentUser;
+  const selector = useSelector((store) => store.user);
+  const user = selector.user;
 
-  const { resumes, loading, error: fetchError } = useGetUploadedResumes();
+  const { resumes, loading, error: fetchError } = useGetUploadedResumes(user);
 
   // Sync getManager with fetched resumes
   useEffect(() => {
@@ -90,7 +92,7 @@ const CvUploader = () => {
       return;
     }
 
-    const { success } = await useUploadResume(data, setManager, setError);
+    const { success } = await useUploadResume(user, data, setManager, setError);
     if (success) {
       push("/job-list");
     }

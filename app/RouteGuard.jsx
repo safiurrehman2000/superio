@@ -2,11 +2,7 @@
 import { addUser, removeUser } from "@/slices/userSlice";
 import { LOGO } from "@/utils/constants";
 import { auth, db } from "@/utils/firebase";
-import {
-  authProtectedPublicRoutes,
-  privateRoutes,
-  publicRoutes,
-} from "@/utils/routes";
+import { authProtectedPublicRoutes, privateRoutes } from "@/utils/routes";
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import Image from "next/image";
@@ -24,6 +20,7 @@ const RouteGuard = ({ children }) => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
+        console.log("loggedin :>> ");
         const { uid, email, displayName } = user;
         const userDoc = await getDoc(doc(db, "users", uid));
         const userData = userDoc.exists() ? userDoc.data() : {};
@@ -64,6 +61,7 @@ const RouteGuard = ({ children }) => {
           return;
         }
       } else {
+        console.log("loggedout :>> ");
         dispatch(removeUser());
 
         // Redirect unauthenticated users from private routes to login

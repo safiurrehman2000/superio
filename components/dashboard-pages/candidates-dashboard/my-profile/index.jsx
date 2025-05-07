@@ -1,7 +1,7 @@
 "use client";
 import { LOGO } from "@/utils/constants";
 import Image from "next/image";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import BreadCrumb from "../../BreadCrumb";
 import CvUploader from "../cv-manager/components/CvUploader";
 import { errorToast } from "@/utils/toast";

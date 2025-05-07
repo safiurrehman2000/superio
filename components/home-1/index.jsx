@@ -1,3 +1,4 @@
+import { auth } from "@/utils/firebase";
 import RegBanner from "../block/RegBanner";
 import Blog from "../blog/Blog";
 import CallToAction2 from "../call-to-action/CallToAction2";
