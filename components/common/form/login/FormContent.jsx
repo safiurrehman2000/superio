@@ -6,7 +6,7 @@ import { useForm, FormProvider } from "react-hook-form";
 
 import Image from "next/image";
 import { LOGO } from "@/utils/constants";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import LoginWithSocial from "./LoginWithSocial";
 import { InputField } from "@/components/inputfield/InputField";
 
@@ -18,6 +18,7 @@ const FormContent = () => {
     },
     mode: "onChange",
   });
+  const searchParams = useSearchParams();
   const { handleSubmit, setValue, formState: isValid } = methods;
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState("");
@@ -118,7 +119,9 @@ const FormContent = () => {
           <div
             style={{ cursor: "pointer" }}
             onClick={() => {
-              push("/register");
+              if (searchParams.get("id")) {
+                push(`/register?id=${searchParams.get("id")}`);
+              } else push("/register");
             }}
           >
             Signup

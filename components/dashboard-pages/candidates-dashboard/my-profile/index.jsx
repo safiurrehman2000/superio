@@ -8,8 +8,8 @@ import { errorToast } from "@/utils/toast";
 import { useRouter } from "next/navigation";
 
 const index = () => {
-  const { push } = useRouter();
-  const selector = useSelector((store) => store.user);
+  // const { push } = useRouter();
+  // const selector = useSelector((store) => store.user);
   return (
     <div
       style={{
@@ -72,7 +72,7 @@ const index = () => {
           {/* End .row */}
         </div>
         {/* End dashboard-outer */}
-        <button
+        {/* <button
           disabled={selector.isFirstTime}
           onClick={() => {
             if (!selector.isFirstTime) {
@@ -85,7 +85,7 @@ const index = () => {
           className={`theme-btn btn-style-one btn `}
         >
           Go to Job Apply
-        </button>
+        </button> */}
       </section>
       {/* <!-- End Dashboard --> */}
     </div>

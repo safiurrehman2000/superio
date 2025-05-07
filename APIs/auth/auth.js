@@ -1,4 +1,3 @@
-import { isFirstTime } from "@/slices/userSlice";
 import { getFirebaseErrorMessage } from "@/utils/constants";
 import { auth, db } from "@/utils/firebase";
 import { errorToast, successToast } from "@/utils/toast";

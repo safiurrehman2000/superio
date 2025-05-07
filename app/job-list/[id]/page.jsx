@@ -1,3 +1,4 @@
+"use client";
 import LoginPopup from "@/components/common/form/login/LoginPopup";
 import FooterDefault from "@/components/footer/common-footer";
 import DefaulHeader2 from "@/components/header/DefaulHeader2";
@@ -12,16 +13,19 @@ import SocialTwo from "@/components/job-single-pages/social/SocialTwo";
 import jobs from "@/data/job-featured";
 import dynamic from "next/dynamic";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useSelector } from "react-redux";
 
-export const metadata = {
-  title: "Job Single Dyanmic V3 || Superio - Job Borad React NextJS Template",
-  description: "Superio - Job Borad React NextJS Template",
-};
+// export const metadata = {
+//   title: "Job Single Dyanmic V3 || Superio - Job Borad React NextJS Template",
+//   description: "Superio - Job Borad React NextJS Template",
+// };
 
 const JobSingleDynamicV3 = ({ params }) => {
   const id = params.id;
   const company = jobs.find((item) => item.id == id) || jobs[0];
-
+  const selector = useSelector((store) => store.user);
+  const { push } = useRouter();
   return (
     <>
       {/* <!-- Header Span --> */}
@@ -110,14 +114,25 @@ const JobSingleDynamicV3 = ({ params }) => {
               <div className="sidebar-column col-lg-4 col-md-12 col-sm-12">
                 <aside className="sidebar">
                   <div className="btn-box">
-                    <a
-                      href="#"
-                      className="theme-btn btn-style-one"
-                      data-bs-toggle="modal"
-                      data-bs-target="#applyJobModal"
-                    >
-                      Apply For Job
-                    </a>
+                    {selector.user ? (
+                      <a
+                        href="#"
+                        className="theme-btn btn-style-one"
+                        data-bs-toggle="modal"
+                        data-bs-target="#applyJobModal"
+                      >
+                        Apply For Job
+                      </a>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          push(`/login?id=${id}`);
+                        }}
+                        className="theme-btn btn-style-one"
+                      >
+                        Login to Apply
+                      </button>
+                    )}
                     <button className="bookmark-btn">
                       <i className="flaticon-bookmark"></i>
                     </button>
