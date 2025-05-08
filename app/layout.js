@@ -47,11 +47,9 @@ export default function RootLayout({ children }) {
           <RouteGuard>
             <div className="page-wrapper">
               {children}
-
               {/* <!-- Scroll To Top --> */}
               <ScrollToTop />
             </div>
-
             <Toaster />
           </RouteGuard>
         </Provider>

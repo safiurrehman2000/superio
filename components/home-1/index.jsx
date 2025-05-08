@@ -1,4 +1,5 @@
-import { auth } from "@/utils/firebase";
+"use client";
+import { useSelector } from "react-redux";
 import RegBanner from "../block/RegBanner";
 import Blog from "../blog/Blog";
 import CallToAction2 from "../call-to-action/CallToAction2";
@@ -11,6 +12,7 @@ import JobCategorie1 from "../job-categories/JobCategorie1";
 import JobFeatured1 from "../job-featured/JobFeatured1";
 
 const index = () => {
+  const selector = useSelector((store) => store.user);
   return (
     <>
       <LoginPopup />
@@ -24,14 +26,15 @@ const index = () => {
 
       <Hero9 />
       {/* End Hero Section */}
-
-      <section className="layout-pt-60 layout-pb-60">
-        <div className="auto-container">
-          <div className="row" data-aos="fade-up">
-            <RegBanner />
+      {!selector.user && (
+        <section className="layout-pt-60 layout-pb-60">
+          <div className="auto-container">
+            <div className="row" data-aos="fade-up">
+              <RegBanner />
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       <section className="job-section">
         <div className="auto-container">
