@@ -3,7 +3,7 @@
 import { useGetUploadedResumes, useUploadResume } from "@/APIs/auth/resume";
 import CircularLoader from "@/components/circular-loading/CircularLoading";
 
-import { auth, db } from "@/utils/firebase";
+import { db } from "@/utils/firebase";
 import { checkFileSize, checkFileTypes } from "@/utils/resumeHelperFunctions";
 import { successToast } from "@/utils/toast";
 import {
