@@ -2,13 +2,13 @@
 import { useLogIn } from "@/APIs/auth/auth";
 import CircularLoader from "@/components/circular-loading/CircularLoading";
 import { useState } from "react";
-import { useForm, FormProvider } from "react-hook-form";
+import { FormProvider, useForm } from "react-hook-form";
 
-import Image from "next/image";
+import { InputField } from "@/components/inputfield/InputField";
 import { LOGO } from "@/utils/constants";
+import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import LoginWithSocial from "./LoginWithSocial";
-import { InputField } from "@/components/inputfield/InputField";
 
 const FormContent = () => {
   const methods = useForm({

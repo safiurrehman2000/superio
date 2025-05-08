@@ -18,8 +18,6 @@ const RouteGuard = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const searchParams = useSearchParams();
 
-  console.log('searchParams.get("id") :>> ', searchParams.get("id"));
-
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {

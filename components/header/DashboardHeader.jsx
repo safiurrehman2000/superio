@@ -1,6 +1,6 @@
 "use client";
 
-import { LOGO, menuData } from "@/utils/constants";
+import { candidateMenuData, LOGO } from "@/utils/constants";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -68,7 +68,7 @@ const DashboardHeader = () => {
               </a>
 
               <ul className="dropdown-menu">
-                {menuData.map((item) => (
+                {candidateMenuData.map((item) => (
                   <li
                     className={`${
                       isActiveLink(item.routePath, usePathname())

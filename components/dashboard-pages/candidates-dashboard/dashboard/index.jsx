@@ -1,25 +1,22 @@
-import MobileMenu from "../../../header/MobileMenu";
+import DefaulHeader2 from "@/components/header/DefaulHeader2";
 import LoginPopup from "../../../common/form/login/LoginPopup";
 import DashboardCandidatesSidebar from "../../../header/DashboardCandidatesSidebar";
+import MobileMenu from "../../../header/MobileMenu";
 import BreadCrumb from "../../BreadCrumb";
-import TopCardBlock from "./components/TopCardBlock";
-import ProfileChart from "./components/ProfileChart";
-import Notification from "./components/Notification";
 import CopyrightFooter from "../../CopyrightFooter";
-import JobApplied from "./components/JobApplied";
-import DashboardCandidatesHeader from "../../../header/DashboardCandidatesHeader";
 import MenuToggler from "../../MenuToggler";
+import JobApplied from "./components/JobApplied";
+import Notification from "./components/Notification";
+import ProfileChart from "./components/ProfileChart";
+import TopCardBlock from "./components/TopCardBlock";
 
 const Index = () => {
   return (
     <div className="page-wrapper dashboard">
-      <span className="header-span"></span>
-      {/* <!-- Header Span for hight --> */}
-
       <LoginPopup />
       {/* End Login Popup Modal */}
 
-      <DashboardCandidatesHeader />
+      <DefaulHeader2 />
       {/* End Header */}
 
       <MobileMenu />

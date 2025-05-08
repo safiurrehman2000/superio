@@ -3,6 +3,7 @@ import { auth, db } from "@/utils/firebase";
 import { errorToast, successToast } from "@/utils/toast";
 import {
   createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signOut,
 } from "firebase/auth";
@@ -53,5 +54,22 @@ export const useSignOut = async () => {
   } catch (error) {
     errorToast("Error signing out, please try again");
     return { success: false, apiError: getFirebaseErrorMessage(error) };
+  }
+};
+
+export const useForgetPassword = async (email) => {
+  if (!email) {
+    errorToast("Email is required");
+    return { success: false, error: "Email is required" };
+  }
+  try {
+    await sendPasswordResetEmail(auth, email);
+    successToast("Password reset link sent to " + email);
+    return { success: true };
+  } catch (error) {
+    const errorCode = error.code;
+    const errorMessage = error.message;
+    errorToast(`${errorCode}: ${errorMessage}`);
+    return { success: false, error: `${errorCode}: ${errorMessage}` };
   }
 };
