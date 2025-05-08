@@ -1,6 +1,7 @@
 "use client";
 
 import { useGetUploadedResumes, useUploadResume } from "@/APIs/auth/resume";
+import CircularLoader from "@/components/circular-loading/CircularLoading";
 
 import { auth, db } from "@/utils/firebase";
 import { checkFileSize, checkFileTypes } from "@/utils/resumeHelperFunctions";
@@ -22,6 +23,7 @@ import { useSelector } from "react-redux";
 const CvUploader = () => {
   const [getManager, setManager] = useState([]);
   const [getError, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const { push } = useRouter();
   const selector = useSelector((store) => store.user);
   const user = selector.user;
@@ -91,8 +93,9 @@ const CvUploader = () => {
       setError("File already exists");
       return;
     }
-
+    setIsLoading(true);
     const { success } = await useUploadResume(user, data, setManager, setError);
+    setIsLoading(false);
     if (success) {
       if (selector?.jobId) {
         push(`/job-list/${selector?.jobId}`);
@@ -148,7 +151,18 @@ const CvUploader = () => {
               To upload file size is (Max 500 KB) and allowed file types are
               (.doc, .docx, .pdf)
             </span>
-            <span className="theme-btn btn-style-one">Upload Resume</span>
+            <span className="theme-btn btn-style-one">
+              {isLoading ? (
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "10px" }}
+                >
+                  <CircularLoader />
+                  <p style={{ margin: 0 }}>Uploading Resume...</p>
+                </div>
+              ) : (
+                "Upload Resume"
+              )}
+            </span>
             {getError && <p className="ui-danger mb-0">{getError}</p>}
           </label>
           <span className="uploadButton-file-name"></span>
