@@ -7,7 +7,7 @@ import { isActiveLink } from "../../utils/linkActiveChecker";
 import { useDispatch, useSelector } from "react-redux";
 import { menuToggle } from "../../features/toggle/toggleSlice";
 import { usePathname } from "next/navigation";
-import { candidateMenuData } from "@/utils/constants";
+import { candidateMenuData, employerMenuData } from "@/utils/constants";
 
 const DashboardEmployerSidebar = () => {
   const { menu } = useSelector((state) => state.toggle);
@@ -30,7 +30,7 @@ const DashboardEmployerSidebar = () => {
 
       <div className="sidebar-inner">
         <ul className="navigation">
-          {candidateMenuData.map((item) => (
+          {employerMenuData.map((item) => (
             <li
               className={`${
                 isActiveLink(item.routePath, usePathname()) ? "active" : ""

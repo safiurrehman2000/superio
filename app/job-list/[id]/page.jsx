@@ -10,6 +10,7 @@ import CompnayInfo from "@/components/job-single-pages/shared-components/Company
 import Contact from "@/components/job-single-pages/shared-components/Contact";
 import JobDetailsDescriptions from "@/components/job-single-pages/shared-components/JobDetailsDescriptions";
 import SocialTwo from "@/components/job-single-pages/social/SocialTwo";
+import Loading from "@/components/loading/Loading";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -36,7 +37,7 @@ const JobSingleDynamicV3 = ({ params }) => {
   const selector = useSelector((store) => store.user);
   const { push } = useRouter();
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <Loading />;
   if (error) return <div>Error: {error}</div>;
   if (!job) return <div>No job found</div>;
 

@@ -1,13 +1,14 @@
 "use client";
 import Aos from "aos";
 import "aos/dist/aos.css";
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { Toaster } from "react-hot-toast";
 import { Provider } from "react-redux";
 import ScrollToTop from "../components/common/ScrollTop";
 import { store } from "../store/store";
 import "../styles/index.scss";
 import RouteGuard from "./RouteGuard";
+import MainLoading from "@/components/loading/MainLoading";
 
 if (typeof window !== "undefined") {
   require("bootstrap/dist/js/bootstrap");
@@ -44,14 +45,16 @@ export default function RootLayout({ children }) {
 
       <body>
         <Provider store={store}>
-          <RouteGuard>
-            <div className="page-wrapper">
-              {children}
-              {/* <!-- Scroll To Top --> */}
-              <ScrollToTop />
-            </div>
-            <Toaster />
-          </RouteGuard>
+          <Suspense fallback={<MainLoading />}>
+            <RouteGuard>
+              <div className="page-wrapper">
+                {children}
+                {/* <!-- Scroll To Top --> */}
+                <ScrollToTop />
+              </div>
+              <Toaster />
+            </RouteGuard>
+          </Suspense>
         </Provider>
       </body>
     </html>

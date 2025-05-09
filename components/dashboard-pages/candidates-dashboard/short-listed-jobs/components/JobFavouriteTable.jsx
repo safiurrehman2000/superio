@@ -1,8 +1,8 @@
 import Link from "next/link.js";
-import jobs from "../../../../../data/job-featured.js";
 import Image from "next/image.js";
 
 const JobFavouriteTable = () => {
+  const jobs = [];
   return (
     <div className="tabs-box">
       <div className="widget-title">
@@ -36,7 +36,7 @@ const JobFavouriteTable = () => {
               </thead>
 
               <tbody>
-                {jobs.slice(8, 12).map((item) => (
+                {jobs?.slice(8, 12).map((item) => (
                   <tr key={item.id}>
                     <td>
                       {/* <!-- Job Block --> */}

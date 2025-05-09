@@ -3,13 +3,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import candidatesMenuData from "../../data/candidatesMenuData";
 import HeaderNavContent from "./HeaderNavContent";
 import { isActiveLink } from "../../utils/linkActiveChecker";
-
 import { usePathname } from "next/navigation";
+import { candidateMenuData, employerMenuData } from "@/utils/constants";
+import { useSelector } from "react-redux";
 const DashboardCandidatesHeader = () => {
   const [navbar, setNavbar] = useState(false);
+  const selector = useSelector((store) => store.user);
 
   const changeBackground = () => {
     if (window.scrollY >= 0) {
@@ -83,22 +84,41 @@ const DashboardCandidatesHeader = () => {
                 <span className="name">My Account</span>
               </a>
 
-              <ul className="dropdown-menu">
-                {candidatesMenuData.map((item) => (
-                  <li
-                    className={`${
-                      isActiveLink(item.routePath, usePathname())
-                        ? "active"
-                        : ""
-                    } mb-1`}
-                    key={item.id}
-                  >
-                    <Link href={item.routePath}>
-                      <i className={`la ${item.icon}`}></i> {item.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
+              {selector.userType == "Candidate" ? (
+                <ul className="dropdown-menu">
+                  {candidateMenuData.map((item) => (
+                    <li
+                      className={`${
+                        isActiveLink(item.routePath, usePathname())
+                          ? "active"
+                          : ""
+                      } mb-1`}
+                      key={item.id}
+                    >
+                      <Link href={item.routePath}>
+                        <i className={`la ${item.icon}`}></i> {item.name}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <ul className="dropdown-menu">
+                  {employerMenuData.map((item) => (
+                    <li
+                      className={`${
+                        isActiveLink(item.routePath, usePathname())
+                          ? "active"
+                          : ""
+                      } mb-1`}
+                      key={item.id}
+                    >
+                      <Link href={item.routePath}>
+                        <i className={`la ${item.icon}`}></i> {item.name}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
             {/* End dropdown */}
           </div>
