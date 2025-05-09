@@ -4,7 +4,6 @@ import "./jobList.css";
 import Image from "next/image";
 import Link from "next/link";
 import { useDispatch, useSelector } from "react-redux";
-import jobs from "../../../data/job-featured";
 import {
   addCategory,
   addDatePosted,
@@ -17,9 +16,12 @@ import {
   addSort,
 } from "../../../features/filter/filterSlice";
 import ListingShowing from "../components/ListingShowing";
+import { useGetJobListing } from "@/APIs/auth/jobs";
 
 const FilterJobBox = () => {
+  const { data: jobs, loading, error } = useGetJobListing();
   const { jobList, jobSort } = useSelector((state) => state.filter);
+
   const {
     keyword,
     location,
@@ -32,68 +34,60 @@ const FilterJobBox = () => {
   } = jobList || {};
 
   const { sort, perPage } = jobSort;
-
   const dispatch = useDispatch();
 
-  // keyword filter on title
+  // Keyword filter on title
   const keywordFilter = (item) =>
     keyword !== ""
-      ? item.jobTitle.toLocaleLowerCase().includes(keyword.toLocaleLowerCase())
+      ? item.title.toLocaleLowerCase().includes(keyword.toLocaleLowerCase())
       : item;
 
-  // location filter
+  // Location filter (using state as location)
   const locationFilter = (item) =>
     location !== ""
-      ? item?.location
+      ? item.location
           ?.toLocaleLowerCase()
-          .includes(location?.toLocaleLowerCase())
+          .includes(location.toLocaleLowerCase())
       : item;
 
-  // location filter
-  const destinationFilter = (item) =>
-    item?.destination?.min >= destination?.min &&
-    item?.destination?.max <= destination?.max;
+  // Destination filter (not in job object, placeholder)
+  const destinationFilter = (item) => item;
 
-  // category filter
+  // Category filter (using tags)
   const categoryFilter = (item) =>
     category !== ""
-      ? item?.category?.toLocaleLowerCase() === category?.toLocaleLowerCase()
+      ? item.tags?.some(
+          (tag) => tag.toLocaleLowerCase() === category.toLocaleLowerCase()
+        )
       : item;
 
-  // job-type filter
+  // Job-type filter
   const jobTypeFilter = (item) =>
-    item.jobType !== undefined && jobTypeSelect !== ""
-      ? item?.jobType[0]?.type.toLocaleLowerCase().split(" ").join("-") ===
-          jobTypeSelect && item
+    jobTypeSelect !== ""
+      ? item.jobType?.toLocaleLowerCase() === jobTypeSelect.toLocaleLowerCase()
       : item;
 
-  // date-posted filter
+  // Date-posted filter
   const datePostedFilter = (item) =>
     datePosted !== "all" && datePosted !== ""
-      ? item?.created_at
-          ?.toLocaleLowerCase()
-          .split(" ")
-          .join("-")
-          .includes(datePosted)
+      ? new Date(item.createdAt)
+          .toLocaleDateString()
+          .toLocaleLowerCase()
+          .includes(datePosted.toLocaleLowerCase())
       : item;
 
-  // experience level filter
-  const experienceFilter = (item) =>
-    experienceSelect !== ""
-      ? item?.experience?.split(" ").join("-").toLocaleLowerCase() ===
-          experienceSelect && item
-      : item;
+  // Experience filter (not in job object, placeholder)
+  const experienceFilter = (item) => item;
 
-  // salary filter
-  const salaryFilter = (item) =>
-    item?.totalSalary?.min >= salary?.min &&
-    item?.totalSalary?.max <= salary?.max;
+  // Salary filter (not in job object, placeholder)
+  const salaryFilter = (item) => item;
 
-  // sort filter
+  // Sort filter
   const sortFilter = (a, b) =>
-    sort === "des" ? a.id > b.id && -1 : a.id < b.id && -1;
+    sort === "des" ? b.createdAt - a.createdAt : a.createdAt - b.createdAt;
 
-  let content = jobs
+  // Render job cards
+  const content = jobs
     ?.filter(keywordFilter)
     ?.filter(locationFilter)
     ?.filter(destinationFilter)
@@ -109,64 +103,81 @@ const FilterJobBox = () => {
         <div className="inner-box hover-effect">
           <div className="content">
             <span className="company-logo">
-              <Image width={50} height={49} src={item.logo} alt="item brand" />
+              {item.logo ? (
+                <Image
+                  width={50}
+                  height={49}
+                  src={item.logo}
+                  alt="company logo"
+                />
+              ) : (
+                <div
+                  style={{
+                    borderRadius: "50%",
+                    height: "50px",
+                    width: "50px",
+                    backgroundColor: "#FA5508",
+                    textAlign: "center",
+                    alignContent: "center",
+                  }}
+                >
+                  <p style={{ color: "white" }}>
+                    {item?.email?.charAt(0).toUpperCase() +
+                      " " +
+                      item?.email?.charAt(1).toUpperCase()}
+                  </p>
+                </div>
+              )}
             </span>
             <h4>
-              <Link href={`/job-list/${item.id}`}>{item.jobTitle}</Link>
+              <Link href={`/job-list/${item.id}`}>{item.title}</Link>
             </h4>
-
             <ul className="job-info">
               <li>
                 <span className="icon flaticon-briefcase"></span>
-                {item.company}
+                {item.title}
               </li>
-              {/* compnay info */}
               <li>
                 <span className="icon flaticon-map-locator"></span>
                 {item.location}
               </li>
-              {/* location info */}
               <li>
-                <span className="icon flaticon-clock-3"></span> {item.time}
+                <span className="icon flaticon-clock-3"></span>
+                {new Date(item.createdAt).toLocaleDateString()}
               </li>
-              {/* time info */}
               <li>
-                <span className="icon flaticon-money"></span> {item.salary}
+                <span className="icon flaticon-money"></span>
+                {item.salary || "Not specified"}
               </li>
-              {/* salary info */}
             </ul>
-            {/* End .job-info */}
-
             <ul className="job-other-info">
-              {item?.jobType?.map((val, i) => (
-                <li key={i} className={`${val.styleClass}`}>
-                  {val.type}
+              {item.tags?.map((tag, i) => (
+                <li key={i} className="category-tag">
+                  {tag}
                 </li>
               ))}
+              {item.jobType && <li className="job-type">{item.jobType}</li>}
             </ul>
-            {/* End .job-other-info */}
-
             <button className="bookmark-btn">
               <span className="flaticon-bookmark"></span>
             </button>
           </div>
         </div>
       </div>
-      // End all jobs
     ));
 
-  // sort handler
+  // Sort handler
   const sortHandler = (e) => {
     dispatch(addSort(e.target.value));
   };
 
-  // per page handler
+  // Per page handler
   const perPageHandler = (e) => {
     const pageData = JSON.parse(e.target.value);
     dispatch(addPerPage(pageData));
   };
 
-  // clear all filters
+  // Clear all filters
   const clearAll = () => {
     dispatch(addKeyword(""));
     dispatch(addLocation(""));
@@ -178,16 +189,23 @@ const FilterJobBox = () => {
     dispatch(addSort(""));
     dispatch(addPerPage({ start: 0, end: 0 }));
   };
+
+  if (loading) {
+    return <div>Loading jobs...</div>;
+  }
+
+  if (error) {
+    return <div>Error fetching jobs: {error.message}</div>;
+  }
+
   return (
     <>
       <div className="ls-switcher">
         <div className="showing-result">
           <div className="text">
-            <strong>{content?.length}</strong> jobs
+            <strong>{content?.length || 0}</strong> jobs
           </div>
         </div>
-        {/* End .showing-result */}
-
         <div className="sort-by">
           {keyword !== "" ||
           location !== "" ||
@@ -208,7 +226,6 @@ const FilterJobBox = () => {
               Clear All
             </button>
           ) : undefined}
-
           <select
             value={sort}
             className="chosen-single form-select"
@@ -218,57 +235,26 @@ const FilterJobBox = () => {
             <option value="asc">Newest</option>
             <option value="des">Oldest</option>
           </select>
-          {/* End select */}
-
           <select
             onChange={perPageHandler}
-            className="chosen-single form-select ms-3 "
+            className="chosen-single form-select ms-3"
             value={JSON.stringify(perPage)}
           >
-            <option
-              value={JSON.stringify({
-                start: 0,
-                end: 0,
-              })}
-            >
-              All
-            </option>
-            <option
-              value={JSON.stringify({
-                start: 0,
-                end: 20,
-              })}
-            >
+            <option value={JSON.stringify({ start: 0, end: 0 })}>All</option>
+            <option value={JSON.stringify({ start: 0, end: 20 })}>
               20 per page
             </option>
-            <option
-              value={JSON.stringify({
-                start: 0,
-                end: 30,
-              })}
-            >
+            <option value={JSON.stringify({ start: 0, end: 30 })}>
               30 per page
             </option>
-            <option
-              value={JSON.stringify({
-                start: 0,
-                end: 40,
-              })}
-            >
+            <option value={JSON.stringify({ start: 0, end: 40 })}>
               40 per page
             </option>
           </select>
-          {/* End select */}
         </div>
-        {/* End sort by filter */}
       </div>
-      {/* <!-- ls Switcher --> */}
-
       <div className="row">{content}</div>
-      {/* End .row with jobs */}
-
       <ListingShowing />
-      {/* <!-- End Pagination --> */}
     </>
   );
 };

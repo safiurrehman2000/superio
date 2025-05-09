@@ -1,8 +1,10 @@
 import Link from "next/link";
-import jobs from "../../../data/job-featured";
+
 import Image from "next/image";
+import { useGetJobListing } from "@/APIs/auth/jobs";
 
 const RelatedJobs = () => {
+  const jobs = useGetJobListing();
   return (
     <>
       {jobs.slice(0, 3).map((item) => (
