@@ -2,11 +2,12 @@
 import { useSignUp } from "@/APIs/auth/auth";
 import CircularLoader from "@/components/circular-loading/CircularLoading";
 import { InputField } from "@/components/inputfield/InputField";
+import { setUserType } from "@/slices/userSlice";
 import { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
-import { useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 
-const FormContent = () => {
+const FormContent = ({ userType }) => {
   const methods = useForm({
     defaultValues: {
       email: "",
@@ -17,17 +18,13 @@ const FormContent = () => {
   const { handleSubmit, setValue, formState: isValid } = methods;
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState("");
-  const selector = useSelector((store) => store.user);
+  const dispatch = useDispatch();
 
   const onSubmit = async (data) => {
     setIsLoading(true);
     setApiError("");
-
-    const result = await useSignUp(
-      data.email,
-      data.password,
-      selector.userType
-    );
+    dispatch(setUserType(userType));
+    const result = await useSignUp(data.email, data.password, userType);
 
     if (!result.success) {
       if (result.errors) {

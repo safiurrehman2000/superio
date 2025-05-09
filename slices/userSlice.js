@@ -17,10 +17,10 @@ const userSlice = createSlice({
       state.userType = "Candidate";
       state.jobId = null;
     },
-    userType: (state, action) => {
+    setUserType: (state, action) => {
       state.userType = action.payload;
       if (state.user) {
-        state.user.userType = action.payload;
+        state.userType = action.payload;
       }
     },
     addJobId: (state, action) => {
@@ -32,6 +32,6 @@ const userSlice = createSlice({
   },
 });
 
-export const { addUser, removeUser, userType, addJobId, removeJobId } =
+export const { addUser, removeUser, setUserType, addJobId, removeJobId } =
   userSlice.actions;
 export default userSlice.reducer;
