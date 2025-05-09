@@ -2,13 +2,15 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import jobFeatured from "../../data/job-featured";
+
 import Slider from "react-slick";
 import { useState } from "react";
 import "slick-carousel/slick/slick.css"; // Ensure slick CSS is imported
 import "slick-carousel/slick/slick-theme.css"; // Ensure slick theme CSS is imported
+import { useGetJobListing } from "@/APIs/auth/jobs";
 
 const JobFeatured1 = () => {
+  const jobFeatured = useGetJobListing();
   const [bookmarkedJobs, setBookmarkedJobs] = useState({});
 
   const toggleBookmark = (jobId) => {
@@ -27,6 +29,8 @@ const JobFeatured1 = () => {
     centerMode: false,
     arrows: false,
   };
+
+  const jobsArray = Array.isArray(jobFeatured) ? jobFeatured : [];
 
   return (
     <div
@@ -52,7 +56,7 @@ const JobFeatured1 = () => {
       `}</style>
 
       <Slider {...settings}>
-        {jobFeatured.slice(0, 6).map((item) => (
+        {jobsArray?.slice(0, 6).map((item) => (
           <div className="job-block" key={item.id}>
             <div className="inner-box">
               <div className="content">

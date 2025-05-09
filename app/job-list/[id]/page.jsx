@@ -1,46 +1,57 @@
 "use client";
+import { useGetJobById } from "@/APIs/auth/jobs";
 import LoginPopup from "@/components/common/form/login/LoginPopup";
 import FooterDefault from "@/components/footer/common-footer";
 import DefaulHeader2 from "@/components/header/DefaulHeader2";
 import MobileMenu from "@/components/header/MobileMenu";
 import JobOverView2 from "@/components/job-single-pages/job-overview/JobOverView2";
-import RelatedJobs2 from "@/components/job-single-pages/related-jobs/RelatedJobs2";
 import ApplyJobModalContent from "@/components/job-single-pages/shared-components/ApplyJobModalContent";
 import CompnayInfo from "@/components/job-single-pages/shared-components/CompanyInfo";
 import Contact from "@/components/job-single-pages/shared-components/Contact";
 import JobDetailsDescriptions from "@/components/job-single-pages/shared-components/JobDetailsDescriptions";
 import SocialTwo from "@/components/job-single-pages/social/SocialTwo";
-import jobs from "@/data/job-featured";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 
-// export const metadata = {
-//   title: "Job Single Dyanmic V3 || Superio - Job Borad React NextJS Template",
-//   description: "Superio - Job Borad React NextJS Template",
-// };
-
 const JobSingleDynamicV3 = ({ params }) => {
   const id = params.id;
-  const company = jobs.find((item) => item.id == id) || jobs[0];
+  const { job, loading, error } = useGetJobById(id);
+
+  console.log("job :>> ", job);
+
+  // Destructure job properties with default values
+  const {
+    jobTitle = "",
+    company = "",
+    location = "",
+    time = "",
+    salary = "",
+    jobType = [],
+    logo = "",
+    link = "",
+  } = job || {};
+
   const selector = useSelector((store) => store.user);
   const { push } = useRouter();
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
+  if (!job) return <div>No job found</div>;
+
+  // Ensure jobType is an array before mapping
+  const jobTypeArray = Array.isArray(jobType) ? jobType : [];
+
   return (
     <>
       {/* <!-- Header Span --> */}
       <span className="header-span"></span>
 
       <LoginPopup />
-      {/* End Login Popup Modal */}
-
       <DefaulHeader2 />
-      {/* <!--End Main Header --> */}
-
       <MobileMenu />
-      {/* End MobileMenu */}
 
-      {/* <!-- Job Detail Section --> */}
       <section className="job-detail-section">
         <div className="job-detail-outer">
           <div className="auto-container">
@@ -50,56 +61,43 @@ const JobSingleDynamicV3 = ({ params }) => {
                   <div className="job-block-seven style-two">
                     <div className="inner-box">
                       <div className="content">
-                        <h4>{company?.jobTitle}</h4>
-
+                        <h4>{jobTitle}</h4>
                         <ul className="job-info">
                           <li>
                             <span className="icon flaticon-briefcase"></span>
-                            {company?.company}
+                            {company}
                           </li>
-                          {/* compnay info */}
                           <li>
                             <span className="icon flaticon-map-locator"></span>
-                            {company?.location}
+                            {location}
                           </li>
-                          {/* location info */}
                           <li>
-                            <span className="icon flaticon-clock-3"></span>{" "}
-                            {company?.time}
+                            <span className="icon flaticon-clock-3"></span>
+                            {time}
                           </li>
-                          {/* time info */}
                           <li>
-                            <span className="icon flaticon-money"></span>{" "}
-                            {company?.salary}
+                            <span className="icon flaticon-money"></span>
+                            {salary}
                           </li>
-                          {/* salary info */}
                         </ul>
-                        {/* End .job-info */}
-
                         <ul className="job-other-info">
-                          {company?.jobType?.map((val, i) => (
-                            <li key={i} className={`${val.styleClass}`}>
+                          {jobTypeArray.map((val, i) => (
+                            <li key={i} className={val.styleClass}>
                               {val.type}
                             </li>
                           ))}
                         </ul>
-                        {/* End .job-other-info */}
                       </div>
-                      {/* End .content */}
                     </div>
                   </div>
-                  {/* <!-- Job Block --> */}
                 </div>
-                {/* <!-- job block outer --> */}
 
                 <div className="job-overview-two">
                   <h4>Job Description</h4>
                   <JobOverView2 />
                 </div>
-                {/* <!-- job-overview-two --> */}
 
                 <JobDetailsDescriptions />
-                {/* End job-details */}
 
                 <div className="other-options">
                   <div className="social-share">
@@ -107,9 +105,7 @@ const JobSingleDynamicV3 = ({ params }) => {
                     <SocialTwo />
                   </div>
                 </div>
-                {/* <!-- Other Options --> */}
               </div>
-              {/* End .content-column */}
 
               <div className="sidebar-column col-lg-4 col-md-12 col-sm-12">
                 <aside className="sidebar">
@@ -125,9 +121,7 @@ const JobSingleDynamicV3 = ({ params }) => {
                       </a>
                     ) : (
                       <button
-                        onClick={() => {
-                          push(`/login?id=${id}`);
-                        }}
+                        onClick={() => push(`/login?id=${id}`)}
                         className="theme-btn btn-style-one"
                       >
                         Login to Apply
@@ -137,9 +131,7 @@ const JobSingleDynamicV3 = ({ params }) => {
                       <i className="flaticon-bookmark"></i>
                     </button>
                   </div>
-                  {/* End apply for job btn */}
 
-                  {/* <!-- Modal --> */}
                   <div
                     className="modal fade"
                     id="applyJobModal"
@@ -157,15 +149,10 @@ const JobSingleDynamicV3 = ({ params }) => {
                             aria-label="Close"
                           ></button>
                         </div>
-                        {/* End modal-header */}
-
                         <ApplyJobModalContent />
-                        {/* End PrivateMessageBox */}
                       </div>
-                      {/* End .send-private-message-wrapper */}
                     </div>
                   </div>
-                  {/* End .modal */}
 
                   <div className="sidebar-widget company-widget">
                     <div className="widget-content">
@@ -174,16 +161,15 @@ const JobSingleDynamicV3 = ({ params }) => {
                           <Image
                             width={54}
                             height={53}
-                            src={company.logo}
+                            src={logo}
                             alt="resource"
                           />
                         </div>
-                        <h5 className="company-name">{company.company}</h5>
+                        <h5 className="company-name">{company}</h5>
                         <a href="#" className="profile-link">
                           View company profile
                         </a>
                       </div>
-                      {/* End company title */}
 
                       <CompnayInfo />
 
@@ -194,13 +180,11 @@ const JobSingleDynamicV3 = ({ params }) => {
                           rel="noopener noreferrer"
                           className="theme-btn btn-style-three"
                         >
-                          {company?.link}
+                          {link}
                         </a>
                       </div>
-                      {/* End btn-box */}
                     </div>
                   </div>
-                  {/* End .company-widget */}
 
                   <div className="sidebar-widget contact-widget">
                     <h4 className="widget-title">Contact Us</h4>
@@ -208,39 +192,23 @@ const JobSingleDynamicV3 = ({ params }) => {
                       <div className="default-form">
                         <Contact />
                       </div>
-                      {/* End .default-form */}
                     </div>
                   </div>
-                  {/* End contact-widget */}
                 </aside>
-                {/* End .sidebar */}
               </div>
-              {/* End .sidebar-column */}
             </div>
-            {/* End .row  */}
 
             <div className="related-jobs">
               <div className="title-box">
                 <h3>Related Jobs</h3>
                 <div className="text">2020 jobs live - 293 added today.</div>
               </div>
-              {/* End title box */}
-
-              <div className="row">
-                <RelatedJobs2 />
-              </div>
-              {/* End .row */}
             </div>
-            {/* <!-- Related Jobs --> */}
           </div>
-          {/* End auto-container */}
         </div>
-        {/* <!-- job-detail-outer--> */}
       </section>
-      {/* <!-- End Job Detail Section --> */}
 
       <FooterDefault footerStyle="alternate5" />
-      {/* <!-- End Main Footer --> */}
     </>
   );
 };

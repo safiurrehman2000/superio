@@ -32,7 +32,7 @@ const RouteGuard = ({ children }) => {
             displayName,
           })
         );
-        console.log("userData.isFirstTime :>> ", userData.isFirstTime);
+
         // Handle Candidate flow
         if (userData.userType === "Candidate") {
           if (searchParams.get("id")) {
