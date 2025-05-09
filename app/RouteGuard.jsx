@@ -24,7 +24,6 @@ const RouteGuard = ({ children }) => {
         const { uid, email, displayName } = user;
         const userDoc = await getDoc(doc(db, "users", uid));
         const userData = userDoc.exists() ? userDoc.data() : {};
-
         dispatch(
           addUser({
             uid,
@@ -33,36 +32,44 @@ const RouteGuard = ({ children }) => {
             displayName,
           })
         );
-
-        if (searchParams.get("id")) {
-          dispatch(addJobId(searchParams.get("id")));
-        }
-        if (userData.isFirstTime) {
-          // Handle first-time users
-          if (pathname !== "/create-profile-candidate") {
-            push("/create-profile-candidate");
-            setLoading(false);
-            return;
-          }
-        } else {
+        console.log("userData.isFirstTime :>> ", userData.isFirstTime);
+        // Handle Candidate flow
+        if (userData.userType === "Candidate") {
           if (searchParams.get("id")) {
-            // Redirect to /job-list/:id if id exists
-            push(`/job-list/${searchParams.get("id")}`);
-            setLoading(false);
-            return;
+            dispatch(addJobId(searchParams.get("id")));
           }
-          // Prevent non-first-time users from accessing create-profile routes
-          if (
-            pathname.startsWith("/create-profile") ||
-            pathname === "/create-profile-candidate" ||
-            pathname === "/create-profile-employer"
-          ) {
-            push("/");
-            setLoading(false);
-            return;
+          if (userData.isFirstTime) {
+            if (pathname !== "/create-profile-candidate") {
+              push("/create-profile-candidate");
+            }
+          } else {
+            if (searchParams.get("id")) {
+              push(`/job-list/${searchParams.get("id")}`);
+            } else if (
+              pathname.startsWith("/create-profile") ||
+              pathname === "/create-profile-candidate" ||
+              pathname === "/create-profile-employer"
+            ) {
+              push("/");
+            }
           }
         }
-
+        // Handle Employer flow
+        else if (userData.userType === "Employer") {
+          if (userData.isFirstTime) {
+            if (pathname !== "/create-profile-employer") {
+              push("/create-profile-employer");
+            }
+          } else {
+            if (
+              pathname.startsWith("/create-profile") ||
+              pathname === "/create-profile-candidate" ||
+              pathname === "/create-profile-employer"
+            ) {
+              push("/pricing");
+            }
+          }
+        }
         // Redirect authenticated users away from auth-protected public routes
         if (authProtectedPublicRoutes.includes(pathname)) {
           push("/");
@@ -94,7 +101,7 @@ const RouteGuard = ({ children }) => {
     });
 
     return () => unsubscribe();
-  }, [dispatch, push, pathname, selector?.userType]);
+  }, [dispatch, push, pathname, selector?.userType, selector.isFirstTime]);
 
   if (loading) {
     return (

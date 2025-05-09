@@ -25,9 +25,28 @@ export const SelectField = ({
   return (
     <div className="form-group">
       {label && (
-        <label style={{ display: "flex", alignItems: "center" }}>
+        <label
+          style={{
+            display: "flex",
+            alignItems: "center",
+            marginBottom: "10px",
+            fontSize: "15px !important",
+            fontWeight: "500 !important",
+          }}
+        >
           {label}
-          {required ? <p style={{ color: "#FA5508", margin: 0 }}>*</p> : ""}
+          {required ? (
+            <p
+              style={{
+                margin: 0,
+                color: "#FA5508",
+              }}
+            >
+              *
+            </p>
+          ) : (
+            ""
+          )}
         </label>
       )}
       <Controller

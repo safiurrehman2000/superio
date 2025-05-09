@@ -3,6 +3,7 @@ import { fileToBase64, resumeToFile } from "@/utils/resumeHelperFunctions";
 import { errorToast, successToast } from "@/utils/toast";
 import { addDoc, collection, doc, getDocs, setDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
+import { useUpdateIsFirstTime } from "./database";
 
 export const useGetUploadedResumes = (user) => {
   if (!user) {
@@ -79,11 +80,7 @@ export const useUploadResume = async (user, data, setManager, setError) => {
         uploadedAt: new Date(),
       });
     }
-    await setDoc(
-      doc(db, "users", user.uid),
-      { isFirstTime: false },
-      { merge: true }
-    );
+    const { success } = await useUpdateIsFirstTime(user.uid);
     setManager((prev) => [...prev, ...data]);
     successToast("Resume uploaded successfully");
     setError("");
