@@ -7,7 +7,7 @@ const RelatedJobs = () => {
   const jobs = useGetJobListing();
   return (
     <>
-      {jobs.slice(0, 3).map((item) => (
+      {jobs?.slice(0, 3).map((item) => (
         <div className="job-block" key={item.id}>
           <div className="inner-box">
             <div className="content">

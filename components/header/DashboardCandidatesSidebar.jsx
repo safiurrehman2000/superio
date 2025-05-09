@@ -1,19 +1,19 @@
-'use client'
+"use client";
 
 import Link from "next/link";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
-import candidatesuData from "../../data/candidatesMenuData";
+
 import { isActiveLink } from "../../utils/linkActiveChecker";
 
 import { useDispatch, useSelector } from "react-redux";
 import { menuToggle } from "../../features/toggle/toggleSlice";
 import { usePathname } from "next/navigation";
+import { candidateMenuData } from "@/utils/constants";
 
 const DashboardCandidatesSidebar = () => {
   const { menu } = useSelector((state) => state.toggle);
   const percentage = 30;
-
 
   const dispatch = useDispatch();
   // menu togggle handler
@@ -33,7 +33,7 @@ const DashboardCandidatesSidebar = () => {
 
       <div className="sidebar-inner">
         <ul className="navigation">
-          {candidatesuData.map((item) => (
+          {candidateMenuData.map((item) => (
             <li
               className={`${
                 isActiveLink(item.routePath, usePathname()) ? "active" : ""
