@@ -28,8 +28,18 @@ const RouteGuard = ({ children }) => {
           addUser({
             uid,
             email,
-            userType: userData.userType || null,
             displayName,
+            userType: userData.userType || "Candidate",
+            createdAt: userData.createdAt || null,
+            isFirstTime: userData.isFirstTime ?? false,
+            name: userData.name || "",
+            title: userData.title || "",
+            phone_number: userData.phone_number || "",
+            gender: userData.gender || "",
+            age: userData.age || "",
+            profile_visibility: userData.profile_visibility || "",
+            description: userData.description || "",
+            logo: userData.logo || null,
           })
         );
 

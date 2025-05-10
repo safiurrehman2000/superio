@@ -12,9 +12,6 @@ export const InputField = ({
   className = "",
 }) => {
   const { control, setValue, clearErrors } = useFormContext();
-  const {
-    formState: { errors },
-  } = useFormContext();
 
   const fieldValue = useWatch({ name, control });
 

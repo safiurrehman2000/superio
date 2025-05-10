@@ -1,4 +1,5 @@
 "use client";
+import Loading from "@/components/loading/Loading";
 import Aos from "aos";
 import "aos/dist/aos.css";
 import { Suspense, useEffect } from "react";
@@ -8,7 +9,6 @@ import ScrollToTop from "../components/common/ScrollTop";
 import { store } from "../store/store";
 import "../styles/index.scss";
 import RouteGuard from "./RouteGuard";
-import MainLoading from "@/components/loading/MainLoading";
 
 if (typeof window !== "undefined") {
   require("bootstrap/dist/js/bootstrap");
@@ -45,7 +45,7 @@ export default function RootLayout({ children }) {
 
       <body>
         <Provider store={store}>
-          <Suspense fallback={<MainLoading />}>
+          <Suspense fallback={<Loading />}>
             <RouteGuard>
               <div className="page-wrapper">
                 {children}
