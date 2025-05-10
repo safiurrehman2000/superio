@@ -10,6 +10,7 @@ export const InputField = ({
   required,
   fieldType,
   className = "",
+  defaultValue,
 }) => {
   const { control, setValue, clearErrors } = useFormContext();
 
@@ -71,6 +72,7 @@ export const InputField = ({
           required: required ? `${label || "This field"} is required!` : false,
           validate: validateField,
         }}
+        defaultValue={defaultValue}
         render={({ field }) => (
           <input
             {...field}

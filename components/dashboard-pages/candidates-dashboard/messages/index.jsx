@@ -6,9 +6,9 @@ import DashboardCandidatesSidebar from "../../../header/DashboardCandidatesSideb
 import BreadCrumb from "../../BreadCrumb";
 import CopyrightFooter from "../../CopyrightFooter";
 import ChatBox from "./components";
-import DashboardCandidatesHeader from "../../../header/DashboardCandidatesHeader";
 import MenuToggler from "../../MenuToggler";
 import { useSelector } from "react-redux";
+import DefaulHeader2 from "@/components/header/DefaulHeader2";
 
 const Index = () => {
   const { chatSidebar } = useSelector((state) => state.toggle);
@@ -20,8 +20,7 @@ const Index = () => {
       <LoginPopup />
       {/* End Login Popup Modal */}
 
-      <DashboardCandidatesHeader />
-      {/* End Header */}
+      <DefaulHeader2 />
 
       <MobileMenu />
       {/* End MobileMenu */}

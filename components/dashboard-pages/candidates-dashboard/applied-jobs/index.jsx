@@ -1,5 +1,4 @@
 import MobileMenu from "../../../header/MobileMenu";
-import DashboardCandidatesHeader from "../../../header/DashboardCandidatesHeader";
 import LoginPopup from "../../../common/form/login/LoginPopup";
 import DashboardCandidatesSidebar from "../../../header/DashboardCandidatesSidebar";
 import BreadCrumb from "../../BreadCrumb";

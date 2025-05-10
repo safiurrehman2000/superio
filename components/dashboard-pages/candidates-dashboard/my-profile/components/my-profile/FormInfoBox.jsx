@@ -8,8 +8,10 @@ import {
   GENDERS,
   PROFILE_VISIBILITY_OPTIONS,
 } from "@/utils/constants";
+import { useSelector } from "react-redux";
 
 const FormInfoBox = () => {
+  const selector = useSelector((store) => store.user);
   return (
     <div className="row default-form">
       {/* <!-- Input --> */}
@@ -19,6 +21,7 @@ const FormInfoBox = () => {
           name="name"
           placeholder="Jerome"
           required
+          defaultValue={selector.user.name}
         />
       </div>
 
