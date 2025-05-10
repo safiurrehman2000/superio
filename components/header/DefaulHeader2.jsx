@@ -66,13 +66,24 @@ const DefaulHeader2 = () => {
               data-bs-toggle="dropdown"
               aria-expanded="false"
             >
-              <Image
-                alt="avatar"
-                className="thumb"
-                src="/images/resource/company-6.png"
-                width={50}
-                height={50}
-              />
+              {selector.user?.logo ? (
+                <Image
+                  alt="avatar"
+                  className="thumb"
+                  src={selector.user?.logo}
+                  width={50}
+                  height={50}
+                  style={{ objectFit: "cover" }}
+                />
+              ) : (
+                <Image
+                  alt="avatar"
+                  className="thumb"
+                  src="/images/resource/company-6.png"
+                  width={50}
+                  height={50}
+                />
+              )}
               <span className="name">
                 {selector?.user?.email?.split("@")[0]}
               </span>

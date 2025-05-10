@@ -38,25 +38,27 @@ const HeaderNavContent = () => {
           </li>
           {/* End findjobs menu items */}
 
-          <li className={`${pathname === "/pricing" ? "current" : ""}`}>
-            <Link
-              className={`header-nav-list ${
-                pathname.startsWith("/candidates-dashboard") ||
-                pathname.startsWith("/employers-dashboard")
-                  ? "header-nav-border-b"
-                  : ""
-              }`}
-              href={`${
-                selector.userType === "Candidate"
-                  ? "/candidates-dashboard/dashboard"
-                  : selector.userType === "Employer"
-                  ? "/employers-dashboard/dashboard"
-                  : "/404"
-              }`}
-            >
-              Dashboard
-            </Link>
-          </li>
+          {selector.user && (
+            <li className={`${pathname === "/pricing" ? "current" : ""}`}>
+              <Link
+                className={`header-nav-list ${
+                  pathname.startsWith("/candidates-dashboard") ||
+                  pathname.startsWith("/employers-dashboard")
+                    ? "header-nav-border-b"
+                    : ""
+                }`}
+                href={`${
+                  selector.userType === "Candidate"
+                    ? "/candidates-dashboard/dashboard"
+                    : selector.userType === "Employer"
+                    ? "/employers-dashboard/dashboard"
+                    : "/404"
+                }`}
+              >
+                Dashboard
+              </Link>
+            </li>
+          )}
           {/* End Candidates menu items */}
 
           <li className={`${pathname === "/pricing" ? "current" : ""}`}>

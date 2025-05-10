@@ -4,11 +4,16 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { FiEdit2, FiTrash2 } from "react-icons/fi";
+import { useSelector } from "react-redux";
 
 const LogoUpload = () => {
-  const { setValue, watch } = useFormContext();
+  const { setValue } = useFormContext();
+  const selector = useSelector((store) => store.user);
+  const [preview, setPreview] = useState(selector.user?.logo || "");
 
-  const [preview, setPreview] = useState("");
+  useEffect(() => {
+    setValue("logo", selector.user?.logo ? selector.user.logo : null);
+  }, [selector.user?.logo, setValue]);
 
   const validateImage = (file) => {
     const allowedFileTypes = ["image/jpeg", "image/png"];

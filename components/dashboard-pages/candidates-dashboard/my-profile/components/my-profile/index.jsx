@@ -14,15 +14,15 @@ const Index = () => {
 
   const methods = useForm({
     defaultValues: {
-      logo: null,
-      name: "",
-      title: "",
-      phone_number: "",
-      email: "",
-      gender: "",
-      age: "",
-      profile_visibility: "",
-      description: "",
+      logo: selector.user?.logo || null,
+      name: selector.user?.name || "",
+      title: selector.user?.title || "",
+      phone_number: selector.user?.phone_number || "",
+      email: selector.user?.email || "",
+      gender: selector.user?.gender || "",
+      age: selector.user?.age || "",
+      profile_visibility: selector.user?.profile_visibility || "",
+      description: selector.user?.description || "",
     },
   });
   const { handleSubmit, setError } = methods;

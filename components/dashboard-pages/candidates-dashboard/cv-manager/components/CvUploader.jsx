@@ -2,6 +2,7 @@
 
 import { useGetUploadedResumes, useUploadResume } from "@/APIs/auth/resume";
 import CircularLoader from "@/components/circular-loading/CircularLoading";
+import { addResume } from "@/slices/userSlice";
 
 import { db } from "@/utils/firebase";
 import { checkFileSize, checkFileTypes } from "@/utils/resumeHelperFunctions";
@@ -18,7 +19,7 @@ import {
 } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 const CvUploader = () => {
   const [getManager, setManager] = useState([]);
@@ -26,6 +27,8 @@ const CvUploader = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { push } = useRouter();
   const selector = useSelector((store) => store.user);
+  const dispatch = useDispatch();
+  console.log("selector.resumes", selector?.resumes);
   const user = selector.user;
 
   const { resumes, loading, error: fetchError } = useGetUploadedResumes(user);
@@ -94,9 +97,16 @@ const CvUploader = () => {
       return;
     }
     setIsLoading(true);
-    const { success } = await useUploadResume(user, data, setManager, setError);
+    const { success } = await useUploadResume(
+      user,
+      data,
+      dispatch,
+      setManager,
+      setError
+    );
+
     setIsLoading(false);
-    if (success) {
+    if (success && selector.isFirstTime) {
       if (selector?.jobId) {
         push(`/job-list/${selector?.jobId}`);
       } else push("/job-list");
