@@ -14,7 +14,7 @@ const DefaulHeader2 = () => {
 
   return (
     // <!-- Main Header-->
-    <header className="main-header bg-light">
+    <header className={`main-header header-shaddow `}>
       {/* <!-- Main box --> */}
       <div className="main-box">
         {/* <!--Nav Outer --> */}

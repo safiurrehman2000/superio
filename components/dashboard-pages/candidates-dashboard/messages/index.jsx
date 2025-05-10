@@ -1,7 +1,4 @@
-
-
-'use client'
-
+"use client";
 
 import MobileMenu from "../../../header/MobileMenu";
 import LoginPopup from "../../../common/form/login/LoginPopup";
@@ -18,7 +15,6 @@ const Index = () => {
 
   return (
     <div className="page-wrapper dashboard">
-      <span className="header-span"></span>
       {/* <!-- Header Span for hight --> */}
 
       <LoginPopup />
