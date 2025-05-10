@@ -36,7 +36,7 @@ const SocialNetworkBox = () => {
           className="form-group col-md-12"
           style={{ display: "flex", justifyContent: "space-between" }}
         >
-          <button className="theme-btn btn-style-one">Next</button>
+          <button className="theme-btn btn-style-one">Save</button>
         </div>
       </div>
     </form>

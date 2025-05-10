@@ -1,5 +1,6 @@
 "use client";
 
+import { useSignOut } from "@/APIs/auth/auth";
 import { candidateMenuData, employerMenuData, LOGO } from "@/utils/constants";
 import { isActiveLink } from "@/utils/linkActiveChecker";
 import Image from "next/image";
@@ -88,9 +89,20 @@ const DefaulHeader2 = () => {
                     } mb-1`}
                     key={item.id}
                   >
-                    <Link href={item.routePath}>
-                      <i className={`la ${item.icon}`}></i> {item.name}
-                    </Link>
+                    {item.name === "Logout" ? (
+                      <Link
+                        onClick={() => {
+                          const { success } = useSignOut();
+                        }}
+                        href={item.routePath}
+                      >
+                        <i className={`la ${item.icon}`}></i> {item.name}
+                      </Link>
+                    ) : (
+                      <Link href={item.routePath}>
+                        <i className={`la ${item.icon}`}></i> {item.name}
+                      </Link>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -105,9 +117,20 @@ const DefaulHeader2 = () => {
                     } mb-1`}
                     key={item.id}
                   >
-                    <Link href={item.routePath}>
-                      <i className={`la ${item.icon}`}></i> {item.name}
-                    </Link>
+                    {item.name === "Logout" ? (
+                      <Link
+                        onClick={() => {
+                          const { success } = useSignOut();
+                        }}
+                        href={item.routePath}
+                      >
+                        <i className={`la ${item.icon}`}></i> {item.name}
+                      </Link>
+                    ) : (
+                      <Link href={item.routePath}>
+                        <i className={`la ${item.icon}`}></i> {item.name}
+                      </Link>
+                    )}
                   </li>
                 ))}
               </ul>

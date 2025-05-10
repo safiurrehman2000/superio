@@ -1,11 +1,13 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useFormContext } from "react-hook-form";
 import { FiEdit2, FiTrash2 } from "react-icons/fi";
 
 const LogoUpload = () => {
-  const [logoImg, setLogoImg] = useState(null);
+  const { setValue, watch } = useFormContext();
+
   const [preview, setPreview] = useState("");
 
   const validateImage = (file) => {
@@ -39,17 +41,24 @@ const LogoUpload = () => {
     }
 
     // If all validations pass
-    setLogoImg(file);
+    setValue("logo", file, { shouldValidate: true });
     setPreview(URL.createObjectURL(file));
   };
 
   const removeImage = () => {
-    setLogoImg(null);
+    setValue("logo", null, { shouldValidate: true });
     setPreview("");
     // Reset input field
     const input = document.getElementById("upload");
     if (input) input.value = "";
   };
+
+  // Clean up preview URL to avoid memory leaks
+  useEffect(() => {
+    return () => {
+      if (preview) URL.revokeObjectURL(preview);
+    };
+  }, [preview]);
 
   return (
     <div className="uploading-outer" style={{ gap: "10px" }}>
@@ -64,7 +73,7 @@ const LogoUpload = () => {
             onChange={logoImgHandler}
           />
           <label className="uploadButton-button ripple-effect" htmlFor="upload">
-            Browse Logo
+            Browse Logo/Image
           </label>
         </div>
       ) : (

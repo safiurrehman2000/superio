@@ -7,6 +7,7 @@ const userSlice = createSlice({
     userType: "Candidate",
     jobId: null,
   },
+
   reducers: {
     addUser: (state, action) => {
       state.user = action.payload;

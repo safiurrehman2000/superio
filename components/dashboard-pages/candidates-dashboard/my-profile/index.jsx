@@ -5,8 +5,6 @@ import BreadCrumb from "../../BreadCrumb";
 import CvUploader from "../cv-manager/components/CvUploader";
 
 const index = () => {
-  // const { push } = useRouter();
-  // const selector = useSelector((store) => store.user);
   return (
     <div
       style={{
