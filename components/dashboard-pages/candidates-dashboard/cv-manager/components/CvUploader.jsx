@@ -22,7 +22,6 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 const CvUploader = () => {
-  const [getManager, setManager] = useState([]);
   const [getError, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { push } = useRouter();
@@ -34,11 +33,11 @@ const CvUploader = () => {
   const { resumes, loading, error: fetchError } = useGetUploadedResumes(user);
 
   // Sync getManager with fetched resumes
-  useEffect(() => {
-    if (resumes && resumes.length > 0) {
-      setManager(resumes);
-    }
-  }, [resumes]);
+  // useEffect(() => {
+  //   if (resumes && resumes.length > 0) {
+  //     setManager(resumes);
+  //   }
+  // }, [resumes]);
 
   // Handle fetch errors
   useEffect(() => {
@@ -89,7 +88,7 @@ const CvUploader = () => {
     }
 
     const data = Array.from(files);
-    const isExist = getManager.some((file1) =>
+    const isExist = selector?.resumes.some((file1) =>
       data.some((file2) => file1.name === file2.name)
     );
     if (isExist) {
@@ -126,7 +125,7 @@ const CvUploader = () => {
         await deleteDoc(doc.ref);
       });
 
-      const deleted = getManager.filter((file) => file.name !== name);
+      const deleted = selector?.resumes.filter((file) => file.name !== name);
       setManager(deleted);
       successToast("Resume deleted successfully");
       setError("");
@@ -182,9 +181,9 @@ const CvUploader = () => {
 
       {/* Start resume Preview */}
       <div className="files-outer">
-        {getManager?.map((file, i) => (
+        {selector?.resumes?.map((file, i) => (
           <div key={i} className="file-edit-box">
-            <span className="title">{file.name}</span>
+            <span className="title">{file.fileName}</span>
             <div className="edit-btns">
               <button disabled>
                 <span className="la la-pencil"></span>
