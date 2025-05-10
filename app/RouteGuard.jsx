@@ -112,7 +112,7 @@ const RouteGuard = ({ children }) => {
     });
 
     return () => unsubscribe();
-  }, [dispatch, push, pathname, selector?.userType, selector.isFirstTime]);
+  }, [push, pathname, selector?.userType, selector.isFirstTime]);
 
   if (loading) {
     return (

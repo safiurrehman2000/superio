@@ -6,21 +6,10 @@ import {
   useUploadResume,
 } from "@/APIs/auth/resume";
 import CircularLoader from "@/components/circular-loading/CircularLoading";
-import { addResume, removeResumeById } from "@/slices/userSlice";
 
 import { db } from "@/utils/firebase";
 import { checkFileSize, checkFileTypes } from "@/utils/resumeHelperFunctions";
-import { successToast } from "@/utils/toast";
-import {
-  collection,
-  deleteDoc,
-  doc,
-  getDoc,
-  getDocs,
-  query,
-  updateDoc,
-  where,
-} from "firebase/firestore";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -31,7 +20,7 @@ const CvUploader = () => {
   const { push } = useRouter();
   const selector = useSelector((store) => store.user);
   const dispatch = useDispatch();
-  console.log("selector.resumes", selector?.resumes);
+
   const user = selector.user;
 
   const { resumes, loading, error: fetchError } = useGetUploadedResumes(user);
@@ -92,13 +81,7 @@ const CvUploader = () => {
       return;
     }
     setIsLoading(true);
-    const { success } = await useUploadResume(
-      user,
-      data,
-      dispatch,
-      setManager,
-      setError
-    );
+    const { success } = await useUploadResume(user, data, dispatch, setError);
 
     setIsLoading(false);
     if (success && selector.isFirstTime) {
