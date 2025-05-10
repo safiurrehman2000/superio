@@ -102,7 +102,7 @@ export const useGetUploadedResumes = (user) => {
     return () => {
       isMounted = false; // Cleanup function to set flag false when unmounted
     };
-  }, [user, dispatch, storedResumes]); // Include storedResumes in dependencies
+  }, [user?.uid]);
 
   return { resumes, loading, error };
 };
@@ -111,7 +111,7 @@ export const useUploadResume = async (
   user,
   data,
   dispatch,
-  setManager,
+
   setError
 ) => {
   const uploadedResumes = []; // Store resume data with Firestore IDs
@@ -173,9 +173,6 @@ export const useUploadResume = async (
     if (!firstTimeSuccess) {
       console.warn("Failed to update isFirstTime status");
     }
-
-    // Update local state with raw file objects
-    setManager((prev) => [...prev, ...data]);
 
     // Show success toast
     successToast(`${uploadedResumes.length} resume(s) uploaded successfully`);
