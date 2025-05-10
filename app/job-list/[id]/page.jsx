@@ -47,7 +47,6 @@ const JobSingleDynamicV3 = ({ params }) => {
   return (
     <>
       {/* <!-- Header Span --> */}
-      <span className="header-span"></span>
 
       <LoginPopup />
       <DefaulHeader2 />

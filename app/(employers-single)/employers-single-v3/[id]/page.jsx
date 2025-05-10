@@ -26,7 +26,6 @@ const EmployersSingleV3 = ({ params }) => {
   return (
     <>
       {/* <!-- Header Span --> */}
-      <span className="header-span"></span>
 
       <LoginPopup />
       {/* End Login Popup Modal */}

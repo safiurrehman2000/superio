@@ -2,22 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  blogItems,
-  candidateItems,
-  employerItems,
-} from "../../data/mainMenuData";
-import {
-  isActiveLink,
-  isActiveParent,
-  isActiveParentChaild,
-} from "../../utils/linkActiveChecker";
 
 import "@/styles/customStyles.css";
+import { useSelector } from "react-redux";
 
 const HeaderNavContent = () => {
   const pathname = usePathname(); // Get the current pathname
-
+  const selector = useSelector((store) => store.user);
   return (
     <>
       <nav className="nav main-menu">
@@ -47,109 +38,24 @@ const HeaderNavContent = () => {
           </li>
           {/* End findjobs menu items */}
 
-          <li
-            className={`${
-              isActiveParent(employerItems, usePathname()) ||
-              usePathname()?.split("/")[1] === "employers-dashboard"
-                ? "current"
-                : ""
-            } dropdown`}
-          >
-            <span>Employers</span>
-            <ul>
-              {employerItems.map((item) => (
-                <li className="dropdown" key={item.id}>
-                  <span
-                    className={
-                      isActiveParentChaild(item.items, usePathname())
-                        ? "current"
-                        : ""
-                    }
-                  >
-                    {item.title}
-                  </span>
-                  <ul>
-                    {item.items.map((menu, i) => (
-                      <li
-                        className={
-                          isActiveLink(menu.routePath, usePathname())
-                            ? "current"
-                            : ""
-                        }
-                        key={i}
-                      >
-                        <Link href={menu.routePath}>{menu.name}</Link>
-                      </li>
-                    ))}
-                  </ul>
-                </li>
-              ))}
-              <li
-                className={
-                  usePathname()?.includes("/employers-dashboard")
-                    ? "current"
-                    : ""
-                }
-              >
-                <Link href="/employers-dashboard/dashboard">
-                  Employers Dashboard
-                </Link>
-              </li>
-            </ul>
-          </li>
-          {/* End Employers menu items */}
-
-          <li
-            className={`${
-              isActiveParent(candidateItems, usePathname()) ||
-              usePathname()?.split("/")[1] === "candidates-dashboard"
-                ? "current"
-                : ""
-                ? "current"
-                : ""
-            } dropdown`}
-          >
-            <span>Candidates</span>
-            <ul>
-              {candidateItems.map((item) => (
-                <li className="dropdown" key={item.id}>
-                  <span
-                    className={
-                      isActiveParentChaild(item.items, usePathname())
-                        ? "current"
-                        : ""
-                    }
-                  >
-                    {item.title}
-                  </span>
-                  <ul>
-                    {item.items.map((menu, i) => (
-                      <li
-                        className={
-                          isActiveLink(menu.routePath, usePathname())
-                            ? "current"
-                            : ""
-                        }
-                        key={i}
-                      >
-                        <Link href={menu.routePath}>{menu.name}</Link>
-                      </li>
-                    ))}
-                  </ul>
-                </li>
-              ))}
-              <li
-                className={
-                  usePathname()?.includes("/candidates-dashboard/")
-                    ? "current"
-                    : ""
-                }
-              >
-                <Link href="/candidates-dashboard/dashboard">
-                  Candidates Dashboard
-                </Link>
-              </li>
-            </ul>
+          <li className={`${pathname === "/pricing" ? "current" : ""}`}>
+            <Link
+              className={`header-nav-list ${
+                pathname.startsWith("/candidates-dashboard") ||
+                pathname.startsWith("/employers-dashboard")
+                  ? "header-nav-border-b"
+                  : ""
+              }`}
+              href={`${
+                selector.userType === "Candidate"
+                  ? "/candidates-dashboard/dashboard"
+                  : selector.userType === "Employer"
+                  ? "/employers-dashboard/dashboard"
+                  : "/404"
+              }`}
+            >
+              Dashboard
+            </Link>
           </li>
           {/* End Candidates menu items */}
 

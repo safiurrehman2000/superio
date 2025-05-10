@@ -6,17 +6,15 @@ import BreadCrumb from "../../BreadCrumb";
 import CopyrightFooter from "../../CopyrightFooter";
 import JobListingsTable from "./components/JobListingsTable";
 import MenuToggler from "../../MenuToggler";
+import DefaulHeader2 from "@/components/header/DefaulHeader2";
 
 const index = () => {
   return (
     <div className="page-wrapper dashboard">
-      <span className="header-span"></span>
-      {/* <!-- Header Span for hight --> */}
-
       <LoginPopup />
       {/* End Login Popup Modal */}
 
-      <DashboardCandidatesHeader />
+      <DefaulHeader2 />
       {/* End Header */}
 
       <MobileMenu />
