@@ -4,18 +4,16 @@ import { errorToast, successToast } from "@/utils/toast";
 import { addDoc, collection, getDocs } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { useUpdateIsFirstTime } from "./database";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { addResume } from "@/slices/userSlice";
 
 export const useGetUploadedResumes = (user) => {
-  if (!user) {
-    errorToast("User is not authenticated");
-    return;
-  }
   const [resumes, setResumes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const dispatch = useDispatch();
+  // Access the current resumes from the Redux store
+  const storedResumes = useSelector((state) => state.user.resumes);
 
   useEffect(() => {
     let isMounted = true; // Flag to track component mount status
@@ -39,14 +37,46 @@ export const useGetUploadedResumes = (user) => {
           id: doc.id,
           ...doc.data(),
         }));
-        const files = resumeData.map(resumeToFile);
 
-        if (files.length === 0) {
+        // Map resumeData to include both Firestore ID and File object
+        const resumeFiles = resumeData.map((resume) => {
+          const file = resumeToFile(resume); // Convert resume to File
+          return {
+            id: resume.id, // Firestore document ID
+            file, // File object from resumeToFile
+            fileName: resume.fileName,
+            fileType: resume.fileType,
+            size: resume.size,
+            uploadedAt: resume.uploadedAt,
+          };
+        });
+
+        if (resumeFiles.length === 0) {
+          if (isMounted) setResumes([]);
           return;
         }
 
         if (isMounted) {
-          setResumes(files);
+          setResumes(resumeFiles);
+
+          // Dispatch only resumes that don't already exist in the Redux store
+          resumeFiles.forEach((resume) => {
+            // Check if resume.id already exists in storedResumes
+            const isDuplicate = storedResumes.some(
+              (storedResume) => storedResume.id === resume.id
+            );
+            if (!isDuplicate) {
+              dispatch(
+                addResume({
+                  id: resume.id,
+                  fileName: resume.fileName,
+                  fileType: resume.fileType,
+                  size: resume.size,
+                  uploadedAt: resume.uploadedAt || new Date().toISOString(),
+                })
+              );
+            }
+          });
 
           successToast("Resumes fetched successfully");
         }
@@ -66,7 +96,7 @@ export const useGetUploadedResumes = (user) => {
     return () => {
       isMounted = false; // Cleanup function to set flag false when unmounted
     };
-  }, []);
+  }, [user, dispatch, storedResumes]); // Include storedResumes in dependencies
 
   return { resumes, loading, error };
 };
