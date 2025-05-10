@@ -1,9 +1,11 @@
-import { auth, db } from "@/utils/firebase";
+import { db } from "@/utils/firebase";
 import { fileToBase64, resumeToFile } from "@/utils/resumeHelperFunctions";
 import { errorToast, successToast } from "@/utils/toast";
-import { addDoc, collection, doc, getDocs, setDoc } from "firebase/firestore";
+import { addDoc, collection, getDocs } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { useUpdateIsFirstTime } from "./database";
+import { useDispatch } from "react-redux";
+import { addResume } from "@/slices/userSlice";
 
 export const useGetUploadedResumes = (user) => {
   if (!user) {
@@ -13,6 +15,7 @@ export const useGetUploadedResumes = (user) => {
   const [resumes, setResumes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     let isMounted = true; // Flag to track component mount status
@@ -44,6 +47,7 @@ export const useGetUploadedResumes = (user) => {
 
         if (isMounted) {
           setResumes(files);
+
           successToast("Resumes fetched successfully");
         }
       } catch (error) {
@@ -67,28 +71,85 @@ export const useGetUploadedResumes = (user) => {
   return { resumes, loading, error };
 };
 
-export const useUploadResume = async (user, data, setManager, setError) => {
+export const useUploadResume = async (
+  user,
+  data,
+  dispatch,
+  setManager,
+  setError
+) => {
+  const uploadedResumes = []; // Store resume data with Firestore IDs
+
+  // Ensure data is an array
+  if (!Array.isArray(data) || data.length === 0) {
+    setError("No files provided for upload.");
+    return { success: false, resumes: [] };
+  }
+
   try {
-    // Convert files to base64 and upload to Firestore
+    // Process each file in the data array
     for (const file of data) {
+      // Validate file
+      if (!(file instanceof File)) {
+        console.warn(`Skipping invalid file: ${file}`);
+        continue; // Skip invalid files but continue processing others
+      }
+
+      // Convert file to base64
       const base64Data = await fileToBase64(file);
-      await addDoc(collection(db, "users", user.uid, "resumes"), {
+
+      // Upload to Firestore and get document reference
+      const docRef = await addDoc(
+        collection(db, "users", user.uid, "resumes"),
+        {
+          fileName: file.name,
+          fileData: base64Data,
+          fileType: file.type,
+          size: file.size,
+          uploadedAt: new Date(),
+        }
+      );
+
+      // Create resume object with Firestore document ID
+      const resume = {
+        id: docRef.id, // Firestore-generated ID
         fileName: file.name,
-        fileData: base64Data,
         fileType: file.type,
         size: file.size,
-        uploadedAt: new Date(),
-      });
+        uploadedAt: new Date().toISOString(),
+      };
+
+      // Add to uploadedResumes for return value
+      uploadedResumes.push(resume);
+
+      // Dispatch to Redux store
+      dispatch(addResume(resume));
     }
-    const { success } = await useUpdateIsFirstTime(user.uid);
+
+    // If no resumes were uploaded (e.g., all files were invalid)
+    if (uploadedResumes.length === 0) {
+      setError("No valid files were uploaded.");
+      return { success: false, resumes: [] };
+    }
+
+    // Update isFirstTime status
+    const { success: firstTimeSuccess } = await useUpdateIsFirstTime(user.uid);
+    if (!firstTimeSuccess) {
+      console.warn("Failed to update isFirstTime status");
+    }
+
+    // Update local state with raw file objects
     setManager((prev) => [...prev, ...data]);
-    successToast("Resume uploaded successfully");
+
+    // Show success toast
+    successToast(`${uploadedResumes.length} resume(s) uploaded successfully`);
     setError("");
 
-    return { success: true };
+    // Return success and uploaded resume data
+    return { success: true, resumes: uploadedResumes };
   } catch (error) {
-    console.error("Error uploading resume:", error);
-    setError("Failed to upload resume. Please try again.");
-    return { success: false };
+    console.error("Error uploading resumes:", error);
+    setError("Failed to upload one or more resumes. Please try again.");
+    return { success: false, resumes: uploadedResumes };
   }
 };
