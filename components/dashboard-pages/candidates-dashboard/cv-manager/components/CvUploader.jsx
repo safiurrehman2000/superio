@@ -1,8 +1,12 @@
 "use client";
 
-import { useGetUploadedResumes, useUploadResume } from "@/APIs/auth/resume";
+import {
+  useDeleteResume,
+  useGetUploadedResumes,
+  useUploadResume,
+} from "@/APIs/auth/resume";
 import CircularLoader from "@/components/circular-loading/CircularLoading";
-import { addResume } from "@/slices/userSlice";
+import { addResume, removeResumeById } from "@/slices/userSlice";
 
 import { db } from "@/utils/firebase";
 import { checkFileSize, checkFileTypes } from "@/utils/resumeHelperFunctions";
@@ -32,14 +36,6 @@ const CvUploader = () => {
 
   const { resumes, loading, error: fetchError } = useGetUploadedResumes(user);
 
-  // Sync getManager with fetched resumes
-  // useEffect(() => {
-  //   if (resumes && resumes.length > 0) {
-  //     setManager(resumes);
-  //   }
-  // }, [resumes]);
-
-  // Handle fetch errors
   useEffect(() => {
     if (fetchError) {
       setError(fetchError);
@@ -112,29 +108,6 @@ const CvUploader = () => {
     }
   };
 
-  // Delete resume from Firestore and local state
-  const deleteHandler = async (name) => {
-    try {
-      // Find and delete the resume document
-      const resumesQuery = query(
-        collection(db, "users", user.uid, "resumes"),
-        where("fileName", "==", name)
-      );
-      const querySnapshot = await getDocs(resumesQuery);
-      querySnapshot.forEach(async (doc) => {
-        await deleteDoc(doc.ref);
-      });
-
-      const deleted = selector?.resumes.filter((file) => file.name !== name);
-      setManager(deleted);
-      successToast("Resume deleted successfully");
-      setError("");
-    } catch (error) {
-      console.error("Error deleting resume:", error);
-      setError("Failed to delete resume. Please try again.");
-    }
-  };
-
   return (
     <>
       {/* Start Upload resume */}
@@ -181,14 +154,18 @@ const CvUploader = () => {
 
       {/* Start resume Preview */}
       <div className="files-outer">
-        {selector?.resumes?.map((file, i) => (
-          <div key={i} className="file-edit-box">
+        {selector?.resumes?.map((file) => (
+          <div key={file?.id} className="file-edit-box">
             <span className="title">{file.fileName}</span>
             <div className="edit-btns">
               <button disabled>
                 <span className="la la-pencil"></span>
               </button>
-              <button onClick={() => deleteHandler(file.name)}>
+              <button
+                onClick={() =>
+                  useDeleteResume(file.id, selector?.user?.uid, dispatch)
+                }
+              >
                 <span className="la la-trash"></span>
               </button>
             </div>

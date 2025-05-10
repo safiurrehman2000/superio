@@ -1,11 +1,17 @@
 import { db } from "@/utils/firebase";
 import { fileToBase64, resumeToFile } from "@/utils/resumeHelperFunctions";
 import { errorToast, successToast } from "@/utils/toast";
-import { addDoc, collection, getDocs } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  getDocs,
+} from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { useUpdateIsFirstTime } from "./database";
 import { useDispatch, useSelector } from "react-redux";
-import { addResume } from "@/slices/userSlice";
+import { addResume, removeResumeById } from "@/slices/userSlice";
 
 export const useGetUploadedResumes = (user) => {
   const [resumes, setResumes] = useState([]);
@@ -181,5 +187,20 @@ export const useUploadResume = async (
     console.error("Error uploading resumes:", error);
     setError("Failed to upload one or more resumes. Please try again.");
     return { success: false, resumes: uploadedResumes };
+  }
+};
+
+export const useDeleteResume = async (id, userId, dispatch) => {
+  try {
+    // Delete the resume document from Firestore using the document ID
+    await deleteDoc(doc(db, "users", userId, "resumes", id));
+
+    // Update Redux store by dispatching removeResumeById
+    dispatch(removeResumeById(id));
+
+    successToast("Resume deleted successfully");
+  } catch (error) {
+    console.error("Error deleting resume:", error);
+    errorToast("Failed to delete resume. Please try again.");
   }
 };
