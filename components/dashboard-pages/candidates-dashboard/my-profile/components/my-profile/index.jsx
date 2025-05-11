@@ -4,6 +4,7 @@ import FormInfoBox from "./FormInfoBox";
 import LogoUpload from "./LogoUpload";
 import { useDispatch, useSelector } from "react-redux";
 import { useUpdateUserInfo } from "@/APIs/auth/database";
+import { successToast } from "@/utils/toast";
 
 const Index = () => {
   const { updateUserInfo } = useUpdateUserInfo();
@@ -29,7 +30,6 @@ const Index = () => {
 
   const onSubmit = async (data) => {
     try {
-      console.log("Form Data Submitted:", data);
       if (!userId) {
         throw new Error("User ID is not available");
       }
@@ -43,7 +43,7 @@ const Index = () => {
         userType,
       };
       dispatch(addUser(updatedUser));
-      console.log("User info updated successfully");
+      successToast("User info updated successfully");
     } catch (error) {
       console.error("Submission error:", error);
       setError("root", {

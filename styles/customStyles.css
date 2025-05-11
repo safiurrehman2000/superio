@@ -19,6 +19,21 @@
   color: #fa5508;
 }
 
+.file-edit-box.job-filter {
+  border: none;
+  border-radius: 5px;
+}
+
+.file-edit-box.job-filter:hover {
+  /* Your existing hover styles */
+  background-color: #f5f5f5; /* example hover effect */
+}
+
+.file-edit-box.job-filter.selected-resume {
+  border: 2px solid #fa5508;
+  padding: calc(1rem - 2px); /* adjust padding to maintain size */
+}
+
 /* Flex Orange – #FA5508
 Bright Aqua – #10E7DC
 Deep Blue – #0074E1 */
