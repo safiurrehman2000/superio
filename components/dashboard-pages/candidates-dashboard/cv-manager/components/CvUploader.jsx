@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  useDeleteResume,
-  useGetUploadedResumes,
-  useUploadResume,
-} from "@/APIs/auth/resume";
+import { useDeleteResume, useUploadResume } from "@/APIs/auth/resume";
 import CircularLoader from "@/components/circular-loading/CircularLoading";
 
 import { db } from "@/utils/firebase";
@@ -73,13 +69,17 @@ const CvUploader = () => {
       return;
     }
     setIsLoading(true);
+
     const { success } = await useUploadResume(user, data, dispatch, setError);
 
     setIsLoading(false);
+    console.log("first", success, selector.isFirstTime);
     if (success && selector.isFirstTime) {
       if (selector?.jobId) {
         push(`/job-list/${selector?.jobId}`);
-      } else push("/job-list");
+      } else {
+        push("/job-list");
+      }
     }
   };
 

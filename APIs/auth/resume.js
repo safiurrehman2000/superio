@@ -80,7 +80,7 @@ export const useGetUploadedResumes = (user) => {
             }
           });
 
-          successToast("Resumes fetched successfully");
+          // successToast("Resumes fetched successfully");
         }
       } catch (error) {
         console.error("Error fetching resumes:", error);
@@ -103,13 +103,7 @@ export const useGetUploadedResumes = (user) => {
   return { loading, error };
 };
 
-export const useUploadResume = async (
-  user,
-  data,
-  dispatch,
-
-  setError
-) => {
+export const useUploadResume = async (user, data, dispatch, setError) => {
   const uploadedResumes = []; // Store resume data with Firestore IDs
 
   // Ensure data is an array
