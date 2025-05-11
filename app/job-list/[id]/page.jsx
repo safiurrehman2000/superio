@@ -20,8 +20,6 @@ const JobSingleDynamicV3 = ({ params }) => {
   const id = params.id;
   const { job, loading, error } = useGetJobById(id);
 
-  console.log("job :>> ", job);
-
   // Destructure job properties with default values
   const {
     jobTitle = "",
