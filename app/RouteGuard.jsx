@@ -1,8 +1,10 @@
 "use client";
+import { useGetAppliedJobs } from "@/APIs/auth/jobs";
 import { useGetUploadedResumes } from "@/APIs/auth/resume";
 import {
   addJobId,
   addUser,
+  clearAppliedJobs,
   clearResumes,
   removeUser,
 } from "@/slices/userSlice";
@@ -32,6 +34,7 @@ const RouteGuard = ({ children }) => {
         const { uid, email, displayName } = user;
         const userDoc = await getDoc(doc(db, "users", uid));
         const userData = userDoc.exists() ? userDoc.data() : {};
+        useGetAppliedJobs(user.uid, dispatch);
 
         dispatch(
           addUser({
@@ -98,6 +101,7 @@ const RouteGuard = ({ children }) => {
       } else {
         dispatch(removeUser());
         dispatch(clearResumes());
+        dispatch(clearAppliedJobs());
         // Redirect unauthenticated users from private routes to login
         if (privateRoutes.some((route) => pathname.includes(route))) {
           push("/login");

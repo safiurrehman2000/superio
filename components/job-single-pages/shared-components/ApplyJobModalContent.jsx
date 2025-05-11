@@ -1,8 +1,11 @@
+import { useApplyForJob } from "@/APIs/auth/jobs";
 import { useDeleteResume, useUploadResume } from "@/APIs/auth/resume";
+import CircularLoader from "@/components/circular-loading/CircularLoading";
 import Loading from "@/components/loading/Loading";
 import "@/styles/customStyles.css";
 import { checkFileSize, checkFileTypes } from "@/utils/resumeHelperFunctions";
 import { errorToast } from "@/utils/toast";
+import { useParams } from "next/navigation";
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -10,14 +13,51 @@ const ApplyJobModalContent = () => {
   const [selected, setSelected] = useState(null);
   const [showError, setShowError] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
   const dispatch = useDispatch();
   const selector = useSelector((store) => store.user);
-
-  const handleSubmit = (e) => {
+  const { id: jobId } = useParams();
+  const hasApplied = selector.appliedJobs.includes(jobId);
+  console.log("hasApplied in modal", hasApplied);
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!selected) {
       setShowError(true);
+      errorToast("Please select a resume before applying.");
       return;
+    }
+    if (hasApplied) {
+      errorToast("You have already applied to this job.");
+      return;
+    }
+    setLoading(true);
+    setShowError(false);
+
+    try {
+      const selectedResume = selector?.resumes?.find(
+        (resume) => resume.id === selected
+      );
+      if (!selectedResume) throw new Error("Selected resume not found.");
+
+      const result = await useApplyForJob(
+        selector?.user?.uid,
+        selectedResume,
+        jobId,
+        message,
+        selector.appliedJobs,
+        dispatch
+      );
+
+      if (result.success) {
+        setMessage("");
+        setSelected(null);
+      } else {
+        throw new Error(result.error);
+      }
+    } catch (err) {
+      errorToast(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -37,25 +77,32 @@ const ApplyJobModalContent = () => {
 
     const data = Array.from(files);
     const isExist = selector?.resumes.some((file1) =>
-      data.some((file2) => file1.name === file2.name)
+      data.some((file2) => file1.fileName === file2.name)
     );
     if (isExist) {
       errorToast("File already exists");
       return;
     }
-    setLoading(true);
+
     const { success } = await useUploadResume(
       selector.user,
       data,
       dispatch,
-      setShowError
+      setShowError,
+      setLoading
     );
 
-    setLoading(false);
+    if (success) {
+      // Auto-select the newly uploaded resume
+      const newResume = selector?.resumes?.find(
+        (resume) => resume.fileName === data[0].name
+      );
+      if (newResume) setSelected(newResume.id);
+    }
   };
 
   return (
-    <form className="default-form job-apply-form">
+    <form className="default-form job-apply-form" onSubmit={handleSubmit}>
       {!showError && (
         <div className="mb-3" style={{ color: "#666", fontSize: "14px" }}>
           Please select a resume to apply with:
@@ -63,7 +110,7 @@ const ApplyJobModalContent = () => {
       )}
 
       {/* Error message */}
-      {showError && selected && (
+      {showError && (
         <div className="mb-3" style={{ color: "#ff4d4f", fontSize: "14px" }}>
           Please select a resume before applying.
         </div>
@@ -127,11 +174,10 @@ const ApplyJobModalContent = () => {
                   className="uploadButton-input"
                   type="file"
                   name="attachments[]"
-                  accept="image/*, application/pdf"
+                  accept=".doc,.docx,application/pdf"
                   id="upload"
                   multiple=""
                   onChange={cvManagerHandler}
-                  required
                 />
                 <label
                   className="uploadButton-button ripple-effect"
@@ -150,34 +196,38 @@ const ApplyJobModalContent = () => {
             className="darma"
             name="message"
             placeholder="Message"
-            // required
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            disabled={hasApplied}
           ></textarea>
         </div>
         {/* End .col */}
 
-        {/* <div className="col-lg-12 col-md-12 col-sm-12 form-group">
-          <div className="input-group checkboxes square">
-            <input type="checkbox" name="remember-me" id="rememberMe" />
-            <label htmlFor="rememberMe" className="remember">
-              <span className="custom-checkbox"></span> You accept our{" "}
-              <span data-bs-dismiss="modal">
-                <Link href="/terms">
-                  Terms and Conditions and Privacy Policy
-                </Link>
-              </span>
-            </label>
-          </div>
-        </div> */}
-        {/* End .col */}
-
         <div className="col-lg-12 col-md-12 col-sm-12 form-group">
           <button
-            className="theme-btn btn-style-one w-100"
+            className={`theme-btn ${
+              loading || hasApplied ? "btn-style-three" : "btn-style-one"
+            } w-100`}
             type="submit"
             name="submit-form"
-            onClick={handleSubmit}
+            disabled={loading || hasApplied}
           >
-            Apply Job
+            {loading ? (
+              <div
+                style={{
+                  display: "flex",
+                  gap: "10px",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <CircularLoader /> <p>Applying...</p>
+              </div>
+            ) : hasApplied ? (
+              "Applied"
+            ) : (
+              "Apply Job"
+            )}
           </button>
         </div>
         {/* End .col */}

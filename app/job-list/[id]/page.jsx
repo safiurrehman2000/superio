@@ -17,9 +17,11 @@ import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 
 const JobSingleDynamicV3 = ({ params }) => {
+  const selector = useSelector((store) => store.user);
   const id = params.id;
   const { job, loading, error } = useGetJobById(id);
-
+  const hasApplied = selector.appliedJobs.includes(id);
+  console.log("hasApplied in main", hasApplied);
   // Destructure job properties with default values
   const {
     jobTitle = "",
@@ -32,7 +34,6 @@ const JobSingleDynamicV3 = ({ params }) => {
     link = "",
   } = job || {};
 
-  const selector = useSelector((store) => store.user);
   const { push } = useRouter();
 
   if (loading) return <Loading />;
@@ -109,14 +110,17 @@ const JobSingleDynamicV3 = ({ params }) => {
                 <aside className="sidebar">
                   <div className="btn-box">
                     {selector.user ? (
-                      <a
+                      <button
+                        disabled={hasApplied}
                         href="#"
-                        className="theme-btn btn-style-one"
+                        className={`theme-btn ${
+                          hasApplied ? "btn-style-three" : "btn-style-one"
+                        }`}
                         data-bs-toggle="modal"
                         data-bs-target="#applyJobModal"
                       >
-                        Apply For Job
-                      </a>
+                        {hasApplied ? "Applied" : "Apply for Job"}
+                      </button>
                     ) : (
                       <button
                         onClick={() => push(`/login?id=${id}`)}

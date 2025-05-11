@@ -1,6 +1,15 @@
+import { addAppliedJob, setAppliedJobs } from "@/slices/userSlice";
 import { db } from "@/utils/firebase";
 import { errorToast, successToast } from "@/utils/toast";
-import { addDoc, collection, doc, getDoc, getDocs } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  where,
+} from "firebase/firestore";
 import { useEffect, useState } from "react";
 
 export const useCreateJobPost = async (payload) => {
@@ -85,4 +94,68 @@ export const useGetJobById = (jobId) => {
   }, [jobId]);
 
   return { job, loading, error };
+};
+
+export const useApplyForJob = async (
+  candidateId,
+  selectedResume,
+  jobId,
+  message,
+  appliedJobs,
+  dispatch
+) => {
+  try {
+    if (!candidateId) throw new Error("You must be logged in to apply.");
+
+    await isAlreadyApplied(candidateId, jobId, appliedJobs);
+
+    await addDoc(collection(db, "applications"), {
+      candidateId,
+      jobId,
+      resume: selectedResume,
+      message: message || "",
+      appliedAt: Date.now(),
+    });
+
+    dispatch(addAppliedJob(jobId));
+
+    successToast("Application submitted successfully!");
+    return { success: true };
+  } catch (err) {
+    errorToast(err.message);
+    return { success: false };
+  }
+};
+
+export const isAlreadyApplied = async (candidateId, jobId, appliedJobs) => {
+  if (appliedJobs.includes(jobId)) {
+    throw new Error("You have already applied to this job.");
+  }
+
+  const applicationsQuery = query(
+    collection(db, "applications"),
+    where("candidateId", "==", candidateId),
+    where("jobId", "==", jobId)
+  );
+  const querySnapshot = await getDocs(applicationsQuery);
+
+  if (!querySnapshot.empty) {
+    throw new Error("You have already applied to this job.");
+  }
+};
+
+export const useGetAppliedJobs = async (candidateId, dispatch) => {
+  try {
+    if (!candidateId) return;
+
+    const applicationsQuery = query(
+      collection(db, "applications"),
+      where("candidateId", "==", candidateId)
+    );
+    const querySnapshot = await getDocs(applicationsQuery);
+    const appliedJobIds = querySnapshot.docs.map((doc) => doc.data().jobId);
+    dispatch(setAppliedJobs(appliedJobIds));
+  } catch (err) {
+    console.error("Failed to fetch applied jobs:", err);
+  }
 };
