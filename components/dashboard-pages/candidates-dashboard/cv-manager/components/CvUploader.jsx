@@ -23,14 +23,6 @@ const CvUploader = () => {
 
   const user = selector.user;
 
-  const { resumes, loading, error: fetchError } = useGetUploadedResumes(user);
-
-  useEffect(() => {
-    if (fetchError) {
-      setError(fetchError);
-    }
-  }, [fetchError]);
-
   // Ensure userType is "Candidate" before allowing upload
   useEffect(() => {
     const checkUserType = async () => {
@@ -105,9 +97,7 @@ const CvUploader = () => {
             multiple
             onChange={cvManagerHandler}
             disabled={
-              loading ||
-              !user?.uid ||
-              getError === "Only Candidates can upload resumes"
+              !user?.uid || getError === "Only Candidates can upload resumes"
             }
           />
           <label className="cv-uploadButton" htmlFor="upload">

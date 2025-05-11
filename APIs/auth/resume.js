@@ -14,7 +14,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { addResume, removeResumeById } from "@/slices/userSlice";
 
 export const useGetUploadedResumes = (user) => {
-  const [resumes, setResumes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const dispatch = useDispatch();
@@ -58,13 +57,10 @@ export const useGetUploadedResumes = (user) => {
         });
 
         if (resumeFiles.length === 0) {
-          if (isMounted) setResumes([]);
           return;
         }
 
         if (isMounted) {
-          setResumes(resumeFiles);
-
           // Dispatch only resumes that don't already exist in the Redux store
           resumeFiles.forEach((resume) => {
             // Check if resume.id already exists in storedResumes
@@ -104,7 +100,7 @@ export const useGetUploadedResumes = (user) => {
     };
   }, [user?.uid]);
 
-  return { resumes, loading, error };
+  return { loading, error };
 };
 
 export const useUploadResume = async (
