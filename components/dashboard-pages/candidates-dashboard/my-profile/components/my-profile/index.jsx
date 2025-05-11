@@ -5,8 +5,12 @@ import LogoUpload from "./LogoUpload";
 import { useDispatch, useSelector } from "react-redux";
 import { useUpdateUserInfo } from "@/APIs/auth/database";
 import { successToast } from "@/utils/toast";
+import { addUser } from "@/slices/userSlice";
+import { useState } from "react";
+import CircularLoader from "@/components/circular-loading/CircularLoading";
 
 const Index = () => {
+  const [loading, setLoading] = useState(false);
   const { updateUserInfo } = useUpdateUserInfo();
   const dispatch = useDispatch();
   const selector = useSelector((store) => store.user);
@@ -30,6 +34,7 @@ const Index = () => {
 
   const onSubmit = async (data) => {
     try {
+      setLoading(true);
       if (!userId) {
         throw new Error("User ID is not available");
       }
@@ -39,7 +44,7 @@ const Index = () => {
       await updateUserInfo(data, userId, userType);
       const updatedUser = {
         ...selector.user,
-        ...updateData,
+        ...data,
         userType,
       };
       dispatch(addUser(updatedUser));
@@ -50,6 +55,8 @@ const Index = () => {
         type: "manual",
         message: error.message || "Failed to update user info",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -63,8 +70,22 @@ const Index = () => {
             className="form-group col-md-12"
             style={{ display: "flex", justifyContent: "space-between" }}
           >
-            <button type="submit" className="theme-btn btn-style-one">
-              Save
+            <button
+              type="submit"
+              className={`theme-btn ${
+                loading ? "btn-style-three" : "btn-style-one"
+              }`}
+            >
+              {loading ? (
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "10px" }}
+                >
+                  <CircularLoader />
+                  <p style={{ margin: 0 }}>Saving...</p>
+                </div>
+              ) : (
+                "Save"
+              )}
             </button>
           </div>
           {methods.formState.errors.root && (

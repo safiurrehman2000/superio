@@ -125,7 +125,7 @@ const PostBoxForm = () => {
                   style={{ display: "flex", alignItems: "center", gap: "10px" }}
                 >
                   <CircularLoader />
-                  <p style={{ p: 0 }}>Creating Job Post...</p>
+                  <p style={{ m: 0 }}>Creating Job Post...</p>
                 </div>
               ) : (
                 "Next"
