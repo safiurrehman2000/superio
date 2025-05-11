@@ -1,5 +1,11 @@
 "use client";
-import { addJobId, addUser, removeUser } from "@/slices/userSlice";
+import { useGetUploadedResumes } from "@/APIs/auth/resume";
+import {
+  addJobId,
+  addUser,
+  clearResumes,
+  removeUser,
+} from "@/slices/userSlice";
 import { LOGO } from "@/utils/constants";
 import { auth, db } from "@/utils/firebase";
 import { authProtectedPublicRoutes, privateRoutes } from "@/utils/routes";
@@ -17,6 +23,8 @@ const RouteGuard = ({ children }) => {
   const pathname = usePathname();
   const [loading, setLoading] = useState(true);
   const searchParams = useSearchParams();
+
+  useGetUploadedResumes(selector.user);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -89,7 +97,7 @@ const RouteGuard = ({ children }) => {
         }
       } else {
         dispatch(removeUser());
-
+        dispatch(clearResumes());
         // Redirect unauthenticated users from private routes to login
         if (privateRoutes.some((route) => pathname.includes(route))) {
           push("/login");

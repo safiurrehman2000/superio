@@ -1,11 +1,30 @@
 import Link from "next/link";
+import { useSelector } from "react-redux";
 
 const ApplyJobModalContent = () => {
+  const selector = useSelector((store) => store.user);
   return (
     <form className="default-form job-apply-form">
       <div className="row">
         <div className="col-lg-12 col-md-12 col-sm-12 form-group">
           <div className="uploading-outer apply-cv-outer">
+            {selector?.resumes?.map((file) => (
+              <div key={file?.id} className="file-edit-box">
+                <span className="title">{file.fileName}</span>
+                <div className="edit-btns">
+                  <button disabled>
+                    <span className="la la-pencil"></span>
+                  </button>
+                  <button
+                    onClick={() =>
+                      useDeleteResume(file.id, selector?.user?.uid, dispatch)
+                    }
+                  >
+                    <span className="la la-trash"></span>
+                  </button>
+                </div>
+              </div>
+            ))}
             <div className="uploadButton">
               <input
                 className="uploadButton-input"
