@@ -225,6 +225,48 @@ export const GENDERS = [
   { value: "other", label: "Other" },
 ];
 
+export const STATES = [
+  { value: "antwerp", label: "Antwerp" },
+  { value: "limburg", label: "Limburg" },
+  { value: "east-flanders", label: "East Flanders" },
+  { value: "flemish-brabant", label: "Flemish Brabant" },
+  { value: "west-flanders", label: "West Flanders" },
+];
+
+export const SECTORS = [
+  { value: "funeral-sector", label: "Funeral sector" },
+  { value: "moving-sector", label: "Moving sector" },
+  { value: "power-supply", label: "Power supply" },
+  { value: "department-stores", label: "Department stores" },
+  { value: "independent-retail", label: "Independent retail" },
+  { value: "automotive-sector", label: "Automotive sector" },
+  { value: "bakeries", label: "Bakeries" },
+  { value: "cinemas", label: "Cinemas" },
+  { value: "buses-and-coaches", label: "Buses and coaches" },
+  { value: "entertainment", label: "Entertainment" },
+  { value: "event-sector", label: "Event Sector" },
+  { value: "fashion-clothing", label: "Fashion/Clothing" },
+  { value: "food-products", label: "Trade in Food Products" },
+  { value: "hotel-sector", label: "Hotel Sector" },
+  { value: "real-estate-sector", label: "Real Estate Sector" },
+  { value: "childcare", label: "Childcare" },
+  { value: "food-retail-trade", label: "Food Retail Trade" },
+  {
+    value: "agriculture-and-horticulture",
+    label: "Agriculture and Horticulture",
+  },
+  {
+    value: "medium-sized-food-companies",
+    label: "Medium Sized Food Companies",
+  },
+  { value: "education", label: "Education" },
+  { value: "driving-schools", label: "Driving Schools" },
+  { value: "sport", label: "Sport" },
+  {
+    value: "sports-and-culture-in-the-flemish-community",
+    label: "Sports and Culture in the Flemish Community",
+  },
+];
 export const AGE_OPTIONS = [
   { value: "18-25", label: "18-25" },
   { value: "26-35", label: "26-35" },
@@ -236,6 +278,13 @@ export const AGE_OPTIONS = [
 export const PROFILE_VISIBILITY_OPTIONS = [
   { value: "yes", label: "Yes" },
   { value: "no", label: "No" },
+];
+
+export const JOB_TYPE_OPTIONS = [
+  { value: "english_speaking_job", label: "English speaking job" },
+  { value: "flexijobber", label: "Flexijobber" },
+  { value: "retired_people", label: "Retired people" },
+  { value: "student_job", label: "Student job" },
 ];
 
 // Flex Orange – #FA5508

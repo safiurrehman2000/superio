@@ -7,7 +7,7 @@ import CircularLoader from "@/components/circular-loading/CircularLoading";
 import { InputField } from "@/components/inputfield/InputField";
 import { SelectField } from "@/components/selectfield/SelectField";
 import { TextAreaField } from "@/components/textarea/TextArea";
-import { GENDERS } from "@/utils/constants";
+import { JOB_TYPE_OPTIONS, SECTORS, STATES } from "@/utils/constants";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
@@ -15,42 +15,64 @@ import { useSelector } from "react-redux";
 
 const PostBoxForm = () => {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const selector = useSelector((store) => store.user);
   const { push } = useRouter();
 
-  const methods = useForm();
+  const methods = useForm({
+    mode: "onSubmit",
+    defaultValues: {
+      name: "",
+      description: "",
+      email: "",
+      "job-type": "",
+      state: "",
+      tags: [],
+    },
+  });
   const {
     handleSubmit,
     formState: { isValid },
+    setError: setFormError,
   } = methods;
-  const specialisms = [
-    { value: "Banking", label: "Banking" },
-    { value: "Digital & Creative", label: "Digital & Creative" },
-    { value: "Retail", label: "Retail" },
-    { value: "Human Resources", label: "Human Resources" },
-    { value: "Managemnet", label: "Managemnet" },
-    { value: "Accounting & Finance", label: "Accounting & Finance" },
-    { value: "Digital", label: "Digital" },
-    { value: "Creative Art", label: "Creative Art" },
-  ];
 
   const onSubmit = async (data) => {
     setLoading(true);
-    const payload = {
-      title: data.name,
-      description: data.description,
-      email: data.email,
-      location: data.state,
-      jobType: data["job-type"],
-      tags: data.tags.map((tag) => tag.value),
-      employerId: selector?.user?.uid,
-      isOpen: false,
-      createdAt: Date.now(),
-    };
-    const { success } = await useCreateJobPost(payload);
-    await useUpdateIsFirstTime(selector.user.uid);
-    push("/pricing");
-    setLoading(false);
+    setError(null);
+
+    try {
+      const payload = {
+        title: data.name,
+        description: data.description,
+        email: data.email,
+        location: data.state,
+        jobType: data["job-type"],
+        tags: data.tags.map((tag) => tag.value),
+        employerId: selector?.user?.uid,
+        isOpen: false,
+        createdAt: Date.now(),
+      };
+
+      if (!selector?.user?.uid) {
+        throw new Error("User authentication data is missing.");
+      }
+
+      const { success, error: apiError } = await useCreateJobPost(payload);
+      if (!success) {
+        throw new Error(apiError || "Failed to create job post.");
+      }
+
+      await useUpdateIsFirstTime(selector.user.uid);
+
+      push("/pricing");
+    } catch (err) {
+      setError(
+        err.message || "An unexpected error occurred. Please try again."
+      );
+      console.error("Error during job post creation:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -91,7 +113,7 @@ const PostBoxForm = () => {
             <SelectField
               label="Job Type"
               name="job-type"
-              options={GENDERS}
+              options={JOB_TYPE_OPTIONS}
               placeholder="Select a Job Type"
               required
             />
@@ -102,7 +124,7 @@ const PostBoxForm = () => {
             <SelectField
               label="State"
               name="state"
-              options={GENDERS}
+              options={STATES}
               placeholder="Select a state"
               required
             />
@@ -112,20 +134,31 @@ const PostBoxForm = () => {
               label="Job Tags"
               placeholder="Select Tags"
               name="tags"
-              options={specialisms}
+              options={SECTORS}
               required
             />
           </div>
 
+          {/* Display error message if exists */}
+          {error && (
+            <div className="form-group col-12" style={{ color: "red" }}>
+              {error}
+            </div>
+          )}
+
           {/* <!-- Input --> */}
           <div className="form-group col-lg-12 col-md-12 text-right">
-            <button disabled={!isValid} className="theme-btn btn-style-one">
+            <button
+              className={`theme-btn ${
+                loading ? "btn-style-three" : "btn-style-one"
+              }`}
+            >
               {loading ? (
                 <div
                   style={{ display: "flex", alignItems: "center", gap: "10px" }}
                 >
                   <CircularLoader />
-                  <p style={{ m: 0 }}>Creating Job Post...</p>
+                  <p style={{ margin: 0 }}>Creating Job Post...</p>
                 </div>
               ) : (
                 "Next"

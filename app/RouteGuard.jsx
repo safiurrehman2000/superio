@@ -26,7 +26,7 @@ const RouteGuard = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const searchParams = useSearchParams();
 
-  useGetUploadedResumes(selector.user);
+  useGetUploadedResumes(selector.user, selector.userType);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -34,7 +34,10 @@ const RouteGuard = ({ children }) => {
         const { uid, email, displayName } = user;
         const userDoc = await getDoc(doc(db, "users", uid));
         const userData = userDoc.exists() ? userDoc.data() : {};
-        useGetAppliedJobs(user.uid, dispatch);
+        console.log("userData.userType", userData.userType);
+        if (userData.userType === "Candidate") {
+          useGetAppliedJobs(user.uid, dispatch);
+        }
 
         dispatch(
           addUser({
