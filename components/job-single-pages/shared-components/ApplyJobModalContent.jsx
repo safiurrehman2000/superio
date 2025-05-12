@@ -18,7 +18,7 @@ const ApplyJobModalContent = () => {
   const selector = useSelector((store) => store.user);
   const { id: jobId } = useParams();
   const hasApplied = selector.appliedJobs.includes(jobId);
-  console.log("hasApplied in modal", hasApplied);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!selected) {

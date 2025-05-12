@@ -1,13 +1,12 @@
 "use client";
-import { FormProvider, useForm } from "react-hook-form";
-import FormInfoBox from "./FormInfoBox";
-import LogoUpload from "./LogoUpload";
-import { useDispatch, useSelector } from "react-redux";
 import { useUpdateUserInfo } from "@/APIs/auth/database";
-import { successToast } from "@/utils/toast";
+import CircularLoader from "@/components/circular-loading/CircularLoading";
 import { addUser } from "@/slices/userSlice";
 import { useState } from "react";
-import CircularLoader from "@/components/circular-loading/CircularLoading";
+import { FormProvider, useForm } from "react-hook-form";
+import { useDispatch, useSelector } from "react-redux";
+import FormInfoBox from "./FormInfoBox";
+import LogoUpload from "./LogoUpload";
 
 const Index = () => {
   const [loading, setLoading] = useState(false);
@@ -48,7 +47,6 @@ const Index = () => {
         userType,
       };
       dispatch(addUser(updatedUser));
-      successToast("User info updated successfully");
     } catch (error) {
       console.error("Submission error:", error);
       setError("root", {

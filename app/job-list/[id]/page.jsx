@@ -21,7 +21,7 @@ const JobSingleDynamicV3 = ({ params }) => {
   const id = params.id;
   const { job, loading, error } = useGetJobById(id);
   const hasApplied = selector.appliedJobs.includes(id);
-  console.log("hasApplied in main", hasApplied);
+
   // Destructure job properties with default values
   const {
     jobTitle = "",

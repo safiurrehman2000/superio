@@ -73,7 +73,7 @@ const CvUploader = () => {
     const { success } = await useUploadResume(user, data, dispatch, setError);
 
     setIsLoading(false);
-    console.log("first", success, selector.isFirstTime);
+
     if (success && selector.isFirstTime) {
       if (selector?.jobId) {
         push(`/job-list/${selector?.jobId}`);
