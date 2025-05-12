@@ -13,7 +13,7 @@ import { useUpdateIsFirstTime } from "./database";
 import { useDispatch, useSelector } from "react-redux";
 import { addResume, removeResumeById } from "@/slices/userSlice";
 
-export const useGetUploadedResumes = (user) => {
+export const useGetUploadedResumes = (user, userType) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const dispatch = useDispatch();
@@ -24,8 +24,8 @@ export const useGetUploadedResumes = (user) => {
     let isMounted = true; // Flag to track component mount status
 
     const fetchResumes = async () => {
-      if (!user?.uid) {
-        if (isMounted) {
+      if (userType !== "Candidate" || !user?.uid) {
+        if (isMounted && !user?.uid) {
           setError("Please login first to view resumes");
           errorToast("Please login first to view resumes");
         }
@@ -46,13 +46,13 @@ export const useGetUploadedResumes = (user) => {
         // Map resumeData to include both Firestore ID and File object
         const resumeFiles = resumeData.map((resume) => {
           const file = resumeToFile(resume); // Convert resume to File
+
           return {
             id: resume.id, // Firestore document ID
             file, // File object from resumeToFile
             fileName: resume.fileName,
             fileType: resume.fileType,
             size: resume.size,
-            uploadedAt: resume.uploadedAt,
           };
         });
 
@@ -74,7 +74,6 @@ export const useGetUploadedResumes = (user) => {
                   fileName: resume.fileName,
                   fileType: resume.fileType,
                   size: resume.size,
-                  uploadedAt: resume.uploadedAt || new Date().toISOString(),
                 })
               );
             }

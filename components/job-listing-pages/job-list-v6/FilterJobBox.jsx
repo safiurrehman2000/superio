@@ -22,6 +22,8 @@ const FilterJobBox = () => {
   const { data: jobs, loading, error } = useGetJobListing();
   const { jobList, jobSort } = useSelector((state) => state.filter);
 
+  console.log("job", jobs);
+
   const {
     keyword,
     location,
