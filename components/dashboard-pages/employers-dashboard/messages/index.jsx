@@ -8,6 +8,7 @@ import CopyrightFooter from "../../CopyrightFooter";
 import ChatBox from "./components";
 import MenuToggler from "../../MenuToggler";
 import { useSelector } from "react-redux";
+import DefaulHeader2 from "@/components/header/DefaulHeader2";
 
 const Index = () => {
   const { chatSidebar } = useSelector((state) => state.toggle);
@@ -18,8 +19,7 @@ const Index = () => {
       <LoginPopup />
       {/* End Login Popup Modal */}
 
-      <DashboardHeader />
-      {/* End Header */}
+      <DefaulHeader2 />
 
       <MobileMenu />
       {/* End MobileMenu */}
