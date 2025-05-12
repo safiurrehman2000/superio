@@ -18,7 +18,6 @@ import {
 import ListingShowing from "../components/ListingShowing";
 import { useGetJobListing } from "@/APIs/auth/jobs";
 import { formatString, transformJobData } from "@/utils/constants";
-import Loading from "@/components/loading/Loading";
 
 const FilterJobBox = () => {
   const { data: jobs, loading, error } = useGetJobListing();
@@ -26,7 +25,7 @@ const FilterJobBox = () => {
 
   const transformedJob = transformJobData(jobs);
 
-  console.log("transformedJob", transformedJob);
+  console.log("first", transformedJob);
 
   const {
     keyword,
@@ -191,7 +190,7 @@ const FilterJobBox = () => {
   };
 
   if (loading) {
-    return <Loading />;
+    return <div>Loading jobs...</div>;
   }
 
   if (error) {
