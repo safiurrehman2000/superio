@@ -287,6 +287,40 @@ export const JOB_TYPE_OPTIONS = [
   { value: "student_job", label: "Student job" },
 ];
 
+export const formatString = (str) => {
+  if (!str) return "";
+  return str
+    .replace(/[-_]/g, " ")
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+};
+
+export const transformJobData = (jobs) => {
+  const findLabel = (options, value) => {
+    const option = options.find((opt) => opt.value === value);
+    return option ? option.label : formatString(value);
+  };
+
+  return jobs.map((job) => ({
+    ...job,
+    jobType: {
+      value: job?.jobType,
+      label: findLabel(JOB_TYPE_OPTIONS, job.jobType),
+    },
+    location: {
+      value: job?.location,
+      label: findLabel(STATES, job.location),
+    },
+    tags: job?.tags?.map((tag) => ({
+      value: tag,
+      label: findLabel(SECTORS, tag),
+    })),
+    // Convert createdAt to a Date object or ISO string
+    createdAt: new Date(job.createdAt)?.toISOString(),
+  }));
+};
+
 // Flex Orange – #FA5508
 // Bright Aqua – #10E7DC
 // Deep Blue – #0074E1

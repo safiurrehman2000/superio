@@ -17,12 +17,16 @@ import {
 } from "../../../features/filter/filterSlice";
 import ListingShowing from "../components/ListingShowing";
 import { useGetJobListing } from "@/APIs/auth/jobs";
+import { formatString, transformJobData } from "@/utils/constants";
+import Loading from "@/components/loading/Loading";
 
 const FilterJobBox = () => {
   const { data: jobs, loading, error } = useGetJobListing();
   const { jobList, jobSort } = useSelector((state) => state.filter);
 
-  console.log("job", jobs);
+  const transformedJob = transformJobData(jobs);
+
+  console.log("transformedJob", transformedJob);
 
   const {
     keyword,
@@ -105,11 +109,11 @@ const FilterJobBox = () => {
         <div className="inner-box hover-effect">
           <div className="content">
             <span className="company-logo">
-              {item.logo ? (
+              {item?.logo ? (
                 <Image
                   width={50}
                   height={49}
-                  src={item.logo}
+                  src={item?.logo}
                   alt="company logo"
                 />
               ) : (
@@ -136,29 +140,23 @@ const FilterJobBox = () => {
             </h4>
             <ul className="job-info">
               <li>
-                <span className="icon flaticon-briefcase"></span>
-                {item.title}
-              </li>
-              <li>
                 <span className="icon flaticon-map-locator"></span>
-                {item.location}
+                {formatString(item?.location)}
               </li>
               <li>
                 <span className="icon flaticon-clock-3"></span>
                 {new Date(item.createdAt).toLocaleDateString()}
               </li>
-              <li>
-                <span className="icon flaticon-money"></span>
-                {item.salary || "Not specified"}
-              </li>
             </ul>
             <ul className="job-other-info">
               {item.tags?.map((tag, i) => (
                 <li key={i} className="category-tag">
-                  {tag}
+                  {formatString(tag)}
                 </li>
               ))}
-              {item.jobType && <li className="job-type">{item.jobType}</li>}
+              {item.jobType && (
+                <li className="job-type">{formatString(item?.jobType)}</li>
+              )}
             </ul>
             <button className="bookmark-btn">
               <span className="flaticon-bookmark"></span>
@@ -193,7 +191,7 @@ const FilterJobBox = () => {
   };
 
   if (loading) {
-    return <div>Loading jobs...</div>;
+    return <Loading />;
   }
 
   if (error) {
