@@ -1,11 +1,11 @@
-import MobileMenu from "../../../header/MobileMenu";
-import DashboardHeader from "../../../header/DashboardHeader";
+import DefaulHeader2 from "@/components/header/DefaulHeader2";
 import LoginPopup from "../../../common/form/login/LoginPopup";
 import DashboardEmployerSidebar from "../../../header/DashboardEmployerSidebar";
+import MobileMenu from "../../../header/MobileMenu";
 import BreadCrumb from "../../BreadCrumb";
 import CopyrightFooter from "../../CopyrightFooter";
-import Form from "./components/Form";
 import MenuToggler from "../../MenuToggler";
+import Form from "./components/Form";
 
 const index = () => {
   return (
@@ -15,8 +15,7 @@ const index = () => {
       <LoginPopup />
       {/* End Login Popup Modal */}
 
-      <DashboardHeader />
-      {/* End Header */}
+      <DefaulHeader2 />
 
       <MobileMenu />
       {/* End MobileMenu */}

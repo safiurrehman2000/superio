@@ -1,14 +1,14 @@
-import MobileMenu from "../../../header/MobileMenu";
-import DashboardHeader from "../../../header/DashboardHeader";
+import DefaulHeader2 from "@/components/header/DefaulHeader2";
 import LoginPopup from "../../../common/form/login/LoginPopup";
 import DashboardEmployerSidebar from "../../../header/DashboardEmployerSidebar";
+import MobileMenu from "../../../header/MobileMenu";
 import BreadCrumb from "../../BreadCrumb";
-import TopCardBlock from "./components/TopCardBlock";
-import ProfileChart from "./components/ProfileChart";
-import Notification from "./components/Notification";
-import Applicants from "./components/Applicants";
 import CopyrightFooter from "../../CopyrightFooter";
 import MenuToggler from "../../MenuToggler";
+import Applicants from "./components/Applicants";
+import Notification from "./components/Notification";
+import ProfileChart from "./components/ProfileChart";
+import TopCardBlock from "./components/TopCardBlock";
 
 const Index = () => {
   return (
@@ -18,8 +18,7 @@ const Index = () => {
       <LoginPopup />
       {/* End Login Popup Modal */}
 
-      <DashboardHeader />
-      {/* End Header */}
+      <DefaulHeader2 />
 
       <MobileMenu />
       {/* End MobileMenu */}
