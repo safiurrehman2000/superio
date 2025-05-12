@@ -12,6 +12,11 @@ import HeaderNavContent from "./HeaderNavContent";
 const DefaulHeader2 = () => {
   const selector = useSelector((store) => store.user);
 
+  const logoSrc = selector.user?.logo
+    ? selector.user.logo.startsWith("data:image")
+      ? selector.user.logo // Already a Data URL
+      : `data:image/jpeg;base64,${selector.user.logo}` // Prepend JPEG prefix
+    : "/images/resource/company-6.png"; // Fallback image
   return (
     // <!-- Main Header-->
     <header className={`main-header header-shaddow `}>
@@ -70,7 +75,7 @@ const DefaulHeader2 = () => {
                 <Image
                   alt="avatar"
                   className="thumb"
-                  src={selector.user?.logo}
+                  src={logoSrc}
                   width={50}
                   height={50}
                   style={{ objectFit: "cover" }}

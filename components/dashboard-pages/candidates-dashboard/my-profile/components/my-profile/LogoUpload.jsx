@@ -1,5 +1,6 @@
 "use client";
 
+import { fileToBase64 } from "@/utils/resumeHelperFunctions";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useFormContext } from "react-hook-form";
@@ -9,7 +10,15 @@ import { useSelector } from "react-redux";
 const LogoUpload = () => {
   const { setValue } = useFormContext();
   const selector = useSelector((store) => store.user);
-  const [preview, setPreview] = useState(selector.user?.logo || "");
+  const [preview, setPreview] = useState(
+    selector.user?.logo ? `data:image/jpeg;base64,${selector.user.logo}` : ""
+  );
+
+  const logoSrc = preview
+    ? preview.startsWith("data:image")
+      ? preview
+      : `data:image/jpeg;base64,${preview}`
+    : "/images/resource/company-6.png";
 
   useEffect(() => {
     setValue("logo", selector.user?.logo ? selector.user.logo : null);
@@ -46,8 +55,9 @@ const LogoUpload = () => {
     }
 
     // If all validations pass
-    setValue("logo", file, { shouldValidate: true });
-    setPreview(URL.createObjectURL(file));
+    const convertedFile = await fileToBase64(file);
+    setValue("logo", convertedFile, { shouldValidate: true });
+    setPreview(convertedFile);
   };
 
   const removeImage = () => {
@@ -85,7 +95,7 @@ const LogoUpload = () => {
         <div style={{ width: "150px" }}>
           <div style={{ display: "flex", flexDirection: "column" }}>
             <Image
-              src={preview}
+              src={logoSrc}
               alt="Logo preview"
               width={150}
               height={150}
@@ -101,6 +111,7 @@ const LogoUpload = () => {
               style={{ display: "flex", gap: "10px", justifyContent: "center" }}
             >
               <button
+                type="button"
                 onClick={() => document.getElementById("upload").click()}
                 title="Edit"
               >

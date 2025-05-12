@@ -12,7 +12,7 @@ export const checkFileSize = (files) => {
   return Array.from(files).every((file) => file.size <= maxSize);
 };
 
-export const fileToBase64 = (file) => {
+export const fileToBase64 = async (file) => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(reader.result.split(",")[1]); // Extract base64 data

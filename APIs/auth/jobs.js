@@ -18,7 +18,6 @@ export const useCreateJobPost = async (payload) => {
     successToast("Job Created Successfully");
     return { success: true };
   } catch (error) {
-    console.log("error :>> ", error);
     errorToast("Couldn't create job post");
     return { success: false };
   }
