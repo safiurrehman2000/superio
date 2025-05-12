@@ -111,7 +111,9 @@ const JobSingleDynamicV3 = ({ params }) => {
                   <div className="btn-box">
                     {selector.user ? (
                       <button
-                        disabled={hasApplied}
+                        disabled={
+                          hasApplied || selector.userType === "Employer"
+                        }
                         href="#"
                         className={`theme-btn ${
                           hasApplied ? "btn-style-three" : "btn-style-one"

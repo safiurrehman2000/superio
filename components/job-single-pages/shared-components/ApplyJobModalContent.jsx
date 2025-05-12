@@ -20,6 +20,10 @@ const ApplyJobModalContent = () => {
   const hasApplied = selector.appliedJobs.includes(jobId);
 
   const handleSubmit = async (e) => {
+    if (selector.userType === "Employer") {
+      errorToast("Employers cannot apply to jobs");
+      return;
+    }
     e.preventDefault();
     if (!selected) {
       setShowError(true);
