@@ -1,3 +1,4 @@
+import { JOB_TYPE_OPTIONS, SECTORS } from "@/utils/constants";
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
@@ -24,32 +25,12 @@ const initialState = {
       value: "apartments",
     },
   ],
-  jobTypeList: [
-    {
-      id: 1,
-      name: "Freelancer",
-      value: "freelancer",
-      isChecked: false,
-    },
-    {
-      id: 2,
-      name: "Full Time",
-      value: "full-time",
-      isChecked: false,
-    },
-    {
-      id: 3,
-      name: "Part Time",
-      value: "part-time",
-      isChecked: false,
-    },
-    {
-      id: 4,
-      name: "Temporary",
-      value: "temporary",
-      isChecked: false,
-    },
-  ],
+  jobTypeList: JOB_TYPE_OPTIONS.map((option, index) => ({
+    id: index + 1,
+    name: option.label,
+    value: option.value,
+    isChecked: false,
+  })),
   datePost: [
     { id: 1, name: "All", value: "all", isChecked: false },
     { id: 2, name: "Last Hour", value: "last-hour", isChecked: false },
@@ -73,50 +54,13 @@ const initialState = {
       isChecked: false,
     },
   ],
-  experienceLavel: [
-    { id: 1, name: "Fresh", value: "fresh", isChecked: false },
-    { id: 2, name: "1 Year", value: "1-year", isChecked: false },
-    { id: 3, name: "2 Year", value: "2-year", isChecked: false },
-    { id: 4, name: "3 Year", value: "3-year", isChecked: false },
-    {
-      id: 5,
-      name: "4 Year",
-      value: "4-year",
-      isChecked: false,
-    },
-  ],
-  tags: [
-    {
-      id: 1,
-      name: "App",
-      value: "app",
-    },
-    {
-      id: 2,
-      name: "Administrative",
-      value: "administrative",
-    },
-    {
-      id: 3,
-      name: "Android",
-      value: "android",
-    },
-    {
-      id: 4,
-      name: "Wordpress",
-      value: "wordpress",
-    },
-    {
-      id: 5,
-      name: "Design",
-      value: "design",
-    },
-    {
-      id: 6,
-      name: "React",
-      value: "react",
-    },
-  ],
+
+  tags: SECTORS.map((sector, index) => ({
+    id: index + 1,
+    name: sector.label,
+    value: sector.value,
+    isChecked: false,
+  })),
 };
 
 export const jobSlice = createSlice({
@@ -172,26 +116,26 @@ export const jobSlice = createSlice({
         };
       });
     },
-    experienceLavelCheck: (state, { payload }) => {
-      state?.experienceLavel?.map((item) => {
-        if (item.id === payload) {
-          if (item.isChecked) {
-            item.isChecked = false;
-          } else {
-            item.isChecked = true;
-          }
-        }
-        return {
-          ...item,
-        };
-      });
-    },
+
     clearExperienceToggle: (state) => {
       state?.experienceLavel?.map((item) => {
         item.isChecked = false;
         return {
           ...item,
         };
+      });
+    },
+
+    tagCheck: (state, { payload }) => {
+      state.tags.forEach((item) => {
+        if (item.id === payload) {
+          item.isChecked = !item.isChecked;
+        }
+      });
+    },
+    clearTagsToggle: (state) => {
+      state.tags.forEach((item) => {
+        item.isChecked = false;
       });
     },
   },
@@ -203,7 +147,8 @@ export const {
   jobTypeCheck,
   datePostCheck,
   clearDatePostToggle,
-  experienceLavelCheck,
   clearExperienceToggle,
+  tagCheck,
+  clearTagsToggle,
 } = jobSlice.actions;
 export default jobSlice.reducer;

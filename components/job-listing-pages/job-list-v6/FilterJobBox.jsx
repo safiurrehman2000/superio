@@ -14,6 +14,7 @@ import {
   addPerPage,
   addSalary,
   addSort,
+  clearTags,
 } from "../../../features/filter/filterSlice";
 import ListingShowing from "../components/ListingShowing";
 import { useGetJobListing } from "@/APIs/auth/jobs";
@@ -23,9 +24,9 @@ const FilterJobBox = () => {
   const { data: jobs, loading, error } = useGetJobListing();
   const { jobList, jobSort } = useSelector((state) => state.filter);
 
-  const transformedJob = transformJobData(jobs);
+  const transformedJobs = transformJobData(jobs || []);
 
-  console.log("first", transformedJob);
+  console.log("first", transformedJobs);
 
   const {
     keyword,
@@ -36,6 +37,7 @@ const FilterJobBox = () => {
     jobTypeSelect,
     experienceSelect,
     salary,
+    tag,
   } = jobList || {};
 
   const { sort, perPage } = jobSort;
@@ -57,15 +59,8 @@ const FilterJobBox = () => {
 
   // Destination filter (not in job object, placeholder)
   const destinationFilter = (item) => item;
-
-  // Category filter (using tags)
-  const categoryFilter = (item) =>
-    category !== ""
-      ? item.tags?.some(
-          (tag) => tag.toLocaleLowerCase() === category.toLocaleLowerCase()
-        )
-      : item;
-
+  const tagsFilter = (item) =>
+    tag.length === 0 || item.tags.some((t) => tag.includes(t.value));
   // Job-type filter
   const jobTypeFilter = (item) =>
     jobTypeSelect !== ""
@@ -96,7 +91,7 @@ const FilterJobBox = () => {
     ?.filter(keywordFilter)
     ?.filter(locationFilter)
     ?.filter(destinationFilter)
-    ?.filter(categoryFilter)
+    ?.filter(tagsFilter)
     ?.filter(jobTypeFilter)
     ?.filter(datePostedFilter)
     ?.filter(experienceFilter)
@@ -187,6 +182,7 @@ const FilterJobBox = () => {
     dispatch(addSalary({ min: 0, max: 20000 }));
     dispatch(addSort(""));
     dispatch(addPerPage({ start: 0, end: 0 }));
+    dispatch(clearTags());
   };
 
   if (loading) {
@@ -208,7 +204,7 @@ const FilterJobBox = () => {
         <div className="sort-by">
           {keyword !== "" ||
           location !== "" ||
-          category !== "" ||
+          tag.length > 0 ||
           jobTypeSelect !== "" ||
           datePosted !== "" ||
           experienceSelect !== "" ||
