@@ -11,6 +11,7 @@ export const InputField = ({
   fieldType,
   className = "",
   defaultValue,
+  disabled,
 }) => {
   const { control, setValue, clearErrors } = useFormContext();
 
@@ -66,6 +67,7 @@ export const InputField = ({
         </label>
       )}
       <Controller
+        disabled={disabled}
         name={name}
         control={control}
         rules={{
