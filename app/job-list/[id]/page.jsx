@@ -4,13 +4,13 @@ import LoginPopup from "@/components/common/form/login/LoginPopup";
 import FooterDefault from "@/components/footer/common-footer";
 import DefaulHeader2 from "@/components/header/DefaulHeader2";
 import MobileMenu from "@/components/header/MobileMenu";
-import JobOverView2 from "@/components/job-single-pages/job-overview/JobOverView2";
 import ApplyJobModalContent from "@/components/job-single-pages/shared-components/ApplyJobModalContent";
 import CompnayInfo from "@/components/job-single-pages/shared-components/CompanyInfo";
 import Contact from "@/components/job-single-pages/shared-components/Contact";
 import JobDetailsDescriptions from "@/components/job-single-pages/shared-components/JobDetailsDescriptions";
 import SocialTwo from "@/components/job-single-pages/social/SocialTwo";
 import Loading from "@/components/loading/Loading";
+import { formatString } from "@/utils/constants";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -22,26 +22,11 @@ const JobSingleDynamicV3 = ({ params }) => {
   const { job, loading, error } = useGetJobById(id);
   const hasApplied = selector.appliedJobs.includes(id);
 
-  // Destructure job properties with default values
-  const {
-    jobTitle = "",
-    company = "",
-    location = "",
-    time = "",
-    salary = "",
-    jobType = [],
-    logo = "",
-    link = "",
-  } = job || {};
-
   const { push } = useRouter();
 
   if (loading) return <Loading />;
   if (error) return <div>Error: {error}</div>;
   if (!job) return <div>No job found</div>;
-
-  // Ensure jobType is an array before mapping
-  const jobTypeArray = Array.isArray(jobType) ? jobType : [];
 
   return (
     <>
@@ -60,27 +45,23 @@ const JobSingleDynamicV3 = ({ params }) => {
                   <div className="job-block-seven style-two">
                     <div className="inner-box">
                       <div className="content">
-                        <h4>{jobTitle}</h4>
+                        <h4>{formatString(job?.title)}</h4>
                         <ul className="job-info">
                           <li>
                             <span className="icon flaticon-briefcase"></span>
-                            {company}
+                            {formatString(job?.jobType)}
                           </li>
                           <li>
                             <span className="icon flaticon-map-locator"></span>
-                            {location}
+                            {formatString(job?.location)}
                           </li>
                           <li>
                             <span className="icon flaticon-clock-3"></span>
-                            {time}
-                          </li>
-                          <li>
-                            <span className="icon flaticon-money"></span>
-                            {salary}
+                            {new Date(job?.createdAt)?.toLocaleDateString()}
                           </li>
                         </ul>
                         <ul className="job-other-info">
-                          {jobTypeArray.map((val, i) => (
+                          {job?.tags?.map((val, i) => (
                             <li key={i} className={val.styleClass}>
                               {val.type}
                             </li>
@@ -91,12 +72,7 @@ const JobSingleDynamicV3 = ({ params }) => {
                   </div>
                 </div>
 
-                <div className="job-overview-two">
-                  <h4>Job Description</h4>
-                  <JobOverView2 />
-                </div>
-
-                <JobDetailsDescriptions />
+                <JobDetailsDescriptions description={job.description} />
 
                 <div className="other-options">
                   <div className="social-share">
@@ -165,11 +141,11 @@ const JobSingleDynamicV3 = ({ params }) => {
                           <Image
                             width={54}
                             height={53}
-                            src={logo}
+                            src={job?.logo}
                             alt="resource"
                           />
                         </div>
-                        <h5 className="company-name">{company}</h5>
+                        <h5 className="company-name">{job?.company}</h5>
                         <a href="#" className="profile-link">
                           View company profile
                         </a>
@@ -184,7 +160,7 @@ const JobSingleDynamicV3 = ({ params }) => {
                           rel="noopener noreferrer"
                           className="theme-btn btn-style-three"
                         >
-                          {link}
+                          {job?.link}
                         </a>
                       </div>
                     </div>
@@ -199,13 +175,6 @@ const JobSingleDynamicV3 = ({ params }) => {
                     </div>
                   </div>
                 </aside>
-              </div>
-            </div>
-
-            <div className="related-jobs">
-              <div className="title-box">
-                <h3>Related Jobs</h3>
-                <div className="text">2020 jobs live - 293 added today.</div>
               </div>
             </div>
           </div>

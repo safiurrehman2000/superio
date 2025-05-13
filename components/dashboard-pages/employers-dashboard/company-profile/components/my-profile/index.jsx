@@ -1,11 +1,10 @@
+import LogoUpload from "@/components/dashboard-pages/candidates-dashboard/my-profile/components/my-profile/LogoUpload";
 import FormInfoBox from "./FormInfoBox";
-import LogoCoverUploader from "./LogoCoverUploader";
 
 const index = () => {
   return (
     <div className="widget-content">
-      <LogoCoverUploader />
-      {/* End logo and cover photo components */}
+      <LogoUpload />
 
       <FormInfoBox />
       {/* compnay info box */}
