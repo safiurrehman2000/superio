@@ -21,9 +21,6 @@ export const useUpdateUserInfo = () => {
       if (!payload || !userId) {
         throw new Error("Payload or user ID is missing");
       }
-      if (!userType || userType !== "Candidate") {
-        throw new Error("Update is only allowed for Candidate user type");
-      }
 
       let updateData = { ...payload };
 
@@ -45,7 +42,7 @@ export const useUpdateUserInfo = () => {
       await setDoc(
         userRef,
         {
-          ...updateData, // Add new fields (name, title, etc., and logo)
+          ...updateData,
           userType,
           updatedAt: new Date(),
         },

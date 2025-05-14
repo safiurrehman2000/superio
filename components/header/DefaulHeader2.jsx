@@ -17,6 +17,7 @@ const DefaulHeader2 = () => {
       ? selector.user.logo // Already a Data URL
       : `data:image/jpeg;base64,${selector.user.logo}` // Prepend JPEG prefix
     : "/images/resource/company-6.png"; // Fallback image
+
   return (
     // <!-- Main Header-->
     <header className={`main-header header-shaddow `}>
