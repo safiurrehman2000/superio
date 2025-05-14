@@ -2,13 +2,14 @@
 
 import AutoSelect from "@/components/autoselect/AutoSelect";
 import { InputField } from "@/components/inputfield/InputField";
+import { SelectField } from "@/components/selectfield/SelectField";
 import { TextAreaField } from "@/components/textarea/TextArea";
-import { SECTORS } from "@/utils/constants";
+import { SECTORS, STATES } from "@/utils/constants";
 import { useSelector } from "react-redux";
 
 const FormInfoBox = () => {
   const selector = useSelector((store) => store.user);
-
+  console.log("selector.user :>> ", selector.user);
   return (
     <div className="row default-form">
       {/* <!-- Input --> */}
@@ -16,8 +17,8 @@ const FormInfoBox = () => {
         <InputField
           label="Company Name"
           placeholder="Company Profile"
-          // defaultValue="Safi"
           name="company_name"
+          defaultValue={selector?.user?.company_name}
           required
         />
       </div>
@@ -28,7 +29,7 @@ const FormInfoBox = () => {
           label="Email"
           placeholder="Company Profile"
           type="Email"
-          defaultValue={selector.user.email}
+          defaultValue={selector?.user?.email}
           name="email"
           // disabled={true}
         />
@@ -39,6 +40,7 @@ const FormInfoBox = () => {
         <InputField
           label="Phone"
           placeholder="000 111 222 333"
+          defaultValue={selector?.user?.phone}
           name="phone"
           required
         />
@@ -49,6 +51,7 @@ const FormInfoBox = () => {
         <InputField
           label="Website"
           placeholder="www.google.com"
+          defaultValue={selector?.user?.website}
           name="website"
         />
       </div>
@@ -59,7 +62,18 @@ const FormInfoBox = () => {
           label="Company Type"
           placeholder="Select Tags"
           name="company_type"
+          defaultValue={selector?.user?.company_type}
           options={SECTORS}
+          required
+        />
+      </div>
+      <div className="form-group col-lg-6 col-md-12">
+        <SelectField
+          label="Location"
+          name="company_location"
+          options={STATES}
+          placeholder="Select a state"
+          defaultValue={selector?.user?.company_location}
           required
         />
       </div>
@@ -69,7 +83,8 @@ const FormInfoBox = () => {
         <TextAreaField
           label="About"
           name="description"
-          placeholder="Describe what type of job it is"
+          defaultValue={selector?.user?.description}
+          placeholder="Describe what of company you are"
           required
         />
       </div>

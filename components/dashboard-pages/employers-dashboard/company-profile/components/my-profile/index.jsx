@@ -23,6 +23,7 @@ const index = () => {
       website: selector?.user?.website || "",
       company_type: selector?.user?.company_type || [],
       description: selector?.user?.description || "",
+      company_location: selector?.user?.company_location || "",
     },
   });
 

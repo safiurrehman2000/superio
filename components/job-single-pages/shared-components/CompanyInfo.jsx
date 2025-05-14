@@ -1,30 +1,42 @@
-import Social from "../social/Social";
+"use client"; // Mark as client component
 
-const CompanyInfo = () => {
+import { useGetUserById } from "@/APIs/auth/database";
+import Social from "../social/Social";
+import { formatString } from "@/utils/constants";
+import { useEffect, useState } from "react";
+
+const CompanyInfo = ({ logoFn, companyId }) => {
+  const { data, loading, error } = useGetUserById(companyId);
+
+  useEffect(() => {
+    if (data?.logo) {
+      logoFn(data.logo); // Pass logo to parent
+    }
+  }, [data, logoFn]);
+
+  if (loading) return <div>Loading company info...</div>;
+  if (error) return <div>Error: {error}</div>;
+  if (!data) return <div>No company data found</div>;
+
   return (
     <ul className="company-info">
       <li>
-        Primary industry: <span>Software</span>
+        Primary industry:{" "}
+        <span>{formatString(data.company_type[0]?.value)}</span>
       </li>
       <li>
-        Company size: <span>501-1,000</span>
+        Phone: <span>{data?.phone}</span>
       </li>
       <li>
-        Founded in: <span>2011</span>
+        Email: <span>{data?.email}</span>
       </li>
       <li>
-        Phone: <span>123 456 7890</span>
+        Location: <span>{data?.location}</span>
       </li>
-      <li>
-        Email: <span>info@joio.com</span>
-      </li>
-      <li>
-        Location: <span>London, UK</span>
-      </li>
-      <li>
+      {/* <li>
         Social media:
         <Social />
-      </li>
+      </li> */}
     </ul>
   );
 };
