@@ -35,10 +35,7 @@ const RouteGuard = ({ children }) => {
         const userDoc = await getDoc(doc(db, "users", uid));
         const userData = userDoc.exists() ? userDoc.data() : {};
 
-        console.log("userData :>> ", userData);
-
         if (userData.userType === "Candidate") {
-          console.log("in candidate :>> ");
           useGetAppliedJobs(user.uid, dispatch);
           dispatch(
             addUser({
@@ -57,7 +54,6 @@ const RouteGuard = ({ children }) => {
             })
           );
         } else {
-          console.log("in employer :>> ");
           dispatch(
             addUser({
               uid,
@@ -65,12 +61,13 @@ const RouteGuard = ({ children }) => {
               userType: userData?.userType || "Employer",
               createdAt: userData?.createdAt || null,
               isFirstTime: userData?.isFirstTime ?? false,
-              logo: selector.user?.logo || null,
-              company_name: selector.user?.company_name || "",
-              phone: selector.user?.phone || "",
-              website: selector.user?.website || "",
-              company_type: selector.user?.company_type || [],
-              description: selector.user?.description || "",
+              logo: userData?.logo || null,
+              company_name: userData?.company_name || "",
+              phone: userData?.phone || "",
+              website: userData?.website || "",
+              company_type: userData?.company_type || [],
+              description: userData?.description || "",
+              company_location: userData?.company_location || "",
             })
           );
         }

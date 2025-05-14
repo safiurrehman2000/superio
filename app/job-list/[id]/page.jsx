@@ -14,6 +14,7 @@ import { formatString } from "@/utils/constants";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useSelector } from "react-redux";
 
 const JobSingleDynamicV3 = ({ params }) => {
@@ -21,6 +22,17 @@ const JobSingleDynamicV3 = ({ params }) => {
   const id = params.id;
   const { job, loading, error } = useGetJobById(id);
   const hasApplied = selector.appliedJobs.includes(id);
+
+  const [logo, setLogo] = useState(null);
+
+  const logoGetter = (logo) => {
+    const logoSrc = logo
+      ? logo.startsWith("data:image")
+        ? logo // Already a Data URL
+        : `data:image/jpeg;base64,${logo}` // Prepend JPEG prefix
+      : "/images/resource/company-6.png"; // Fallback image
+    setLogo(logoSrc);
+  };
 
   const { push } = useRouter();
 
@@ -140,18 +152,27 @@ const JobSingleDynamicV3 = ({ params }) => {
                         <div className="company-logo">
                           <Image
                             width={54}
-                            height={53}
-                            src={job?.logo}
+                            height={54}
+                            src={logo || "/images/resource/company-6.png"}
                             alt="resource"
+                            style={{
+                              borderRadius: "50%",
+                              objectFit: "cover",
+                              height: "55px",
+                              width: "55px",
+                            }}
                           />
                         </div>
                         <h5 className="company-name">{job?.company}</h5>
-                        <a href="#" className="profile-link">
+                        <a href="/company" className="profile-link">
                           View company profile
                         </a>
                       </div>
 
-                      <CompnayInfo />
+                      <CompnayInfo
+                        logoFn={logoGetter}
+                        companyId={job.employerId}
+                      />
 
                       <div className="btn-box">
                         <a

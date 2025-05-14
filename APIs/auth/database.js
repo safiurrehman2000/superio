@@ -1,6 +1,7 @@
 import { db } from "@/utils/firebase";
 import { errorToast, successToast } from "@/utils/toast";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { useEffect, useState } from "react";
 
 export const useUpdateIsFirstTime = async (id) => {
   try {
@@ -58,4 +59,42 @@ export const useUpdateUserInfo = () => {
   };
 
   return { updateUserInfo };
+};
+
+export const useGetUserById = (userId) => {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        if (!userId) {
+          throw new Error("User ID is required");
+        }
+
+        setLoading(true);
+        const userRef = doc(db, "users", userId);
+        const userSnap = await getDoc(userRef);
+
+        if (!userSnap.exists()) {
+          throw new Error(`User with ID ${userId} not found`);
+        }
+
+        setData({
+          id: userSnap.id,
+          ...userSnap.data(),
+        });
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        setError(error.message || "Failed to fetch user data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, [userId]);
+
+  return { data, loading, error };
 };
