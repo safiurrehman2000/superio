@@ -4,15 +4,11 @@ import AutoSelect from "@/components/autoselect/AutoSelect";
 import { InputField } from "@/components/inputfield/InputField";
 import { TextAreaField } from "@/components/textarea/TextArea";
 import { SECTORS } from "@/utils/constants";
-import { useFormContext } from "react-hook-form";
 import { useSelector } from "react-redux";
-import Select from "react-select";
 
 const FormInfoBox = () => {
   const selector = useSelector((store) => store.user);
-  const { handleSubmit } = useFormContext();
 
-  const onSubmit = (data) => {};
   return (
     <div className="row default-form">
       {/* <!-- Input --> */}
@@ -34,7 +30,7 @@ const FormInfoBox = () => {
           type="Email"
           defaultValue={selector.user.email}
           name="email"
-          disabled={true}
+          // disabled={true}
         />
       </div>
 
@@ -71,7 +67,7 @@ const FormInfoBox = () => {
       {/* <!-- About Company --> */}
       <div className="form-group col-lg-12 col-md-12">
         <TextAreaField
-          label="Description"
+          label="About"
           name="description"
           placeholder="Describe what type of job it is"
           required
@@ -79,14 +75,6 @@ const FormInfoBox = () => {
       </div>
 
       {/* <!-- Input --> */}
-      <div className="form-group col-lg-6 col-md-12">
-        <button
-          onSubmit={handleSubmit(onSubmit)}
-          className="theme-btn btn-style-one"
-        >
-          Save
-        </button>
-      </div>
     </div>
   );
 };

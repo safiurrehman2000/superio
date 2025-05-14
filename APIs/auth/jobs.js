@@ -1,3 +1,4 @@
+"use client";
 import { addAppliedJob, setAppliedJobs } from "@/slices/userSlice";
 import { db } from "@/utils/firebase";
 import { errorToast, successToast } from "@/utils/toast";

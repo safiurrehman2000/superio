@@ -31,32 +31,49 @@ const RouteGuard = ({ children }) => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        const { uid, email, displayName } = user;
+        const { uid, email } = user;
         const userDoc = await getDoc(doc(db, "users", uid));
         const userData = userDoc.exists() ? userDoc.data() : {};
-        console.log("userData.userType", userData.userType);
-        if (userData.userType === "Candidate") {
-          useGetAppliedJobs(user.uid, dispatch);
-        }
 
-        dispatch(
-          addUser({
-            uid,
-            email,
-            displayName,
-            userType: userData.userType || "Candidate",
-            createdAt: userData.createdAt || null,
-            isFirstTime: userData.isFirstTime ?? false,
-            name: userData.name || "",
-            title: userData.title || "",
-            phone_number: userData.phone_number || "",
-            gender: userData.gender || "",
-            age: userData.age || "",
-            profile_visibility: userData.profile_visibility || "",
-            description: userData.description || "",
-            logo: userData.logo || null,
-          })
-        );
+        console.log("userData :>> ", userData);
+
+        if (userData.userType === "Candidate") {
+          console.log("in candidate :>> ");
+          useGetAppliedJobs(user.uid, dispatch);
+          dispatch(
+            addUser({
+              uid,
+              email,
+              userType: userData.userType || "Candidate",
+              createdAt: userData.createdAt || null,
+              isFirstTime: userData.isFirstTime ?? false,
+              name: userData.name || "",
+              title: userData.title || "",
+              phone_number: userData.phone_number || "",
+              gender: userData.gender || "",
+              age: userData.age || "",
+              description: userData.description || "",
+              logo: userData.logo || null,
+            })
+          );
+        } else {
+          console.log("in employer :>> ");
+          dispatch(
+            addUser({
+              uid,
+              email,
+              userType: userData?.userType || "Employer",
+              createdAt: userData?.createdAt || null,
+              isFirstTime: userData?.isFirstTime ?? false,
+              logo: selector.user?.logo || null,
+              company_name: selector.user?.company_name || "",
+              phone: selector.user?.phone || "",
+              website: selector.user?.website || "",
+              company_type: selector.user?.company_type || [],
+              description: selector.user?.description || "",
+            })
+          );
+        }
 
         // Handle Candidate flow
         if (userData.userType === "Candidate") {
