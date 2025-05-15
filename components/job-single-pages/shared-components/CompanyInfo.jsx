@@ -1,9 +1,8 @@
-"use client"; // Mark as client component
+"use client";
 
 import { useGetUserById } from "@/APIs/auth/database";
-import Social from "../social/Social";
 import { formatString } from "@/utils/constants";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 const CompanyInfo = ({ logoFn, companyId }) => {
   const { data, loading, error } = useGetUserById(companyId);
@@ -31,7 +30,7 @@ const CompanyInfo = ({ logoFn, companyId }) => {
         Email: <span>{data?.email}</span>
       </li>
       <li>
-        Location: <span>{data?.location}</span>
+        Location: <span>{formatString(data?.company_location)}</span>
       </li>
       {/* <li>
         Social media:
