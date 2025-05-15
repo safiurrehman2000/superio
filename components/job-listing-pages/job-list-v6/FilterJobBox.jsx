@@ -98,67 +98,95 @@ const FilterJobBox = () => {
     ?.filter(salaryFilter)
     ?.sort(sortFilter)
     .slice(perPage.start, perPage.end !== 0 ? perPage.end : 16)
-    ?.map((item) => (
-      <div className="job-block col-lg-6 col-md-12 col-sm-12" key={item.id}>
-        <div className="inner-box hover-effect">
-          <div className="content">
-            <span className="company-logo">
-              {item?.logo ? (
-                <Image
-                  width={50}
-                  height={49}
-                  src={item?.logo}
-                  alt="company logo"
-                />
-              ) : (
-                <div
-                  style={{
-                    borderRadius: "50%",
-                    height: "50px",
-                    width: "50px",
-                    backgroundColor: "#FA5508",
-                    textAlign: "center",
-                    alignContent: "center",
-                  }}
-                >
-                  <p style={{ color: "white" }}>
-                    {item?.email?.charAt(0).toUpperCase() +
-                      " " +
-                      item?.email?.charAt(1).toUpperCase()}
-                  </p>
-                </div>
-              )}
-            </span>
-            <h4>
-              <Link href={`/job-list/${item.id}`}>{item.title}</Link>
-            </h4>
-            <ul className="job-info">
-              <li>
-                <span className="icon flaticon-map-locator"></span>
-                {formatString(item?.location)}
-              </li>
-              <li>
-                <span className="icon flaticon-clock-3"></span>
-                {new Date(item.createdAt).toLocaleDateString()}
-              </li>
-            </ul>
-            <ul className="job-other-info">
-              {item.tags?.map((tag, i) => (
-                <li key={i} className="category-tag">
-                  {formatString(tag)}
+    ?.map((item, index) => {
+      return (
+        <div className="job-block col-lg-6 col-md-12 col-sm-12" key={item.id}>
+          <div className="inner-box hover-effect">
+            <div className="content">
+              <span className="company-logo">
+                {item?.logo ? (
+                  <Image
+                    width={50}
+                    height={49}
+                    src={item?.logo}
+                    alt="company logo"
+                  />
+                ) : (
+                  <div
+                    style={{
+                      borderRadius: "50%",
+                      height: "50px",
+                      width: "50px",
+                      backgroundColor:
+                        index % 3 === 0
+                          ? "#FA5508"
+                          : index % 3 === 1
+                          ? "#10E7DC"
+                          : "#0074E1",
+                      textAlign: "center",
+                      alignContent: "center",
+                    }}
+                  >
+                    <p style={{ color: "white" }}>
+                      {item?.email?.charAt(0).toUpperCase() +
+                        " " +
+                        item?.email?.charAt(1).toUpperCase()}
+                    </p>
+                  </div>
+                )}
+              </span>
+              <h4>
+                <Link href={`/job-list/${item.id}`}>
+                  {formatString(item?.title)}
+                </Link>
+              </h4>
+
+              <ul className="job-info">
+                <li>
+                  <span className="icon flaticon-briefcase"></span>
+                  {formatString(item?.jobType) || "Not specified"}
                 </li>
-              ))}
-              {item.jobType && (
-                <li className="job-type">{formatString(item?.jobType)}</li>
-              )}
-            </ul>
-            <button className="bookmark-btn">
-              <span className="flaticon-bookmark"></span>
-            </button>
+                {/* compnay info */}
+                <li>
+                  <span className="icon flaticon-map-locator"></span>
+                  {formatString(item?.location)}
+                </li>
+                {/* location info */}
+                <li>
+                  <span className="icon flaticon-clock-3"></span>{" "}
+                  {new Date(item?.createdAt)?.toLocaleDateString()}
+                </li>
+                {/* time info */}
+              </ul>
+              {/* End .job-info */}
+
+              <ul className="job-other-info">
+                {item?.tags?.map((val, i) => {
+                  let styleClass = "";
+                  if (i % 3 === 0) {
+                    styleClass = "time";
+                  } else if (i % 3 === 1) {
+                    styleClass = "privacy";
+                  } else {
+                    styleClass = "required";
+                  }
+
+                  return (
+                    <li key={i} className={styleClass}>
+                      {formatString(val)}
+                    </li>
+                  );
+                })}
+              </ul>
+              {/* End .job-other-info */}
+              <button className="bookmark-btn">
+                <span className="flaticon-bookmark"></span>
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-    ));
+      );
+    });
 
   // Sort handler
   const sortHandler = (e) => {

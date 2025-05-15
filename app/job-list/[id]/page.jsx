@@ -164,14 +164,17 @@ const JobSingleDynamicV3 = ({ params }) => {
                           />
                         </div>
                         <h5 className="company-name">{job?.company}</h5>
-                        <a href="/company" className="profile-link">
+                        <a
+                          href={`/company-profile/${job?.employerId}`}
+                          className="profile-link"
+                        >
                           View company profile
                         </a>
                       </div>
 
                       <CompnayInfo
                         logoFn={logoGetter}
-                        companyId={job.employerId}
+                        companyId={job?.employerId}
                       />
 
                       <div className="btn-box">

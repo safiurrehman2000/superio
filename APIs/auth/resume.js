@@ -27,7 +27,6 @@ export const useGetUploadedResumes = (user, userType) => {
       if (userType !== "Candidate" || !user?.uid) {
         if (isMounted && !user?.uid) {
           setError("Please login first to view resumes");
-          errorToast("Please login first to view resumes");
         }
         return;
       }
