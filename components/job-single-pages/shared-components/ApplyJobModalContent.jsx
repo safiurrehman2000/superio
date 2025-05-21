@@ -17,7 +17,7 @@ const ApplyJobModalContent = () => {
   const dispatch = useDispatch();
   const selector = useSelector((store) => store.user);
   const { id: jobId } = useParams();
-  const hasApplied = selector.appliedJobs.includes(jobId);
+  const hasApplied = selector.appliedJobs.some((job) => job.id === jobId);
 
   const handleSubmit = async (e) => {
     if (selector.userType === "Employer") {

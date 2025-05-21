@@ -1,5 +1,5 @@
 "use client";
-import { useGetAppliedJobs } from "@/APIs/auth/jobs";
+import { useGetAppliedJobs, useGetSavedJobs } from "@/APIs/auth/jobs";
 import { useGetUploadedResumes } from "@/APIs/auth/resume";
 import {
   addJobId,
@@ -7,6 +7,7 @@ import {
   clearAppliedJobs,
   clearResumes,
   removeUser,
+  setSavedJobs,
 } from "@/slices/userSlice";
 import { LOGO } from "@/utils/constants";
 import { auth, db } from "@/utils/firebase";
@@ -37,6 +38,8 @@ const RouteGuard = ({ children }) => {
 
         if (userData.userType === "Candidate") {
           useGetAppliedJobs(user.uid, dispatch);
+          const savedJobs = await useGetSavedJobs(user.uid);
+          dispatch(setSavedJobs(savedJobs));
           dispatch(
             addUser({
               uid,
