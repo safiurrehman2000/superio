@@ -221,7 +221,7 @@ export const useSaveJob = async (userId, jobId) => {
     if (!querySnapshot.empty) {
       // Job already saved - return the existing document
       const doc = querySnapshot.docs[0];
-      return { id: doc.id, jobId, ...doc.data() }; // Make sure to include jobId
+      return { id: doc.id, jobId, ...doc.data() };
     }
 
     // If not saved, create new bookmark
@@ -233,7 +233,7 @@ export const useSaveJob = async (userId, jobId) => {
 
     const docRef = await addDoc(collection(db, "saved_jobs"), savedJob);
     successToast("Job Saved Successfully");
-    return { id: docRef.id, jobId, ...savedJob }; // Make sure to include jobId
+    return { id: docRef.id, jobId, ...savedJob };
   } catch (error) {
     console.error("Error saving job:", error);
     errorToast("Failed to save Job, Please try again");
@@ -271,7 +271,7 @@ export const useUnsaveJob = async (userId, jobId) => {
 
 export const useGetSavedJobs = async (userId) => {
   try {
-    if (!userId) return []; // Early return if no userId
+    if (!userId) return [];
 
     const q = query(
       collection(db, "saved_jobs"),
@@ -289,7 +289,7 @@ export const useGetSavedJobs = async (userId) => {
           if (jobDoc.exists()) {
             savedJobs.push({
               id: docSnapshot.id,
-              jobId: savedJob.jobId, // Make sure to include jobId
+              jobId: savedJob.jobId,
               ...jobDoc.data(),
               savedAt: savedJob.savedAt,
             });

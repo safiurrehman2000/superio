@@ -6,9 +6,8 @@ import { formatString } from "@/utils/constants";
 
 const JobListingsTable = () => {
   const selector = useSelector((store) => store.user);
-  const jobs = selector?.user?.appliedJobs;
+  const jobs = selector?.appliedJobs;
 
-  console.log("jobs :>> ", jobs);
   return (
     <div className="tabs-box">
       <div className="widget-title">
