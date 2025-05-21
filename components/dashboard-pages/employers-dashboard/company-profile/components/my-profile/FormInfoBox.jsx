@@ -10,7 +10,10 @@ import Select from "react-select";
 
 const FormInfoBox = () => {
   const selector = useSelector((store) => store.user);
-  const { handleSubmit } = useFormContext();
+  const { handleSubmit, setValue } = useFormContext({
+    mode: "onChange",
+    defaultValues: {},
+  });
 
   const onSubmit = (data) => {};
   return (
@@ -71,9 +74,9 @@ const FormInfoBox = () => {
       {/* <!-- About Company --> */}
       <div className="form-group col-lg-12 col-md-12">
         <TextAreaField
-          label="Description"
-          name="description"
-          placeholder="Describe what type of job it is"
+          label="About us"
+          name="about"
+          placeholder="Describe your company"
           required
         />
       </div>
