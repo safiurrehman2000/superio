@@ -6,10 +6,10 @@ import "@/styles/customStyles.css";
 import { checkFileSize, checkFileTypes } from "@/utils/resumeHelperFunctions";
 import { errorToast } from "@/utils/toast";
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-const ApplyJobModalContent = () => {
+const ApplyJobModalContent = ({ onApplicationSuccess }) => {
   const [selected, setSelected] = useState(null);
   const [showError, setShowError] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -17,7 +17,9 @@ const ApplyJobModalContent = () => {
   const dispatch = useDispatch();
   const selector = useSelector((store) => store.user);
   const { id: jobId } = useParams();
-  const hasApplied = selector.appliedJobs.some((job) => job.id === jobId);
+  const [hasApplied, setHasApplied] = useState(
+    selector.appliedJobs.some((job) => job.id === jobId)
+  );
 
   const handleSubmit = async (e) => {
     if (selector.userType === "Employer") {
@@ -41,7 +43,10 @@ const ApplyJobModalContent = () => {
       const selectedResume = selector?.resumes?.find(
         (resume) => resume.id === selected
       );
-      if (!selectedResume) throw new Error("Selected resume not found.");
+      if (!selectedResume) {
+        errorToast("Selected resume not found.");
+        return;
+      }
 
       const result = await useApplyForJob(
         selector?.user?.uid,
@@ -55,6 +60,8 @@ const ApplyJobModalContent = () => {
       if (result.success) {
         setMessage("");
         setSelected(null);
+        setHasApplied(true);
+        onApplicationSuccess();
       } else {
         throw new Error(result.error);
       }

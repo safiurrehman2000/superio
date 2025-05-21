@@ -22,12 +22,16 @@ import {
 } from "../../../features/filter/filterSlice";
 import ListingShowing from "../components/ListingShowing";
 import "./jobList.css";
+import { useState } from "react";
+import CircularLoader from "@/components/circular-loading/CircularLoading";
 
 const FilterJobBox = () => {
   const { data: jobs, loading, error } = useGetJobListing();
   const selector = useSelector((store) => store.user);
   const { jobList, jobSort } = useSelector((state) => state.filter);
   const dispatch = useDispatch();
+  const [bookmarkLoading, setBookmarkLoading] = useState(null);
+
   const transformedJobs = transformJobData(jobs || []);
 
   const {
@@ -46,6 +50,7 @@ const FilterJobBox = () => {
 
   const handleBookmark = async (jobId) => {
     try {
+      setBookmarkLoading(jobId);
       if (!selector?.user?.uid) {
         errorToast("Please login to bookmark a job");
         return;
@@ -74,6 +79,8 @@ const FilterJobBox = () => {
     } catch (error) {
       console.error("Error handling bookmark:", error);
       errorToast("Failed to update bookmark");
+    } finally {
+      setBookmarkLoading(null);
     }
   };
 
@@ -227,8 +234,11 @@ const FilterJobBox = () => {
               <button
                 className="bookmark-btn"
                 onClick={() => handleBookmark(item?.id)}
+                disabled={bookmarkLoading === item.id}
               >
-                {selector.savedJobs.some((job) => job.jobId === item.id) ? (
+                {bookmarkLoading === item.id ? (
+                  <CircularLoader strokeColor="#000000" />
+                ) : selector.savedJobs.some((job) => job.jobId === item.id) ? (
                   <TbBookmarkFilled color="#FA5508" />
                 ) : (
                   <TbBookmark />

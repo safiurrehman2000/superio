@@ -25,7 +25,11 @@ const CallToAction2 = () => {
           <Link href="/job-list-v6" className="theme-btn btn-style-one">
             Search Job
           </Link>
-          <Link href="/register" className="theme-btn btn-style-four">
+          <Link
+            target="_blank"
+            href="https://www.facebook.com/people/Flexi-jobber-Vlaanderen/61571515856408/"
+            className="theme-btn btn-style-four"
+          >
             Follow us on Facebook
           </Link>
         </div>

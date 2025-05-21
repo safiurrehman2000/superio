@@ -21,20 +21,14 @@ const SearchForm4 = () => {
           />
         </div>
 
-        {/* <!-- Form Group: Location --> */}
-        <div className="form-group col-lg-3 col-md-6 col-sm-12 location">
-          <span className="icon flaticon-map-locator"></span>
-          <input type="text" name="location" placeholder="City or postcode" />
-        </div>
-
         {/* <!-- Form Group: Salary Range (New) --> */}
-        <div className="form-group col-lg-2 col-md-6 col-sm-12">
+        <div className="form-group col-lg-3 col-md-6 col-sm-12">
           <span className="icon flaticon-map-locator"></span>
           <input type="text" name="Province" placeholder="Province" />
         </div>
 
         {/* <!-- Form Group: Category --> */}
-        <div className="form-group col-lg-2 col-md-6 col-sm-12 category">
+        <div className="form-group col-lg-3 col-md-6 col-sm-12 category">
           <span className="icon flaticon-briefcase"></span>
           <select className="chosen-single form-select">
             <option value="">All Categories</option>
@@ -50,7 +44,7 @@ const SearchForm4 = () => {
         </div>
 
         {/* <!-- Form Group: Submit Button --> */}
-        <div className="form-group col-lg-2 col-md-6 col-sm-12 text-right">
+        <div className="form-group col-lg-3 col-md-6 col-sm-12 text-right">
           <button
             type="submit"
             className="theme-btn btn-style-one"
