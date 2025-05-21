@@ -1,19 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 
 import { isActiveLink } from "../../utils/linkActiveChecker";
 
+import { candidateMenuData } from "@/utils/constants";
+import { usePathname, useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { menuToggle } from "../../features/toggle/toggleSlice";
-import { usePathname } from "next/navigation";
-import { candidateMenuData } from "@/utils/constants";
+import { useSignOut } from "@/APIs/auth/auth";
 
 const DashboardCandidatesSidebar = () => {
   const { menu } = useSelector((state) => state.toggle);
-  const percentage = 30;
+  const { push } = useRouter();
 
   const dispatch = useDispatch();
   // menu togggle handler
@@ -41,36 +41,24 @@ const DashboardCandidatesSidebar = () => {
               key={item.id}
               onClick={menuToggleHandler}
             >
-              <Link href={item.routePath}>
-                <i className={`la ${item.icon}`}></i> {item.name}
-              </Link>
+              {item.name === "Logout" ? (
+                <Link
+                  onClick={() => {
+                    const { success } = useSignOut();
+                  }}
+                  href={item.routePath}
+                >
+                  <i className={`la ${item.icon}`}></i> {item.name}
+                </Link>
+              ) : (
+                <Link href={item.routePath}>
+                  <i className={`la ${item.icon}`}></i> {item.name}
+                </Link>
+              )}
             </li>
           ))}
         </ul>
         {/* End navigation */}
-
-        <div className="skills-percentage">
-          <h4>Skills Percentage</h4>
-          <p>
-            `Put value for <strong>Cover Image</strong> field to increase your
-            skill up to <strong>85%</strong>`
-          </p>
-          <div style={{ width: 200, height: 200, margin: "auto" }}>
-            <CircularProgressbar
-              background
-              backgroundPadding={6}
-              styles={buildStyles({
-                backgroundColor: "#7367F0",
-                textColor: "#fff",
-                pathColor: "#fff",
-                trailColor: "transparent",
-              })}
-              value={percentage}
-              text={`${percentage}%`}
-            />
-          </div>{" "}
-          {/* <!-- Pie Graph --> */}
-        </div>
       </div>
     </div>
   );

@@ -9,7 +9,7 @@ const CompanyInfo = ({ logoFn, companyId }) => {
 
   useEffect(() => {
     if (data?.logo) {
-      logoFn(data.logo); // Pass logo to parent
+      logoFn(data.logo);
     }
   }, [data, logoFn]);
 
@@ -17,25 +17,35 @@ const CompanyInfo = ({ logoFn, companyId }) => {
   if (error) return <div>Error: {error}</div>;
   if (!data) return <div>No company data found</div>;
 
+  // Fallback values
+  const primaryIndustry = data?.company_type?.[0]?.value
+    ? formatString(data.company_type[0].value)
+    : "Not specified";
+
+  const phone = data?.phone || "Not provided";
+  const email = data?.email || "Not available";
+  const location = data?.company_location
+    ? formatString(data.company_location)
+    : "Location not specified";
+
   return (
     <ul className="company-info">
       <li>
-        Primary industry:{" "}
-        <span>{formatString(data.company_type[0]?.value)}</span>
+        Primary industry: <span>{primaryIndustry}</span>
       </li>
       <li>
-        Phone: <span>{data?.phone}</span>
+        Phone: <span>{phone}</span>
       </li>
       <li>
-        Email: <span>{data?.email}</span>
+        Email: <span>{email}</span>
       </li>
       <li>
-        Location: <span>{formatString(data?.company_location)}</span>
+        Location: <span>{location}</span>
       </li>
       {/* <li>
-        Social media:
-        <Social />
-      </li> */}
+       Social media:
+       <Social />
+     </li> */}
     </ul>
   );
 };
