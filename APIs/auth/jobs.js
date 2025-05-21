@@ -1,3 +1,4 @@
+"use client";
 import { addAppliedJob, setAppliedJobs } from "@/slices/userSlice";
 import { db } from "@/utils/firebase";
 import { errorToast, successToast } from "@/utils/toast";
@@ -156,5 +157,29 @@ export const useGetAppliedJobs = async (candidateId, dispatch) => {
     dispatch(setAppliedJobs(appliedJobIds));
   } catch (err) {
     console.error("Failed to fetch applied jobs:", err);
+  }
+};
+
+export const useGetCompanyJobListings = async (employerId) => {
+  try {
+    const jobsRef = collection(db, "jobs");
+
+    const q = query(jobsRef, where("employerId", "==", employerId));
+
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+      return { jobs: [] };
+    }
+
+    const jobs = querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    return { jobs };
+  } catch (error) {
+    console.error("Error getting employer jobs:", error);
+    throw error; // Re-throw to handle in calling component
   }
 };

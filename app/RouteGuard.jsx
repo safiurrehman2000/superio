@@ -31,32 +31,46 @@ const RouteGuard = ({ children }) => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        const { uid, email, displayName } = user;
+        const { uid, email } = user;
         const userDoc = await getDoc(doc(db, "users", uid));
         const userData = userDoc.exists() ? userDoc.data() : {};
-        console.log("userData.userType", userData.userType);
+
         if (userData.userType === "Candidate") {
           useGetAppliedJobs(user.uid, dispatch);
+          dispatch(
+            addUser({
+              uid,
+              email,
+              userType: userData.userType || "Candidate",
+              createdAt: userData.createdAt || null,
+              isFirstTime: userData.isFirstTime ?? false,
+              name: userData.name || "",
+              title: userData.title || "",
+              phone_number: userData.phone_number || "",
+              gender: userData.gender || "",
+              age: userData.age || "",
+              description: userData.description || "",
+              logo: userData.logo || null,
+            })
+          );
+        } else {
+          dispatch(
+            addUser({
+              uid,
+              email,
+              userType: userData?.userType || "Employer",
+              createdAt: userData?.createdAt || null,
+              isFirstTime: userData?.isFirstTime ?? false,
+              logo: userData?.logo || null,
+              company_name: userData?.company_name || "",
+              phone: userData?.phone || "",
+              website: userData?.website || "",
+              company_type: userData?.company_type || [],
+              description: userData?.description || "",
+              company_location: userData?.company_location || "",
+            })
+          );
         }
-
-        dispatch(
-          addUser({
-            uid,
-            email,
-            displayName,
-            userType: userData.userType || "Candidate",
-            createdAt: userData.createdAt || null,
-            isFirstTime: userData.isFirstTime ?? false,
-            name: userData.name || "",
-            title: userData.title || "",
-            phone_number: userData.phone_number || "",
-            gender: userData.gender || "",
-            age: userData.age || "",
-            profile_visibility: userData.profile_visibility || "",
-            description: userData.description || "",
-            logo: userData.logo || null,
-          })
-        );
 
         // Handle Candidate flow
         if (userData.userType === "Candidate") {
