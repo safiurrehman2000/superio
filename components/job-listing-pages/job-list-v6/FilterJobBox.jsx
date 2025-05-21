@@ -30,8 +30,6 @@ const FilterJobBox = () => {
   const dispatch = useDispatch();
   const transformedJobs = transformJobData(jobs || []);
 
-  console.log("selector.savedJobs :>> ", selector.savedJobs);
-
   const {
     keyword,
     location,
