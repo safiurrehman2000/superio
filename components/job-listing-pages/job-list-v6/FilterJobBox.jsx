@@ -1,8 +1,12 @@
 "use client";
 
-import "./jobList.css";
+import { useGetJobListing, useSaveJob, useUnsaveJob } from "@/APIs/auth/jobs";
+import { addSavedJob, removeSavedJob } from "@/slices/userSlice";
+import { formatString, transformJobData } from "@/utils/constants";
+import { errorToast } from "@/utils/toast";
 import Image from "next/image";
 import Link from "next/link";
+import { TbBookmark, TbBookmarkFilled } from "react-icons/tb";
 import { useDispatch, useSelector } from "react-redux";
 import {
   addCategory,
@@ -17,16 +21,16 @@ import {
   clearTags,
 } from "../../../features/filter/filterSlice";
 import ListingShowing from "../components/ListingShowing";
-import { useGetJobListing } from "@/APIs/auth/jobs";
-import { formatString, transformJobData } from "@/utils/constants";
+import "./jobList.css";
 
 const FilterJobBox = () => {
   const { data: jobs, loading, error } = useGetJobListing();
+  const selector = useSelector((store) => store.user);
   const { jobList, jobSort } = useSelector((state) => state.filter);
-
+  const dispatch = useDispatch();
   const transformedJobs = transformJobData(jobs || []);
 
-  console.log("first", transformedJobs);
+  console.log("selector.savedJobs :>> ", selector.savedJobs);
 
   const {
     keyword,
@@ -41,7 +45,39 @@ const FilterJobBox = () => {
   } = jobList || {};
 
   const { sort, perPage } = jobSort;
-  const dispatch = useDispatch();
+
+  const handleBookmark = async (jobId) => {
+    try {
+      if (!selector?.user?.uid) {
+        errorToast("Please login to bookmark a job");
+        return;
+      }
+
+      if (selector?.userType !== "Candidate") {
+        errorToast("Employer cannot bookmark a job");
+        return;
+      }
+
+      // Check both in local state and in the database
+      const isAlreadySaved = selector.savedJobs?.some(
+        (job) => job.jobId === jobId
+      );
+
+      if (isAlreadySaved) {
+        await useUnsaveJob(selector.user.uid, jobId);
+        dispatch(removeSavedJob(jobId));
+      } else {
+        // This will now check in the database before saving
+        const savedJob = await useSaveJob(selector.user.uid, jobId);
+        if (savedJob) {
+          dispatch(addSavedJob(savedJob));
+        }
+      }
+    } catch (error) {
+      console.error("Error handling bookmark:", error);
+      errorToast("Failed to update bookmark");
+    }
+  };
 
   // Keyword filter on title
   const keywordFilter = (item) =>
@@ -99,6 +135,11 @@ const FilterJobBox = () => {
     ?.sort(sortFilter)
     .slice(perPage.start, perPage.end !== 0 ? perPage.end : 16)
     ?.map((item, index) => {
+      const logoSrc = item?.logo
+        ? item.logo.startsWith("data:image")
+          ? item.logo // Already a Data URL
+          : `data:image/jpeg;base64,${item.logo}`
+        : "/images/resource/company-6.png";
       return (
         <div className="job-block col-lg-6 col-md-12 col-sm-12" key={item.id}>
           <div className="inner-box hover-effect">
@@ -108,8 +149,14 @@ const FilterJobBox = () => {
                   <Image
                     width={50}
                     height={49}
-                    src={item?.logo}
+                    src={logoSrc}
                     alt="company logo"
+                    style={{
+                      borderRadius: "50%",
+                      objectFit: "cover",
+                      height: "50px",
+                      width: "50px",
+                    }}
                   />
                 ) : (
                   <div
@@ -179,8 +226,15 @@ const FilterJobBox = () => {
                 })}
               </ul>
               {/* End .job-other-info */}
-              <button className="bookmark-btn">
-                <span className="flaticon-bookmark"></span>
+              <button
+                className="bookmark-btn"
+                onClick={() => handleBookmark(item?.id)}
+              >
+                {selector.savedJobs.some((job) => job.jobId === item.id) ? (
+                  <TbBookmarkFilled color="#FA5508" />
+                ) : (
+                  <TbBookmark />
+                )}
               </button>
             </div>
           </div>

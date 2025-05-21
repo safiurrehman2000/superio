@@ -21,8 +21,8 @@ const JobSingleDynamicV3 = ({ params }) => {
   const selector = useSelector((store) => store.user);
   const id = params.id;
   const { job, loading, error } = useGetJobById(id);
-  const hasApplied = selector.appliedJobs.includes(id);
 
+  const hasApplied = selector.appliedJobs.some((job) => job.id === id);
   const [logo, setLogo] = useState(null);
 
   const logoGetter = (logo) => {

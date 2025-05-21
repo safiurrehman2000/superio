@@ -8,6 +8,7 @@ const userSlice = createSlice({
     jobId: null,
     resumes: [],
     appliedJobs: [],
+    savedJobs: [],
     isFirstTime: true,
   },
   reducers: {
@@ -16,6 +17,7 @@ const userSlice = createSlice({
       state.userType = action.payload.userType || state.userType;
       state.resumes = action.payload.resumes || state.resumes;
       state.appliedJobs = action.payload.appliedJobs || state.appliedJobs;
+      state.savedJobs = action.payload.savedJobs || state.savedJobs;
     },
     removeUser: (state) => {
       state.user = null;
@@ -23,6 +25,7 @@ const userSlice = createSlice({
       state.jobId = null;
       state.resumes = [];
       state.appliedJobs = [];
+      state.savedJobs = [];
     },
     setUserType: (state, action) => {
       state.userType = action.payload;
@@ -78,6 +81,32 @@ const userSlice = createSlice({
         state.user.appliedJobs = state.appliedJobs;
       }
     },
+    addSavedJob: (state, action) => {
+      state.savedJobs = [...state.savedJobs, action.payload];
+      if (state.user) {
+        state.user.savedJobs = state.savedJobs;
+      }
+    },
+    setSavedJobs: (state, action) => {
+      state.savedJobs = action.payload;
+      if (state.user) {
+        state.user.savedJobs = state.savedJobs;
+      }
+    },
+    removeSavedJob: (state, action) => {
+      state.savedJobs = state.savedJobs.filter(
+        (job) => job.jobId !== action.payload
+      );
+      if (state.user) {
+        state.user.savedJobs = state.savedJobs;
+      }
+    },
+    clearSavedJobs: (state) => {
+      state.savedJobs = [];
+      if (state.user) {
+        state.user.savedJobs = state.savedJobs;
+      }
+    },
   },
 });
 
@@ -93,6 +122,10 @@ export const {
   addAppliedJob,
   setAppliedJobs,
   clearAppliedJobs,
+  addSavedJob,
+  setSavedJobs,
+  removeSavedJob,
+  clearSavedJobs,
 } = userSlice.actions;
 
 export default userSlice.reducer;

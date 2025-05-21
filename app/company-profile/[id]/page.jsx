@@ -18,7 +18,7 @@ import { useSelector } from "react-redux";
 const EmployersSingleV1 = () => {
   const params = useParams();
   const [jobs, setJobs] = useState([]);
-  const selector = useSelector((store) => store.user);
+
   useEffect(() => {
     const fetchJobs = async () => {
       try {
@@ -34,12 +34,11 @@ const EmployersSingleV1 = () => {
     fetchJobs();
   }, [params?.id]);
 
-  console.log("jobs :>> ", jobs);
   const { data, loading, error } = useGetUserById(params?.id);
   const logoSrc = data?.logo
     ? data.logo.startsWith("data:image")
       ? data.logo // Already a Data URL
-      : `data:image/jpeg;base64,${data.logo}` // Prepend JPEG prefix
+      : `data:image/jpeg;base64,${data.logo}`
     : "/images/resource/company-6.png";
 
   if (!params?.id) {

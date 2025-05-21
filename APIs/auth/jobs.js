@@ -5,6 +5,7 @@ import { errorToast, successToast } from "@/utils/toast";
 import {
   addDoc,
   collection,
+  deleteDoc,
   doc,
   getDoc,
   getDocs,
@@ -115,6 +116,7 @@ export const useApplyForJob = async (
       resume: selectedResume,
       message: message || "",
       appliedAt: Date.now(),
+      status: "Active",
     });
 
     dispatch(addAppliedJob(jobId));
@@ -148,13 +150,35 @@ export const useGetAppliedJobs = async (candidateId, dispatch) => {
   try {
     if (!candidateId) return;
 
+    // Fetch applied job IDs
     const applicationsQuery = query(
       collection(db, "applications"),
       where("candidateId", "==", candidateId)
     );
     const querySnapshot = await getDocs(applicationsQuery);
-    const appliedJobIds = querySnapshot.docs.map((doc) => doc.data().jobId);
-    dispatch(setAppliedJobs(appliedJobIds));
+    const applications = querySnapshot.docs.map((doc) => ({
+      jobId: doc.data().jobId,
+      appliedAt: doc.data().appliedAt,
+      status: doc.data().status,
+    }));
+
+    // Fetch job details for each job ID
+    const jobDetailsPromises = applications.map(
+      async ({ jobId, appliedAt }) => {
+        const jobDocRef = doc(db, "jobs", jobId);
+        const jobDocSnap = await getDoc(jobDocRef);
+        if (jobDocSnap.exists()) {
+          return { id: jobId, appliedAt, status, ...jobDocSnap.data() };
+        }
+        return null;
+      }
+    );
+
+    const jobDetails = (await Promise.all(jobDetailsPromises)).filter(
+      (job) => job !== null
+    );
+
+    dispatch(setAppliedJobs(jobDetails));
   } catch (err) {
     console.error("Failed to fetch applied jobs:", err);
   }
@@ -180,6 +204,104 @@ export const useGetCompanyJobListings = async (employerId) => {
     return { jobs };
   } catch (error) {
     console.error("Error getting employer jobs:", error);
-    throw error; // Re-throw to handle in calling component
+    throw error;
+  }
+};
+
+export const useSaveJob = async (userId, jobId) => {
+  try {
+    // First check if the job is already saved
+    const q = query(
+      collection(db, "saved_jobs"),
+      where("userId", "==", userId),
+      where("jobId", "==", jobId)
+    );
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+      // Job already saved - return the existing document
+      const doc = querySnapshot.docs[0];
+      return { id: doc.id, jobId, ...doc.data() }; // Make sure to include jobId
+    }
+
+    // If not saved, create new bookmark
+    const savedJob = {
+      userId,
+      jobId,
+      savedAt: new Date().toISOString(),
+    };
+
+    const docRef = await addDoc(collection(db, "saved_jobs"), savedJob);
+    successToast("Job Saved Successfully");
+    return { id: docRef.id, jobId, ...savedJob }; // Make sure to include jobId
+  } catch (error) {
+    console.error("Error saving job:", error);
+    errorToast("Failed to save Job, Please try again");
+    throw error;
+  }
+};
+
+export const useUnsaveJob = async (userId, jobId) => {
+  try {
+    const q = query(
+      collection(db, "saved_jobs"),
+      where("userId", "==", userId),
+      where("jobId", "==", jobId)
+    );
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+      console.log("No saved job found to unsave");
+      return true;
+    }
+
+    const deletePromises = querySnapshot.docs.map((docSnapshot) =>
+      deleteDoc(doc(db, "saved_jobs", docSnapshot.id))
+    );
+
+    await Promise.all(deletePromises);
+    successToast("Successfully unsaved job");
+    return true;
+  } catch (error) {
+    console.error("Error unsaving job:", error);
+    errorToast("Error unsaving job");
+    throw error;
+  }
+};
+
+export const useGetSavedJobs = async (userId) => {
+  try {
+    if (!userId) return []; // Early return if no userId
+
+    const q = query(
+      collection(db, "saved_jobs"),
+      where("userId", "==", userId)
+    );
+    const querySnapshot = await getDocs(q);
+
+    const savedJobs = [];
+    const promises = [];
+
+    for (const docSnapshot of querySnapshot.docs) {
+      const savedJob = docSnapshot.data();
+      promises.push(
+        getDoc(doc(db, "jobs", savedJob.jobId)).then((jobDoc) => {
+          if (jobDoc.exists()) {
+            savedJobs.push({
+              id: docSnapshot.id,
+              jobId: savedJob.jobId, // Make sure to include jobId
+              ...jobDoc.data(),
+              savedAt: savedJob.savedAt,
+            });
+          }
+        })
+      );
+    }
+
+    await Promise.all(promises);
+    return savedJobs;
+  } catch (error) {
+    console.error("Error fetching saved jobs:", error);
+    throw error;
   }
 };

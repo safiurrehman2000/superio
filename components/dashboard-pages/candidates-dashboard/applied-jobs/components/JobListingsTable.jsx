@@ -1,8 +1,14 @@
+"use client";
 import Link from "next/link.js";
 import Image from "next/image.js";
+import { useSelector } from "react-redux";
+import { formatString } from "@/utils/constants";
 
 const JobListingsTable = () => {
-  const jobs = [];
+  const selector = useSelector((store) => store.user);
+  const jobs = selector?.user?.appliedJobs;
+
+  console.log("jobs :>> ", jobs);
   return (
     <div className="tabs-box">
       <div className="widget-title">
@@ -36,60 +42,77 @@ const JobListingsTable = () => {
               </thead>
 
               <tbody>
-                {jobs?.slice(0, 4).map((item) => (
-                  <tr key={item.id}>
-                    <td>
-                      {/* <!-- Job Block --> */}
-                      <div className="job-block">
-                        <div className="inner-box">
-                          <div className="content">
-                            <span className="company-logo">
-                              <Image
-                                width={50}
-                                height={49}
-                                src={item.logo}
-                                alt="logo"
-                              />
-                            </span>
-                            <h4>
-                              <Link href={`/job-single-v3/${item.id}`}>
-                                {item.jobTitle}
-                              </Link>
-                            </h4>
-                            <ul className="job-info">
-                              <li>
-                                <span className="icon flaticon-briefcase"></span>
-                                Segment
-                              </li>
-                              <li>
-                                <span className="icon flaticon-map-locator"></span>
-                                London, UK
-                              </li>
-                            </ul>
+                {jobs?.map((item) => {
+                  const logoSrc = item?.logo
+                    ? item.logo.startsWith("data:image")
+                      ? item.logo // Already a Data URL
+                      : `data:image/jpeg;base64,${item.logo}`
+                    : "/images/resource/company-6.png";
+                  return (
+                    <tr key={item.id}>
+                      <td>
+                        {/* <!-- Job Block --> */}
+                        <div className="job-block">
+                          <div className="inner-box">
+                            <div className="content">
+                              <span className="company-logo">
+                                <Image
+                                  width={50}
+                                  height={49}
+                                  src={logoSrc}
+                                  alt="logo"
+                                  style={{
+                                    borderRadius: "50%",
+                                    objectFit: "cover",
+                                    height: "50px",
+                                    width: "50px",
+                                  }}
+                                />
+                              </span>
+                              <h4>
+                                <Link href={`/job-list/${item?.id}`}>
+                                  {item?.title}
+                                </Link>
+                              </h4>
+                              <ul className="job-info">
+                                <li>
+                                  <span className="icon flaticon-briefcase"></span>
+                                  {formatString(item?.jobType)}
+                                </li>
+                                <li>
+                                  <span className="icon flaticon-map-locator"></span>
+                                  {formatString(item?.location)}
+                                </li>
+                              </ul>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </td>
-                    <td>Dec 5, 2020</td>
-                    <td className="status">Active</td>
-                    <td>
-                      <div className="option-box">
-                        <ul className="option-list">
-                          <li>
-                            <button data-text="View Aplication">
-                              <span className="la la-eye"></span>
-                            </button>
-                          </li>
-                          <li>
-                            <button data-text="Delete Aplication">
-                              <span className="la la-trash"></span>
-                            </button>
-                          </li>
-                        </ul>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td>{new Date(item?.createdAt)?.toLocaleDateString()}</td>
+                      <td className="status">
+                        {item?.status || (
+                          <p style={{ color: "black", margin: 0 }}>NA</p>
+                        )}
+                      </td>
+                      <td>
+                        <div className="option-box">
+                          <ul className="option-list">
+                            <li>
+                              <button data-text="View Aplication">
+                                <span className="la la-eye"></span>
+                              </button>
+                            </li>
+                            <li>
+                              <button data-text="Delete Aplication">
+                                <span className="la la-trash"></span>
+                              </button>
+                            </li>
+                          </ul>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
