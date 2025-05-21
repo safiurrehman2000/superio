@@ -276,6 +276,27 @@ export const formatString = (str) => {
     .join(" ");
 };
 
+export const applyFilters = (state) => {
+  const searchLower = state.searchTerm.toLowerCase();
+  const locationLower = state.locationTerm.toLowerCase();
+
+  state.filteredJobs = state.jobs.filter((job) => {
+    const matchesSearch =
+      searchLower === "" ||
+      job.title.toLowerCase().includes(searchLower) ||
+      job.description.toLowerCase().includes(searchLower) ||
+      (job.tags &&
+        job.tags.some((tag) => tag.toLowerCase().includes(searchLower)));
+
+    // Apply location filter
+    const formattedLocation = formatString(job.location || "").toLowerCase();
+    const matchesLocation =
+      locationLower === "" || formattedLocation.includes(locationLower);
+
+    return matchesSearch && matchesLocation;
+  });
+};
+
 export const transformJobData = (jobs) => {
   const findLabel = (options, value) => {
     const option = options.find((opt) => opt.value === value);

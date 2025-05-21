@@ -1,36 +1,26 @@
-
-'use client'
-
-import { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { addLocation } from "../../../features/filter/filterSlice";
+"use client";
+import { setLocationTerm } from "@/features/job/newJobSlice";
+import { useDispatch } from "react-redux";
 
 const LocationBox = () => {
-    const { jobList } = useSelector((state) => state.filter);
-    const [getLocation, setLocation] = useState(jobList.location);
-    const dispath = useDispatch();
+  const dispatch = useDispatch();
 
-    // location handler
-    const locationHandler = (e) => {
-        dispath(addLocation(e.target.value));
-    };
+  const handleLocationChange = (e) => {
+    dispatch(setLocationTerm(e.target.value));
+  };
 
-    useEffect(() => {
-        setLocation(jobList.location);
-    }, [setLocation, jobList]);
-
-    return (
-        <>
-            <input
-                type="text"
-                name="listing-search"
-                placeholder="City or postcode"
-                value={getLocation}
-                onChange={locationHandler}
-            />
-            <span className="icon flaticon-map-locator"></span>
-        </>
-    );
+  return (
+    <>
+      <input
+        type="text"
+        name="listing-search"
+        placeholder="City or postcode"
+        onChange={handleLocationChange}
+        className="location-search-input"
+      />
+      <span className="icon flaticon-map-locator"></span>
+    </>
+  );
 };
 
 export default LocationBox;
