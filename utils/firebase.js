@@ -19,6 +19,7 @@ import { getFirestore } from "firebase/firestore";
 //   appId: "1:409931945808:web:d20f763290e5ad92fdfe55",
 //   measurementId: "G-CT24VQ9WVR",
 // };
+
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,

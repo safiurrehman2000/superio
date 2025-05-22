@@ -279,8 +279,10 @@ export const formatString = (str) => {
 export const applyFilters = (state) => {
   const searchLower = state.searchTerm.toLowerCase();
   const locationLower = state.locationTerm.toLowerCase();
+  const now = Date.now();
 
   state.filteredJobs = state.jobs.filter((job) => {
+    // Search filter
     const matchesSearch =
       searchLower === "" ||
       job.title.toLowerCase().includes(searchLower) ||
@@ -288,12 +290,44 @@ export const applyFilters = (state) => {
       (job.tags &&
         job.tags.some((tag) => tag.toLowerCase().includes(searchLower)));
 
-    // Apply location filter
+    // Location filter
     const formattedLocation = formatString(job.location || "").toLowerCase();
     const matchesLocation =
       locationLower === "" || formattedLocation.includes(locationLower);
 
-    return matchesSearch && matchesLocation;
+    // Category filter
+    const matchesCategory =
+      state.selectedCategory === "" ||
+      (job.tags && job.tags.includes(state.selectedCategory));
+
+    // Job type filter
+    const matchesJobType =
+      state.selectedJobType === "" || job.jobType === state.selectedJobType;
+
+    // Date posted filter
+    let matchesDatePosted = true;
+    if (state.selectedDatePosted) {
+      const jobDate = parseInt(job.createdAt);
+      const dayInMs = 24 * 60 * 60 * 1000;
+
+      if (state.selectedDatePosted === "today") {
+        matchesDatePosted = now - jobDate < dayInMs;
+      } else if (state.selectedDatePosted === "3days") {
+        matchesDatePosted = now - jobDate < 3 * dayInMs;
+      } else if (state.selectedDatePosted === "week") {
+        matchesDatePosted = now - jobDate < 7 * dayInMs;
+      } else if (state.selectedDatePosted === "month") {
+        matchesDatePosted = now - jobDate < 30 * dayInMs;
+      }
+    }
+
+    return (
+      matchesSearch &&
+      matchesLocation &&
+      matchesCategory &&
+      matchesJobType &&
+      matchesDatePosted
+    );
   });
 };
 
