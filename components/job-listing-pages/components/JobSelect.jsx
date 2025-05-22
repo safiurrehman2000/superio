@@ -1,44 +1,37 @@
 "use client";
-import { useDispatch, useSelector } from "react-redux";
 import {
-  addDatePosted,
-  addJobTypeSelect,
-  addSalary,
-  addTag,
-  clearTags,
-} from "../../../features/filter/filterSlice";
+  setSelectedDatePosted,
+  setSelectedJobType,
+} from "@/features/job/newJobSlice";
+import { JOB_TYPE_OPTIONS } from "@/utils/constants";
+import { useDispatch, useSelector } from "react-redux";
 
 export default function JobSelect() {
-  const { jobList } = useSelector((state) => state.filter);
-  const { jobTypeList, datePost, tags } = useSelector((state) => state.job);
-
   const dispatch = useDispatch();
+  const { selectedJobType, selectedDatePosted } = useSelector(
+    (state) => state.newJob
+  );
 
-  // Job type handler
-  const jobTypeHandler = (e) => {
-    dispatch(addJobTypeSelect(e.target.value));
-  };
+  const datePostedOptions = [
+    { value: "", label: "Any Time" },
+    { value: "today", label: "Today" },
+    { value: "3days", label: "Last 3 Days" },
+    { value: "week", label: "Last Week" },
+    { value: "month", label: "Last Month" },
+  ];
 
-  // Date post handler
-  const datePostHandler = (e) => {
-    dispatch(addDatePosted(e.target.value));
-  };
-
-  // Salary handler
-  const salaryHandler = (e) => {
-    const data = JSON.parse(e.target.value);
-    dispatch(addSalary(data));
-  };
-
-  // Tag handler
-  const tagHandler = (tagValue) => {
-    dispatch(addTag(tagValue));
-  };
-
-  // Clear tags handler
-  const clearTagsHandler = () => {
-    dispatch(clearTags());
-  };
+  const popularTags = [
+    "remote",
+    "urgent",
+    "flexible",
+    "manager",
+    "developer",
+    "designer",
+    "marketing",
+    "sales",
+    "entry-level",
+    "senior",
+  ];
 
   return (
     <>
@@ -46,14 +39,14 @@ export default function JobSelect() {
         <div className="top-filters">
           <div className="form-group">
             <select
-              onChange={jobTypeHandler}
               className="chosen-single form-select"
-              value={jobList?.jobTypeSelect || ""}
+              value={selectedJobType}
+              onChange={(e) => dispatch(setSelectedJobType(e.target.value))}
             >
               <option value="">Job Type</option>
-              {jobTypeList?.map((item) => (
-                <option value={item.value} key={item.id}>
-                  {item.name}
+              {JOB_TYPE_OPTIONS.map((type) => (
+                <option key={type.value} value={type.value}>
+                  {type.label}
                 </option>
               ))}
             </select>
@@ -62,87 +55,18 @@ export default function JobSelect() {
 
           <div className="form-group">
             <select
-              onChange={datePostHandler}
               className="chosen-single form-select"
-              value={jobList?.datePosted || ""}
+              value={selectedDatePosted}
+              onChange={(e) => dispatch(setSelectedDatePosted(e.target.value))}
             >
-              {datePost?.map((item) => (
-                <option value={item.value} key={item.id}>
-                  {item.name}
+              {datePostedOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
                 </option>
               ))}
             </select>
           </div>
           {/* End date posted filter */}
-
-          <div className="form-group">
-            <select
-              onChange={salaryHandler}
-              className="chosen-single form-select"
-              value={
-                JSON.stringify(jobList?.salary) ||
-                JSON.stringify({ min: 0, max: 20000 })
-              }
-            >
-              <option
-                value={JSON.stringify({
-                  min: 0,
-                  max: 20000,
-                })}
-              >
-                Salary estimate
-              </option>
-              <option
-                value={JSON.stringify({
-                  min: 0,
-                  max: 5000,
-                })}
-              >
-                0 - 5000
-              </option>
-              <option
-                value={JSON.stringify({
-                  min: 5000,
-                  max: 10000,
-                })}
-              >
-                5000 - 10000
-              </option>
-              <option
-                value={JSON.stringify({
-                  min: 10000,
-                  max: 15000,
-                })}
-              >
-                10000 - 15000
-              </option>
-              <option
-                value={JSON.stringify({
-                  min: 15000,
-                  max: 20000,
-                })}
-              >
-                15000 - 20000
-              </option>
-            </select>
-          </div>
-          {/* End salary estimate filter */}
-
-          <div className="form-group">
-            <select
-              onChange={(e) => tagHandler(e.target.value)}
-              className="chosen-single form-select"
-              value={jobList?.tag[0] || ""} // Use the first selected tag or empty string if none
-            >
-              <option value="">All Tags</option>
-              {tags?.map((tag) => (
-                <option key={tag.id} value={tag.value}>
-                  {tag.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          {/* End tag filter */}
         </div>
       </div>
     </>
