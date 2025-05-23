@@ -22,7 +22,7 @@ const CallToAction2 = () => {
         </div>
 
         <div className="btn-box">
-          <Link href="/job-list-v6" className="theme-btn btn-style-one">
+          <Link href="/job-list" className="theme-btn btn-style-one">
             Search Job
           </Link>
           <Link
