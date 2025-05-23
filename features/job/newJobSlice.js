@@ -9,6 +9,12 @@ const initialState = {
   selectedCategory: "",
   selectedJobType: "",
   selectedDatePosted: "",
+  sortOrder: "",
+  pagination: {
+    currentPage: 1,
+    itemsPerPage: Infinity,
+    totalItems: 0,
+  },
 };
 
 const newJobsSlice = createSlice({
@@ -39,6 +45,25 @@ const newJobsSlice = createSlice({
       state.selectedDatePosted = action.payload;
       applyFilters(state);
     },
+    setSortOrder: (state, action) => {
+      state.sortOrder = action.payload;
+      applyFilters(state);
+    },
+    setPagination: (state, action) => {
+      state.pagination = {
+        ...state.pagination,
+        ...action.payload,
+      };
+    },
+    clearAllFilters: (state) => {
+      state.searchTerm = "";
+      state.locationTerm = "";
+      state.selectedCategory = "";
+      state.selectedJobType = "";
+      state.selectedDatePosted = "";
+      state.sortOrder = "";
+      state.filteredJobs = state.jobs;
+    },
   },
 });
 
@@ -49,7 +74,9 @@ export const {
   setSelectedCategory,
   setSelectedJobType,
   setSelectedDatePosted,
-
+  setSortOrder,
+  setPagination,
+  clearAllFilters,
 } = newJobsSlice.actions;
 
 export default newJobsSlice.reducer;

@@ -2,6 +2,12 @@
 
 import { useGetJobListing, useSaveJob, useUnsaveJob } from "@/APIs/auth/jobs";
 import CircularLoader from "@/components/circular-loading/CircularLoading";
+import {
+  clearAllFilters,
+  setJobs,
+  setPagination,
+  setSortOrder,
+} from "@/features/job/newJobSlice";
 import { addSavedJob, removeSavedJob } from "@/slices/userSlice";
 import { formatString } from "@/utils/constants";
 import { errorToast } from "@/utils/toast";
@@ -10,46 +16,51 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { TbBookmark, TbBookmarkFilled } from "react-icons/tb";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  addCategory,
-  addDatePosted,
-  addExperienceSelect,
-  addJobTypeSelect,
-  addKeyword,
-  addLocation,
-  addPerPage,
-  addSalary,
-  addSort,
-  clearTags,
-} from "../../../features/filter/filterSlice";
 import ListingShowing from "../components/ListingShowing";
 import "./jobList.css";
-import { setJobs } from "@/features/job/newJobSlice";
 
 const FilterJobBox = () => {
   const { data: jobs, loading, error } = useGetJobListing();
   const selector = useSelector((store) => store.user);
-  const { jobList, jobSort } = useSelector((state) => state.filter);
   const dispatch = useDispatch();
   const [bookmarkLoading, setBookmarkLoading] = useState(null);
-  const { filteredJobs } = useSelector((state) => state.newJob);
+  const {
+    filteredJobs,
+    jobs: allJobs,
+    searchTerm,
+    locationTerm,
+    selectedCategory,
+    selectedJobType,
+    selectedDatePosted,
+    sortOrder,
+    pagination,
+  } = useSelector((state) => state.newJob);
 
+  const getPaginatedJobs = () => {
+    if (pagination.itemsPerPage === Infinity || pagination.itemsPerPage === 0) {
+      return filteredJobs || [];
+    }
+    const startIndex = (pagination.currentPage - 1) * pagination.itemsPerPage;
+    const endIndex = startIndex + pagination.itemsPerPage;
+    return filteredJobs?.slice(startIndex, endIndex) || [];
+  };
+  const paginatedJobs = getPaginatedJobs();
+  const handlePageChange = (page) => {
+    dispatch(setPagination({ currentPage: page }));
+  };
+  useEffect(() => {
+    dispatch(
+      setPagination({
+        totalItems: filteredJobs?.length || 0,
+        currentPage: 1,
+      })
+    );
+  }, [filteredJobs, dispatch]);
   useEffect(() => {
     if (jobs) {
       dispatch(setJobs(jobs));
     }
-  }, [jobs]);
-  const {
-    keyword,
-    location,
-    datePosted,
-    jobTypeSelect,
-    experienceSelect,
-    salary,
-    tag,
-  } = jobList || {};
-
-  const { sort, perPage } = jobSort;
+  }, [jobs, dispatch]);
 
   const handleBookmark = async (jobId) => {
     try {
@@ -64,7 +75,6 @@ const FilterJobBox = () => {
         return;
       }
 
-      // Check both in local state and in the database
       const isAlreadySaved = selector.savedJobs?.some(
         (job) => job.jobId === jobId
       );
@@ -73,7 +83,6 @@ const FilterJobBox = () => {
         await useUnsaveJob(selector.user.uid, jobId);
         dispatch(removeSavedJob(jobId));
       } else {
-        // This will now check in the database before saving
         const savedJob = await useSaveJob(selector.user.uid, jobId);
         if (savedJob) {
           dispatch(addSavedJob(savedJob));
@@ -87,11 +96,22 @@ const FilterJobBox = () => {
     }
   };
 
+  // Check if any filters are active
+  const hasActiveFilters =
+    searchTerm ||
+    locationTerm ||
+    selectedCategory ||
+    selectedJobType ||
+    selectedDatePosted ||
+    sortOrder ||
+    (filteredJobs && allJobs && filteredJobs.length !== allJobs.length) ||
+    (pagination.itemsPerPage !== 20 && pagination.itemsPerPage !== Infinity);
+
   // Render job cards
-  const content = filteredJobs?.map((item, index) => {
+  const content = paginatedJobs?.map((item, index) => {
     const logoSrc = item?.logo
       ? item.logo.startsWith("data:image")
-        ? item.logo // Already a Data URL
+        ? item.logo
         : `data:image/jpeg;base64,${item.logo}`
       : "/images/resource/company-6.png";
     return (
@@ -199,29 +219,44 @@ const FilterJobBox = () => {
     );
   });
 
+  const totalPages = Math.ceil(
+    (filteredJobs?.length || 0) / (pagination.itemsPerPage || 1)
+  );
   // Sort handler
   const sortHandler = (e) => {
-    dispatch(addSort(e.target.value));
+    const value = e.target.value;
+    dispatch(setSortOrder(value));
+  };
+
+  const clearAll = () => {
+    dispatch(clearAllFilters());
+    dispatch(
+      setPagination({
+        currentPage: 1,
+        itemsPerPage: 20,
+        totalItems: filteredJobs?.length || 0,
+      })
+    );
+    dispatch(setSortOrder("")); // Reset sorting
   };
 
   // Per page handler
   const perPageHandler = (e) => {
-    const pageData = JSON.parse(e.target.value);
-    dispatch(addPerPage(pageData));
+    const value = e.target.value;
+    const itemsPerPage = value === "0" ? Infinity : parseInt(value);
+    dispatch(
+      setPagination({
+        itemsPerPage,
+        currentPage: 1,
+        totalItems: filteredJobs?.length || 0,
+      })
+    );
   };
 
-  // Clear all filters
-  const clearAll = () => {
-    dispatch(addKeyword(""));
-    dispatch(addLocation(""));
-    dispatch(addCategory(""));
-    dispatch(addJobTypeSelect(""));
-    dispatch(addDatePosted(""));
-    dispatch(addExperienceSelect(""));
-    dispatch(addSalary({ min: 0, max: 20000 }));
-    dispatch(addSort(""));
-    dispatch(addPerPage({ start: 0, end: 0 }));
-    dispatch(clearTags());
+  const getSelectValue = () => {
+    return pagination.itemsPerPage === Infinity
+      ? "0"
+      : pagination.itemsPerPage.toString();
   };
 
   if (loading) {
@@ -237,21 +272,12 @@ const FilterJobBox = () => {
       <div className="ls-switcher">
         <div className="showing-result">
           <div className="text">
-            <strong>{content?.length || 0}</strong> jobs
+            Showing <strong>{content?.length || 0}</strong> of{" "}
+            <strong>{filteredJobs?.length || 0}</strong> jobs
           </div>
         </div>
         <div className="sort-by">
-          {keyword !== "" ||
-          location !== "" ||
-          tag.length > 0 ||
-          jobTypeSelect !== "" ||
-          datePosted !== "" ||
-          experienceSelect !== "" ||
-          salary?.min !== 0 ||
-          salary?.max !== 20000 ||
-          sort !== "" ||
-          perPage.start !== 0 ||
-          perPage.end !== 0 ? (
+          {hasActiveFilters && (
             <button
               onClick={clearAll}
               className="btn btn-danger text-nowrap me-2"
@@ -259,35 +285,68 @@ const FilterJobBox = () => {
             >
               Clear All
             </button>
-          ) : undefined}
+          )}
+
           <select
-            value={sort}
             className="chosen-single form-select"
             onChange={sortHandler}
+            value={sortOrder}
           >
             <option value="">Sort by (default)</option>
             <option value="asc">Newest</option>
-            <option value="des">Oldest</option>
+            <option value="desc">Oldest</option> {/* Fixed "des" to "desc" */}
           </select>
+
           <select
             onChange={perPageHandler}
             className="chosen-single form-select ms-3"
-            value={JSON.stringify(perPage)}
+            value={getSelectValue()}
           >
-            <option value={JSON.stringify({ start: 0, end: 0 })}>All</option>
-            <option value={JSON.stringify({ start: 0, end: 20 })}>
-              20 per page
-            </option>
-            <option value={JSON.stringify({ start: 0, end: 30 })}>
-              30 per page
-            </option>
-            <option value={JSON.stringify({ start: 0, end: 40 })}>
-              40 per page
-            </option>
+            <option value="0">All</option>
+            <option value="2">2 per page</option>
+            <option value="3">3 per page</option>
+            <option value="4">4 per page</option>
           </select>
         </div>
       </div>
       <div className="row">{content}</div>
+      {totalPages > 1 && (
+        <div className="ls-pagination">
+          <ul className="pagination-list">
+            {/* Previous Page Button */}
+            <li className={pagination.currentPage === 1 ? "disabled" : ""}>
+              <button
+                onClick={() => handlePageChange(pagination.currentPage - 1)}
+                disabled={pagination.currentPage === 1}
+              >
+                <i className="fa fa-angle-left"></i>
+              </button>
+            </li>
+
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <li
+                key={page}
+                className={pagination.currentPage === page ? "active" : ""}
+              >
+                <button onClick={() => handlePageChange(page)}>{page}</button>
+              </li>
+            ))}
+
+            <li
+              className={
+                pagination.currentPage === totalPages ? "disabled" : ""
+              }
+            >
+              <button
+                onClick={() => handlePageChange(pagination.currentPage + 1)}
+                disabled={pagination.currentPage === totalPages}
+              >
+                <i className="fa fa-angle-right"></i>
+              </button>
+            </li>
+          </ul>
+        </div>
+      )}
       <ListingShowing />
     </>
   );

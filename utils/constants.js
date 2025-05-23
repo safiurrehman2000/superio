@@ -274,7 +274,7 @@ export const applyFilters = (state) => {
   const locationLower = state.locationTerm.toLowerCase();
   const now = Date.now();
 
-  state.filteredJobs = state.jobs.filter((job) => {
+  let filteredJobs = state.jobs.filter((job) => {
     // Search filter
     const matchesSearch =
       searchLower === "" ||
@@ -322,6 +322,15 @@ export const applyFilters = (state) => {
       matchesDatePosted
     );
   });
+
+  // Then apply sorting if specified
+  if (state.sortOrder === "asc") {
+    filteredJobs.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+  } else if (state.sortOrder === "desc") {
+    filteredJobs.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  }
+
+  state.filteredJobs = filteredJobs;
 };
 
 export const transformJobData = (jobs) => {
