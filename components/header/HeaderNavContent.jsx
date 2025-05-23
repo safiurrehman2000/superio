@@ -49,7 +49,7 @@ const HeaderNavContent = () => {
                 }`}
                 href={`${
                   selector.userType === "Candidate"
-                    ? "/candidates-dashboard/dashboard"
+                    ? "/candidates-dashboard/my-profile"
                     : selector.userType === "Employer"
                     ? "/employers-dashboard/dashboard"
                     : "/404"

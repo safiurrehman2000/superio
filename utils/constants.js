@@ -47,13 +47,6 @@ export const LOGO = "/images/logo-deflexijobber.png";
 
 export const candidateMenuData = [
   {
-    id: 1,
-    name: "Dashboard",
-    icon: "la-home",
-    routePath: "/candidates-dashboard/dashboard",
-    active: "active",
-  },
-  {
     id: 2,
     name: "My Profile",
     icon: "la-user-tie",
