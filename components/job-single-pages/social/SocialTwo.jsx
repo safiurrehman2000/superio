@@ -1,42 +1,40 @@
+"use client";
+import {
+  FacebookShareButton,
+  FacebookIcon,
+  TwitterShareButton,
+  TwitterIcon,
+  LinkedinShareButton,
+  LinkedinIcon,
+} from "next-share";
+
 const SocialTwo = () => {
-  const socialContent = [
-    {
-      id: 1,
-      name: "Facebook",
-      icon: "fa-facebook-f",
-      iconClass: "facebook",
-      link: "https://www.facebook.com/",
-    },
-    {
-      id: 2,
-      name: "Twitter",
-      icon: "fa-twitter",
-      iconClass: "twitter",
-      link: "https://www.twitter.com/",
-    },
-    {
-      id: 3,
-      name: "Linkedin",
-      icon: "fa-likedin",
-      iconClass: "linkedin",
-      link: "https://www.linkedin.com/",
-    },
-  ];
+  const getCurrentUrl = () => {
+    if (typeof window !== "undefined") {
+      return window.location.href;
+    }
+    return "";
+  };
+
+  const currentUrl = getCurrentUrl();
+  const shareText = "Check out this amazing job opportunity at Flexijobber!";
 
   return (
-    <>
-      {socialContent.map((item) => (
-        <a
-          href={item.link}
-          className={item.iconClass}
-          target="_blank"
-          rel="noopener noreferrer"
-          key={item.id}
-        >
-          <i className={`fab ${item.icon}`}></i> {item.name}
-        </a>
-      ))}
-    </>
+    <div className="social-share-buttons">
+      <FacebookShareButton
+        url={currentUrl}
+        quote={shareText}
+        hashtag="#Flexijobber"
+      >
+        <FacebookIcon size={32} round />
+      </FacebookShareButton>
+      <TwitterShareButton url={currentUrl} title={shareText}>
+        <TwitterIcon size={32} round />
+      </TwitterShareButton>
+      <LinkedinShareButton url={currentUrl} title={shareText}>
+        <LinkedinIcon size={32} round />
+      </LinkedinShareButton>
+    </div>
   );
 };
 

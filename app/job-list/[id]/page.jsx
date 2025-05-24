@@ -197,15 +197,6 @@ const JobSingleDynamicV3 = ({ params }) => {
                       </div>
                     </div>
                   </div>
-
-                  <div className="sidebar-widget contact-widget">
-                    <h4 className="widget-title">Contact Us</h4>
-                    <div className="widget-content">
-                      <div className="default-form">
-                        <Contact />
-                      </div>
-                    </div>
-                  </div>
                 </aside>
               </div>
             </div>
