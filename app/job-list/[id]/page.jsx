@@ -22,7 +22,13 @@ const JobSingleDynamicV3 = ({ params }) => {
   const id = params.id;
   const { job, loading, error } = useGetJobById(id);
 
-  const hasApplied = selector.appliedJobs.some((job) => job.id === id);
+  const [hasApplied, setHasApplied] = useState(
+    selector.appliedJobs.some((job) => job.id === id)
+  );
+
+  const onApplicationSuccess = () => {
+    setHasApplied(true);
+  };
   const [logo, setLogo] = useState(null);
 
   const logoGetter = (logo) => {
@@ -141,7 +147,9 @@ const JobSingleDynamicV3 = ({ params }) => {
                             aria-label="Close"
                           ></button>
                         </div>
-                        <ApplyJobModalContent />
+                        <ApplyJobModalContent
+                          onApplicationSuccess={onApplicationSuccess}
+                        />
                       </div>
                     </div>
                   </div>
