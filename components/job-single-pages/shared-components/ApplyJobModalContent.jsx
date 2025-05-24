@@ -6,7 +6,7 @@ import "@/styles/customStyles.css";
 import { checkFileSize, checkFileTypes } from "@/utils/resumeHelperFunctions";
 import { errorToast } from "@/utils/toast";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 const ApplyJobModalContent = ({ onApplicationSuccess }) => {
