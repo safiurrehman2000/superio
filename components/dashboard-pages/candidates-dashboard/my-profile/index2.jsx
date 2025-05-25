@@ -1,13 +1,11 @@
-import MobileMenu from "../../../header/MobileMenu";
+import DefaulHeader2 from "@/components/header/DefaulHeader2";
 import LoginPopup from "../../../common/form/login/LoginPopup";
 import DashboardCandidatesSidebar from "../../../header/DashboardCandidatesSidebar";
+import MobileMenu from "../../../header/MobileMenu";
 import BreadCrumb from "../../BreadCrumb";
-import MyProfile from "./components/my-profile";
-import SocialNetworkBox from "./components/SocialNetworkBox";
-import ContactInfoBox from "./components/ContactInfoBox";
 import CopyrightFooter from "../../CopyrightFooter";
 import MenuToggler from "../../MenuToggler";
-import DefaulHeader2 from "@/components/header/DefaulHeader2";
+import MyProfile from "./components/my-profile";
 
 const index = () => {
   return (
