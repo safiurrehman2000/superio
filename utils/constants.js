@@ -264,6 +264,12 @@ export const formatString = (str) => {
 };
 
 export const applyFilters = (state) => {
+  console.log(
+    "applyFilters: searchTerm =",
+    state.searchTerm,
+    "jobs =",
+    state.jobs
+  );
   const searchLower = state.searchTerm.toLowerCase();
   const locationLower = state.locationTerm.toLowerCase();
   const now = Date.now();
