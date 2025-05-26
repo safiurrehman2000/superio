@@ -45,7 +45,6 @@ const index = () => {
         userType: selector.userType,
       };
 
-      console.log("updatedUser :>> ", updatedUser);
       dispatch(addUser(updatedUser));
     } catch (error) {
       console.error("Submission error:", error);

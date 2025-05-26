@@ -1,6 +1,6 @@
 "use client";
 import { addAppliedJob, setAppliedJobs } from "@/slices/userSlice";
-import { db } from "@/utils/firebase";
+import { auth, db } from "@/utils/firebase";
 import { errorToast, successToast } from "@/utils/toast";
 import {
   addDoc,
@@ -9,10 +9,13 @@ import {
   doc,
   getDoc,
   getDocs,
+  increment,
   query,
+  setDoc,
+  updateDoc,
   where,
 } from "firebase/firestore";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 export const useCreateJobPost = async (payload) => {
   try {
@@ -251,7 +254,6 @@ export const useUnsaveJob = async (userId, jobId) => {
     const querySnapshot = await getDocs(q);
 
     if (querySnapshot.empty) {
-      console.log("No saved job found to unsave");
       return true;
     }
 
@@ -304,4 +306,43 @@ export const useGetSavedJobs = async (userId) => {
     console.error("Error fetching saved jobs:", error);
     throw error;
   }
+};
+
+export const useJobViewIncrement = (jobId, user) => {
+  const isTracking = useRef(false);
+
+  useEffect(() => {
+    if (!user || !jobId || user.userType !== "Candidate") return;
+    const trackJobView = async () => {
+      if (isTracking?.current) return;
+      isTracking.current = true;
+
+      try {
+        // Check session storage
+        const sessionKey = `viewed_${user.uid}_${jobId}`;
+        if (sessionStorage.getItem(sessionKey)) return;
+
+        // Check Firestore for existing view
+        const viewDocRef = doc(db, `jobViews/${jobId}/views`, user.uid);
+        const viewDoc = await getDoc(viewDocRef);
+        if (viewDoc.exists()) return;
+
+        console.log("trackJobView is being called :>> ");
+
+        const jobRef = doc(db, "jobs", jobId);
+        // Increment viewCount
+        await updateDoc(jobRef, { viewCount: increment(1) });
+        // Record view in jobViews subcollection, creating jobViews if needed
+        await setDoc(viewDocRef, { userId: user.uid, timestamp: Date.now() });
+        sessionStorage.setItem(sessionKey, "true");
+        console.log(`View count incremented for job ${jobId}`);
+      } catch (error) {
+        console.error("Error incrementing view count:", error);
+      } finally {
+        isTracking.current = false; // Reset tracking flag
+      }
+    };
+
+    trackJobView();
+  }, [jobId, user]); // Correct dependencies
 };

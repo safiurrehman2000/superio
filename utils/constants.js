@@ -53,13 +53,7 @@ export const candidateMenuData = [
     routePath: "/candidates-dashboard/my-profile",
     active: "",
   },
-  {
-    id: 3,
-    name: "My Resume",
-    icon: "la la-file-invoice",
-    routePath: "/candidates-dashboard/my-resume",
-    active: "",
-  },
+
   {
     id: 4,
     name: "Applied Jobs",
@@ -264,12 +258,6 @@ export const formatString = (str) => {
 };
 
 export const applyFilters = (state) => {
-  console.log(
-    "applyFilters: searchTerm =",
-    state.searchTerm,
-    "jobs =",
-    state.jobs
-  );
   const searchLower = state.searchTerm.toLowerCase();
   const locationLower = state.locationTerm.toLowerCase();
   const now = Date.now();
