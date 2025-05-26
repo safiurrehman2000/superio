@@ -1,5 +1,10 @@
 "use client";
-import { useGetJobById, useSaveJob, useUnsaveJob } from "@/APIs/auth/jobs";
+import {
+  useGetJobById,
+  useJobViewIncrement,
+  useSaveJob,
+  useUnsaveJob,
+} from "@/APIs/auth/jobs";
 import CircularLoader from "@/components/circular-loading/CircularLoading";
 import LoginPopup from "@/components/common/form/login/LoginPopup";
 import FooterDefault from "@/components/footer/common-footer";
@@ -23,20 +28,20 @@ import { useDispatch, useSelector } from "react-redux";
 const JobSingleDynamicV3 = ({ params }) => {
   const dispatch = useDispatch();
   const selector = useSelector((store) => store.user);
-
   const id = params.id;
   const { job, loading, error } = useGetJobById(id);
+
+  useJobViewIncrement(id, selector.user);
 
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [bookmarkLoading, setBookmarkLoading] = useState(false);
 
   useEffect(() => {
-    if (selector?.savedJobs) {
-      const isAlreadySaved = selector.savedJobs.some(
-        (savedJob) => savedJob.jobId === id
-      );
-      setIsBookmarked(isAlreadySaved);
-    }
+    // Check if savedJobs is an array before calling some
+    const isAlreadySaved = Array.isArray(selector.savedJobs)
+      ? selector.savedJobs.some((savedJob) => savedJob?.jobId === id)
+      : false;
+    setIsBookmarked(isAlreadySaved);
   }, [selector.savedJobs, id]);
 
   const handleBookmarkClick = async () => {

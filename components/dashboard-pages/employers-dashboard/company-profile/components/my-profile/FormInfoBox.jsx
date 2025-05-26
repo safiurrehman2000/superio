@@ -9,7 +9,7 @@ import { useSelector } from "react-redux";
 
 const FormInfoBox = () => {
   const selector = useSelector((store) => store.user);
-  console.log("selector.user :>> ", selector.user);
+
   return (
     <div className="row default-form">
       {/* <!-- Input --> */}

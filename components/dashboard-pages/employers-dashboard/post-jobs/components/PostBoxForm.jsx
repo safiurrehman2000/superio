@@ -51,6 +51,7 @@ const PostBoxForm = () => {
         employerId: selector?.user?.uid,
         isOpen: false,
         createdAt: Date.now(),
+        viewCount: 0,
       };
 
       if (!selector?.user?.uid) {

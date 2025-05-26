@@ -1,6 +1,11 @@
-import { db } from "@/utils/firebase";
+import { auth, db } from "@/utils/firebase";
 import { errorToast, successToast } from "@/utils/toast";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import {
+  deleteUser,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+} from "firebase/auth";
+import { deleteDoc, doc, getDoc, setDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
 
 export const useUpdateIsFirstTime = async (id) => {
@@ -97,4 +102,40 @@ export const useGetUserById = (userId) => {
   }, [userId]);
 
   return { data, loading, error };
+};
+
+export const reauthenticateUser = async (email, password) => {
+  try {
+    const user = auth.currentUser;
+    if (!user) {
+      throw new Error("No authenticated user found");
+    }
+    const credential = EmailAuthProvider.credential(email, password);
+    await reauthenticateWithCredential(user, credential);
+    return true;
+  } catch (error) {
+    console.error("Re-authentication failed: " + error.message);
+    throw error;
+  }
+};
+
+export const useDeleteUserAccount = async (userId) => {
+  try {
+    // Step 1: Delete user data from Firestore
+    const userDocRef = doc(db, "users", userId);
+    await deleteDoc(userDocRef);
+
+    const user = auth.currentUser;
+    if (user && user.uid === userId) {
+      await deleteUser(user);
+    } else {
+      errorToast("Error deleting user, please try again");
+      throw new Error("No authenticated user found or userId mismatch");
+    }
+    successToast("User Successfully deleted");
+  } catch (error) {
+    errorToast("Error deleting user, please try again");
+    console.error("Error deleting user:", error.message);
+    throw error;
+  }
 };
