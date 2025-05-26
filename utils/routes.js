@@ -7,6 +7,6 @@ export const publicRoutes = [
   "/forgot-password",
   "/job-list",
 ];
-export const privateRoutes = [];
+export const privateRoutes = ["/candidates-dashboard", "/employers-dashboard"];
 
 export const authProtectedPublicRoutes = ["/login", "/register"];

@@ -13,7 +13,7 @@ const Index = () => {
   const { updateUserInfo } = useUpdateUserInfo();
   const dispatch = useDispatch();
   const selector = useSelector((store) => store.user);
-  const userId = selector?.user.uid;
+  const userId = selector?.user?.uid;
   const userType = selector?.userType;
 
   const methods = useForm({

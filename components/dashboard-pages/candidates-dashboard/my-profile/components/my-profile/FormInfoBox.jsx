@@ -21,7 +21,7 @@ const FormInfoBox = () => {
           name="name"
           placeholder="Jerome"
           required
-          defaultValue={selector.user.name}
+          defaultValue={selector.user?.name}
         />
       </div>
 
