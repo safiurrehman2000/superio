@@ -5,7 +5,7 @@ import {
   EmailAuthProvider,
   reauthenticateWithCredential,
 } from "firebase/auth";
-import { deleteDoc, doc, getDoc, setDoc } from "firebase/firestore";
+import { collection, deleteDoc, doc, getDoc, getDocs, setDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
 
 export const useUpdateIsFirstTime = async (id) => {
@@ -104,25 +104,47 @@ export const useGetUserById = (userId) => {
   return { data, loading, error };
 };
 
-export const reauthenticateUser = async (email, password) => {
+export const reauthenticateUser = async (email, password, setLoading) => {
   try {
+    setLoading(true);
     const user = auth.currentUser;
     if (!user) {
-      throw new Error("No authenticated user found");
+      errorToast("No user found! Please try again");
+      return;
     }
     const credential = EmailAuthProvider.credential(email, password);
     await reauthenticateWithCredential(user, credential);
-    return true;
+    return { success: true };
   } catch (error) {
-    console.error("Re-authentication failed: " + error.message);
-    throw error;
+    console.log("error :>> ", error);
+    if (
+      error.code === "auth/invalid-credential" ||
+      error.code === "auth/wrong-password"
+    ) {
+      errorToast("Your password is wrong");
+    } else {
+      errorToast("Something went wrong, please try again");
+    }
+    return { success: false };
+  } finally {
+    setLoading(false);
   }
 };
 
 export const useDeleteUserAccount = async (userId) => {
   try {
-    // Step 1: Delete user data from Firestore
     const userDocRef = doc(db, "users", userId);
+    // First delete the resume subcollection
+    const resumeCollectionRef = collection(userDocRef, "resume");
+    const resumeDocs = await getDocs(resumeCollectionRef);
+
+    // Delete all documents in the resume subcollection
+    const deleteResumePromises = resumeDocs.docs.map((doc) =>
+      deleteDoc(doc.ref)
+    );
+    await Promise.all(deleteResumePromises);
+
+    // Then delete the user document
     await deleteDoc(userDocRef);
 
     const user = auth.currentUser;
@@ -130,7 +152,6 @@ export const useDeleteUserAccount = async (userId) => {
       await deleteUser(user);
     } else {
       errorToast("Error deleting user, please try again");
-      throw new Error("No authenticated user found or userId mismatch");
     }
     successToast("User Successfully deleted");
   } catch (error) {
