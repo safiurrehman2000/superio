@@ -6,27 +6,53 @@ import "react-circular-progressbar/dist/styles.css";
 import { isActiveLink } from "../../utils/linkActiveChecker";
 
 import { candidateMenuData } from "@/utils/constants";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { menuToggle } from "../../features/toggle/toggleSlice";
 import { useSignOut } from "@/APIs/auth/auth";
 import { useState } from "react";
-import { useDeleteUserAccount } from "@/APIs/auth/database";
+import { reauthenticateUser, useDeleteUserAccount } from "@/APIs/auth/database";
+import { FormProvider, useForm } from "react-hook-form";
+import { InputField } from "../inputfield/InputField";
+import { errorToast } from "@/utils/toast";
+import CircularLoader from "../circular-loading/CircularLoading";
 
 const DashboardCandidatesSidebar = () => {
+  const [loading, setLoading] = useState(false);
   const { menu } = useSelector((state) => state.toggle);
-  const { push } = useRouter();
   const [showModal, setShowModal] = useState(false);
   const selector = useSelector((store) => store.user);
+  const methods = useForm({
+    mode: "onChange",
+    defaultValues: {
+      password: "",
+    },
+  });
 
+  const { handleSubmit } = methods;
   const dispatch = useDispatch();
   // menu togggle handler
   const menuToggleHandler = () => {
     dispatch(menuToggle());
   };
 
-  const handleDeleteProfile = () => {
-    useDeleteUserAccount(selector.user.uid);
+  const onSubmit = async (data) => {
+    if (!selector.user) {
+      errorToast("Please login to delete your account");
+      return;
+    }
+    try {
+      const { success } = await reauthenticateUser(
+        selector.user?.email,
+        data?.password,
+        setLoading
+      );
+      if (success) {
+        await useDeleteUserAccount(selector.user?.uid);
+      }
+    } catch (err) {
+      console.error("Account deletion process failed:", err);
+    }
   };
 
   return (
@@ -103,22 +129,49 @@ const DashboardCandidatesSidebar = () => {
               Are you sure you want to delete your profile? This action cannot
               be undone.
             </div>
-            <div className="modal-footer">
-              <button
-                type="button"
-                className="btn btn-secondary"
-                onClick={() => setShowModal(false)}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                className="btn btn-danger"
-                onClick={handleDeleteProfile}
-              >
-                Delete Profile
-              </button>
-            </div>
+            <FormProvider {...methods}>
+              <form className="p-3" onSubmit={handleSubmit(onSubmit)}>
+                <InputField
+                  name="password"
+                  fieldType="Password"
+                  label="Enter your password to confirm"
+                  required
+                  placeholder={"Enter your password"}
+                />
+                <div className="modal-footer">
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => setShowModal(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className={`btn ${
+                      loading ? "btn-style-three" : "btn btn-danger"
+                    } `}
+                    style={{ padding: "6px 12px" }}
+                  >
+                    {loading ? (
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "10px",
+                        }}
+                      >
+                        {" "}
+                        <CircularLoader />{" "}
+                        <p style={{ margin: 0, padding: 0 }}> Deleting.... </p>
+                      </div>
+                    ) : (
+                      "Delete Profile"
+                    )}
+                  </button>
+                </div>
+              </form>
+            </FormProvider>
           </div>
         </div>
       </div>
