@@ -9,6 +9,7 @@ const userSlice = createSlice({
     resumes: [],
     appliedJobs: [],
     savedJobs: [],
+    employerJobs: [],
     isFirstTime: true,
   },
   reducers: {
@@ -107,6 +108,18 @@ const userSlice = createSlice({
         state.user.savedJobs = state.savedJobs;
       }
     },
+    setEmployerJobs: (state, action) => {
+      if (state.user && state.userType === "Employer") {
+        state.employerJobs = action.payload;
+        state.user.employerJobs = action.payload; // Sync with user
+      }
+    },
+    addEmployerJob: (state, action) => {
+      if (state.user && state.userType === "Employer") {
+        state.employerJobs = [...state.employerJobs, action.payload];
+        state.user.employerJobs = state.employerJobs;
+      }
+    },
   },
 });
 
@@ -126,6 +139,8 @@ export const {
   setSavedJobs,
   removeSavedJob,
   clearSavedJobs,
+  setEmployerJobs,
+  addEmployerJob,
 } = userSlice.actions;
 
 export default userSlice.reducer;

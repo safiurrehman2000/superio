@@ -346,3 +346,21 @@ export const useJobViewIncrement = (jobId, user) => {
     trackJobView();
   }, [jobId, user]); // Correct dependencies
 };
+
+export const useFetchEmployerJobs = async (employerId) => {
+  try {
+    const jobsRef = collection(db, "jobs");
+    const q = query(jobsRef, where("employerId", "==", employerId));
+    const querySnapshot = await getDocs(q);
+
+    const jobs = [];
+    querySnapshot.forEach((doc) => {
+      jobs.push({ id: doc.id, ...doc.data() }); // Include the job ID and data
+    });
+
+    return jobs; // Returns an array of jobs
+  } catch (error) {
+    console.error("Error fetching jobs:", error);
+    throw error;
+  }
+};
