@@ -1,5 +1,9 @@
 "use client";
-import { useGetAppliedJobs, useGetSavedJobs } from "@/APIs/auth/jobs";
+import {
+  useFetchEmployerJobs,
+  useGetAppliedJobs,
+  useGetSavedJobs,
+} from "@/APIs/auth/jobs";
 import { useGetUploadedResumes } from "@/APIs/auth/resume";
 import {
   addJobId,
@@ -7,6 +11,7 @@ import {
   clearAppliedJobs,
   clearResumes,
   removeUser,
+  setEmployerJobs,
   setSavedJobs,
 } from "@/slices/userSlice";
 import { LOGO } from "@/utils/constants";

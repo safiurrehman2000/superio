@@ -5,7 +5,7 @@ import MobileMenu from "../../../header/MobileMenu";
 import BreadCrumb from "../../BreadCrumb";
 import CopyrightFooter from "../../CopyrightFooter";
 import MenuToggler from "../../MenuToggler";
-import Form from "./components/Form";
+import Form from "../../candidates-dashboard/change-password/components/Form";
 
 const index = () => {
   return (

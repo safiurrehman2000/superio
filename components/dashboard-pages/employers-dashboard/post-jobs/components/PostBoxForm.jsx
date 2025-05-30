@@ -7,13 +7,15 @@ import CircularLoader from "@/components/circular-loading/CircularLoading";
 import { InputField } from "@/components/inputfield/InputField";
 import { SelectField } from "@/components/selectfield/SelectField";
 import { TextAreaField } from "@/components/textarea/TextArea";
+import { addEmployerJob } from "@/slices/userSlice";
 import { JOB_TYPE_OPTIONS, SECTORS, STATES } from "@/utils/constants";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 const PostBoxForm = () => {
+  const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const selector = useSelector((store) => store.user);
@@ -61,6 +63,9 @@ const PostBoxForm = () => {
       const { success, error: apiError } = await useCreateJobPost(payload);
       if (!success) {
         throw new Error(apiError || "Failed to create job post.");
+      }
+      if (job) {
+        dispatch(addEmployerJob(job));
       }
 
       await useUpdateIsFirstTime(selector.user.uid);
