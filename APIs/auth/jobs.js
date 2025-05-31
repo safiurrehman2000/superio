@@ -1,6 +1,6 @@
 "use client";
 import { addAppliedJob, setAppliedJobs } from "@/slices/userSlice";
-import { auth, db } from "@/utils/firebase";
+import { db } from "@/utils/firebase";
 import { errorToast, successToast } from "@/utils/toast";
 import {
   addDoc,
@@ -116,7 +116,7 @@ export const useApplyForJob = async (
     await addDoc(collection(db, "applications"), {
       candidateId,
       jobId,
-      resume: selectedResume,
+      resumeId: selectedResume?.id,
       message: message || "",
       appliedAt: Date.now(),
       status: "Active",
@@ -363,4 +363,84 @@ export const useFetchEmployerJobs = async (employerId) => {
     console.error("Error fetching jobs:", error);
     throw error;
   }
+};
+
+export const useFetchApplications = (employerId, selectedJobId) => {
+  const [applications, setApplications] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchApplications = async () => {
+      setLoading(true);
+      try {
+        // Fetch applications for the selected job
+        const applicationsQuery = query(
+          collection(db, "applications"),
+          where("jobId", "==", selectedJobId || "")
+        );
+        const applicationsSnapshot = await getDocs(applicationsQuery);
+        const applicationsData = applicationsSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        // Fetch candidate and resume details for each application
+        const applicationsWithDetails = await Promise.all(
+          applicationsData.map(async (app) => {
+            // Fetch candidate document
+            const candidateDocRef = doc(db, "users", app.candidateId);
+            const candidateSnapshot = await getDoc(candidateDocRef);
+            const candidateData = candidateSnapshot.exists()
+              ? candidateSnapshot.data()
+              : null;
+
+            // Fetch resume document from user's resumes subcollection
+            let resumeData = {};
+            if (app.resumeId) {
+              const resumeDocRef = doc(
+                db,
+                "users",
+                app.candidateId,
+                "resumes",
+                app.resumeId
+              );
+              const resumeSnapshot = await getDoc(resumeDocRef);
+              if (resumeSnapshot.exists()) {
+                resumeData = resumeSnapshot.data();
+                // Convert Base64 fileData to data URL for PDF
+                if (resumeData.fileData) {
+                  resumeData.url = `data:application/pdf;base64,${resumeData.fileData}`;
+                }
+              }
+            }
+
+            return {
+              ...app,
+              candidate:
+                candidateData && candidateData.userType === "Candidate"
+                  ? candidateData
+                  : {},
+              resume: resumeData,
+            };
+          })
+        );
+
+        console.log("applicationsWithDetails :>> ", applicationsWithDetails);
+        setApplications(applicationsWithDetails);
+      } catch (error) {
+        console.error("Error fetching applications:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (selectedJobId) {
+      fetchApplications();
+    } else {
+      setApplications([]);
+      setLoading(false);
+    }
+  }, [selectedJobId, employerId]);
+
+  return { applications, loading };
 };
