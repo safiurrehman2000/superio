@@ -148,19 +148,34 @@ const WidgetContentBox = () => {
                         style={{
                           border: "none",
                           borderRadius: "5px",
+                          gap: "10px",
                         }}
                       >
-                        <span
-                          className="title"
-                          style={{
-                            wordBreak: "break-word",
-                            fontSize: "15px",
-                            WebkitLineClamp: 1,
-                            overflow: "hidden",
-                          }}
-                        >
-                          {candidate?.resume?.fileName}
-                        </span>
+                        <div className="d-flex flex-column flex-column align-items-center">
+                          <span
+                            className="title me-2"
+                            style={{
+                              wordBreak: "break-word",
+                              fontSize: "15px",
+                              WebkitLineClamp: 1,
+                              overflow: "hidden",
+                            }}
+                          >
+                            {candidate?.resume?.fileName}
+                          </span>
+
+                          {/* Status indicator */}
+                          {candidate.status === "Accepted" && (
+                            <span className="badge bg-success me-2">
+                              Accepted
+                            </span>
+                          )}
+                          {candidate.status === "Rejected" && (
+                            <span className="badge bg-danger me-2">
+                              Rejected
+                            </span>
+                          )}
+                        </div>
                         <div className="edit-btns option-list">
                           <li>
                             <button
@@ -170,26 +185,30 @@ const WidgetContentBox = () => {
                               <span className="la la-eye"></span>
                             </button>
                           </li>
-                          <li>
-                            <button
-                              data-text="Approve Aplication"
-                              onClick={() =>
-                                openConfirmationModal(candidate.id, "accept")
-                              }
-                            >
-                              <span className="la la-check"></span>
-                            </button>
-                          </li>
-                          <li>
-                            <button
-                              data-text="Reject Aplication"
-                              onClick={() =>
-                                openConfirmationModal(candidate.id, "reject")
-                              }
-                            >
-                              <span className="la la-times-circle"></span>
-                            </button>
-                          </li>
+                          {candidate.status === "Active" && (
+                            <>
+                              <button
+                                className="btn btn-sm btn-link text-success"
+                                style={{ padding: 0 }}
+                                data-text="Approve Application"
+                                onClick={() =>
+                                  openConfirmationModal(candidate.id, "accept")
+                                }
+                              >
+                                <span className="la la-check"></span>
+                              </button>
+                              <button
+                                className="btn btn-sm btn-link text-danger"
+                                style={{ padding: 0 }}
+                                data-text="Reject Application"
+                                onClick={() =>
+                                  openConfirmationModal(candidate.id, "reject")
+                                }
+                              >
+                                <span className="la la-times-circle"></span>
+                              </button>
+                            </>
+                          )}
                           <li>
                             <button data-text="Delete Aplication">
                               <span className="la la-trash"></span>
@@ -219,19 +238,34 @@ const WidgetContentBox = () => {
                           style={{
                             border: "none",
                             borderRadius: "5px",
+                            gap: "10px",
                           }}
                         >
-                          <span
-                            className="title"
-                            style={{
-                              wordBreak: "break-word",
-                              fontSize: "15px",
-                              WebkitLineClamp: 1,
-                              overflow: "hidden",
-                            }}
-                          >
-                            {candidate?.resume?.fileName}
-                          </span>
+                          <div className="d-flex flex-column flex-column flex-column align-items-center">
+                            <span
+                              className="title me-2"
+                              style={{
+                                wordBreak: "break-word",
+                                fontSize: "15px",
+                                WebkitLineClamp: 1,
+                                overflow: "hidden",
+                              }}
+                            >
+                              {candidate?.resume?.fileName}
+                            </span>
+
+                            {/* Status indicator */}
+                            {candidate.status === "Accepted" && (
+                              <span className="badge bg-success me-2">
+                                Accepted
+                              </span>
+                            )}
+                            {candidate.status === "Rejected" && (
+                              <span className="badge bg-danger me-2">
+                                Rejected
+                              </span>
+                            )}
+                          </div>
                           <div className="edit-btns option-list">
                             <li>
                               <button
@@ -243,16 +277,36 @@ const WidgetContentBox = () => {
                                 <span className="la la-eye"></span>
                               </button>
                             </li>
-                            <li>
-                              <button data-text="Approve Application" disabled>
-                                <span className="la la-check"></span>
-                              </button>
-                            </li>
-                            <li>
-                              <button data-text="Reject Application">
-                                <span className="la la-times-circle"></span>
-                              </button>
-                            </li>
+                            {candidate.status === "Open" && (
+                              <>
+                                <button
+                                  className="btn btn-sm btn-link text-success"
+                                  style={{ padding: 0 }}
+                                  data-text="Approve Application"
+                                  onClick={() =>
+                                    openConfirmationModal(
+                                      candidate.id,
+                                      "accept"
+                                    )
+                                  }
+                                >
+                                  <span className="la la-check"></span>
+                                </button>
+                                <button
+                                  className="btn btn-sm btn-link text-danger"
+                                  style={{ padding: 0 }}
+                                  data-text="Reject Application"
+                                  onClick={() =>
+                                    openConfirmationModal(
+                                      candidate.id,
+                                      "reject"
+                                    )
+                                  }
+                                >
+                                  <span className="la la-times-circle"></span>
+                                </button>
+                              </>
+                            )}
                             <li>
                               <button data-text="Delete Application">
                                 <span className="la la-trash"></span>
@@ -280,19 +334,34 @@ const WidgetContentBox = () => {
                           style={{
                             border: "none",
                             borderRadius: "5px",
+                            gap: "10px",
                           }}
                         >
-                          <span
-                            className="title"
-                            style={{
-                              wordBreak: "break-word",
-                              fontSize: "15px",
-                              WebkitLineClamp: 1,
-                              overflow: "hidden",
-                            }}
-                          >
-                            {candidate?.resume?.fileName}
-                          </span>
+                          <div className="d-flex flex-column flex-column align-items-center">
+                            <span
+                              className="title me-2"
+                              style={{
+                                wordBreak: "break-word",
+                                fontSize: "15px",
+                                WebkitLineClamp: 1,
+                                overflow: "hidden",
+                              }}
+                            >
+                              {candidate?.resume?.fileName}
+                            </span>
+
+                            {/* Status indicator */}
+                            {candidate.status === "Accepted" && (
+                              <span className="badge bg-success me-2">
+                                Accepted
+                              </span>
+                            )}
+                            {candidate.status === "Rejected" && (
+                              <span className="badge bg-danger me-2">
+                                Rejected
+                              </span>
+                            )}
+                          </div>
                           <div className="edit-btns option-list">
                             <li>
                               <button
@@ -304,16 +373,36 @@ const WidgetContentBox = () => {
                                 <span className="la la-eye"></span>
                               </button>
                             </li>
-                            <li>
-                              <button data-text="Approve Application">
-                                <span className="la la-check"></span>
-                              </button>
-                            </li>
-                            <li>
-                              <button data-text="Reject Application" disabled>
-                                <span className="la la-times-circle"></span>
-                              </button>
-                            </li>
+                            {candidate.status === "Open" && (
+                              <>
+                                <button
+                                  className="btn btn-sm btn-link text-success"
+                                  style={{ padding: 0 }}
+                                  data-text="Approve Application"
+                                  onClick={() =>
+                                    openConfirmationModal(
+                                      candidate.id,
+                                      "accept"
+                                    )
+                                  }
+                                >
+                                  <span className="la la-check"></span>
+                                </button>
+                                <button
+                                  className="btn btn-sm btn-link text-danger"
+                                  style={{ padding: 0 }}
+                                  data-text="Reject Application"
+                                  onClick={() =>
+                                    openConfirmationModal(
+                                      candidate.id,
+                                      "reject"
+                                    )
+                                  }
+                                >
+                                  <span className="la la-times-circle"></span>
+                                </button>
+                              </>
+                            )}
                             <li>
                               <button data-text="Delete Application">
                                 <span className="la la-trash"></span>
