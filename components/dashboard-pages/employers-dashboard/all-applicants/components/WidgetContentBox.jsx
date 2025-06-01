@@ -1,11 +1,16 @@
 "use client";
 
-import { useFetchApplications, useFetchEmployerJobs } from "@/APIs/auth/jobs";
+import {
+  updateApplicationStatus,
+  useFetchApplications,
+  useFetchEmployerJobs,
+} from "@/APIs/auth/jobs";
 import Loading from "@/components/loading/Loading";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { Tab, TabList, TabPanel, Tabs } from "react-tabs";
 import { ResumeModal } from "./ResumeModal";
+import { ConfirmationModal } from "./ConfirmationModal";
 
 const WidgetContentBox = () => {
   const selector = useSelector((store) => store.user);
@@ -13,13 +18,20 @@ const WidgetContentBox = () => {
   const [jobsLoading, setJobsLoading] = useState(true);
   const [selectedJobId, setSelectedJobId] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
+  const [confirmationModalOpen, setConfirmationModalOpen] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
   const [selectedResume, setSelectedResume] = useState({
     url: "",
     fileName: "",
   });
+  const [currentAction, setCurrentAction] = useState({
+    type: "",
+    applicationId: "",
+  });
   const { applications, loading } = useFetchApplications(
     selector.user?.uid,
-    selectedJobId
+    selectedJobId,
+    refreshKey
   );
 
   const totalApplications = applications?.length || 0;
@@ -43,6 +55,30 @@ const WidgetContentBox = () => {
       fileName: resume.fileName || "Resume",
     });
     setModalOpen(true);
+  };
+
+  const handleStatusUpdate = async (applicationId, actionType) => {
+    try {
+      const newStatus = actionType === "accept" ? "Accepted" : "Rejected";
+      const result = await updateApplicationStatus(applicationId, newStatus);
+
+      if (result.success) {
+        setRefreshKey((prev) => prev + 1);
+        setConfirmationModalOpen(false);
+      } else {
+        console.error("Failed to update status:", result.error);
+      }
+    } catch (error) {
+      console.error("Error updating status:", error);
+    }
+  };
+
+  const openConfirmationModal = (applicationId, actionType) => {
+    setCurrentAction({
+      type: actionType,
+      applicationId,
+    });
+    setConfirmationModalOpen(true);
   };
 
   useEffect(() => {
@@ -135,12 +171,22 @@ const WidgetContentBox = () => {
                             </button>
                           </li>
                           <li>
-                            <button data-text="Approve Aplication">
+                            <button
+                              data-text="Approve Aplication"
+                              onClick={() =>
+                                openConfirmationModal(candidate.id, "accept")
+                              }
+                            >
                               <span className="la la-check"></span>
                             </button>
                           </li>
                           <li>
-                            <button data-text="Reject Aplication">
+                            <button
+                              data-text="Reject Aplication"
+                              onClick={() =>
+                                openConfirmationModal(candidate.id, "reject")
+                              }
+                            >
                               <span className="la la-times-circle"></span>
                             </button>
                           </li>
@@ -284,6 +330,13 @@ const WidgetContentBox = () => {
           )}
         </Tabs>
       </div>
+      <ConfirmationModal
+        isOpen={confirmationModalOpen}
+        onClose={() => setConfirmationModalOpen(false)}
+        onConfirm={handleStatusUpdate}
+        actionType={currentAction.type}
+        applicationId={currentAction.applicationId}
+      />
       <ResumeModal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}

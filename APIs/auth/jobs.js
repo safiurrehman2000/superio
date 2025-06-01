@@ -365,7 +365,7 @@ export const useFetchEmployerJobs = async (employerId) => {
   }
 };
 
-export const useFetchApplications = (employerId, selectedJobId) => {
+export const useFetchApplications = (employerId, selectedJobId, refreshKey) => {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -458,7 +458,7 @@ export const useFetchApplications = (employerId, selectedJobId) => {
       setApplications([]);
       setLoading(false);
     }
-  }, [selectedJobId, employerId]);
+  }, [selectedJobId, employerId, refreshKey]);
 
   return { applications, loading };
 };
@@ -468,11 +468,12 @@ export const updateApplicationStatus = async (applicationId, newStatus) => {
     const applicationRef = doc(db, "applications", applicationId);
     await updateDoc(applicationRef, {
       status: newStatus,
-      updatedAt: serverTimestamp(),
+      updatedAt: Date.now(),
     });
-    console.log(`Application ${applicationId} updated to ${newStatus}`);
+    successToast("Application status updated");
     return { success: true };
   } catch (error) {
+    errorToast("Couldn't change application status, please try again");
     console.error("Error updating application status:", error);
     return { success: false, error: error.message };
   }
