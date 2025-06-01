@@ -444,3 +444,18 @@ export const useFetchApplications = (employerId, selectedJobId) => {
 
   return { applications, loading };
 };
+
+export const updateApplicationStatus = async (applicationId, newStatus) => {
+  try {
+    const applicationRef = doc(db, "applications", applicationId);
+    await updateDoc(applicationRef, {
+      status: newStatus,
+      updatedAt: serverTimestamp(),
+    });
+    console.log(`Application ${applicationId} updated to ${newStatus}`);
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating application status:", error);
+    return { success: false, error: error.message };
+  }
+};
