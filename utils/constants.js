@@ -135,13 +135,7 @@ export const employerMenuData = [
     routePath: "/employers-dashboard/all-applicants",
     active: "",
   },
-  {
-    id: 6,
-    name: "Shortlisted Resumes",
-    icon: "la-bookmark-o",
-    routePath: "/employers-dashboard/shortlisted-resumes",
-    active: "",
-  },
+
   {
     id: 7,
     name: "Packages",
