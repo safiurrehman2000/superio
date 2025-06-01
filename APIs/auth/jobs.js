@@ -373,11 +373,30 @@ export const useFetchApplications = (employerId, selectedJobId) => {
     const fetchApplications = async () => {
       setLoading(true);
       try {
-        // Fetch applications for the selected job
-        const applicationsQuery = query(
-          collection(db, "applications"),
-          where("jobId", "==", selectedJobId || "")
-        );
+        let applicationsQuery;
+
+        if (selectedJobId) {
+          // Fetch applications for the selected job
+          applicationsQuery = query(
+            collection(db, "applications"),
+            where("jobId", "==", selectedJobId)
+          );
+        } else {
+          // First fetch all jobs for this employer
+          const jobsQuery = query(
+            collection(db, "jobs"),
+            where("employerId", "==", employerId)
+          );
+          const jobsSnapshot = await getDocs(jobsQuery);
+          const jobIds = jobsSnapshot.docs.map((doc) => doc.id);
+
+          // Then fetch all applications for these job IDs
+          applicationsQuery = query(
+            collection(db, "applications"),
+            where("jobId", "in", jobIds)
+          );
+        }
+
         const applicationsSnapshot = await getDocs(applicationsQuery);
         const applicationsData = applicationsSnapshot.docs.map((doc) => ({
           id: doc.id,
@@ -425,7 +444,6 @@ export const useFetchApplications = (employerId, selectedJobId) => {
           })
         );
 
-        console.log("applicationsWithDetails :>> ", applicationsWithDetails);
         setApplications(applicationsWithDetails);
       } catch (error) {
         console.error("Error fetching applications:", error);
@@ -434,7 +452,7 @@ export const useFetchApplications = (employerId, selectedJobId) => {
       }
     };
 
-    if (selectedJobId) {
+    if (employerId) {
       fetchApplications();
     } else {
       setApplications([]);

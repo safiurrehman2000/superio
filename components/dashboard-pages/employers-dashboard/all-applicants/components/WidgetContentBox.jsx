@@ -104,7 +104,7 @@ const WidgetContentBox = () => {
                 <div className="row">
                   {applications?.map((candidate) => (
                     <div
-                      className="candidate-block-three col-lg-6 col-md-12 col-sm-12"
+                      className="candidate-block-three col-lg-3 col-md-12 col-sm-12"
                       key={candidate?.candidateId}
                     >
                       <div
