@@ -35,6 +35,7 @@ const RouteGuard = ({ children }) => {
   useGetUploadedResumes(selector.user, selector.userType);
 
   useEffect(() => {
+    console.log("selector?.user?.uid :>> ", selector?.user?.uid);
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         const { uid, email } = user;
