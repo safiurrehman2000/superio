@@ -1,6 +1,11 @@
 "use client";
 
-import { useGetJobListing, useSaveJob, useUnsaveJob } from "@/APIs/auth/jobs";
+import {
+  createJobAlert,
+  useGetJobListing,
+  useSaveJob,
+  useUnsaveJob,
+} from "@/APIs/auth/jobs";
 import CircularLoader from "@/components/circular-loading/CircularLoading";
 import {
   clearAllFilters,
@@ -10,7 +15,7 @@ import {
 } from "@/features/job/newJobSlice";
 import { addSavedJob, removeSavedJob } from "@/slices/userSlice";
 import { formatString } from "@/utils/constants";
-import { errorToast } from "@/utils/toast";
+import { errorToast, successToast } from "@/utils/toast";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -18,10 +23,15 @@ import { TbBookmark, TbBookmarkFilled } from "react-icons/tb";
 import { useDispatch, useSelector } from "react-redux";
 import ListingShowing from "../components/ListingShowing";
 import "./jobList.css";
+import JobAlertModal from "./JobAlertModal";
 
 const FilterJobBox = () => {
   const { data: jobs, loading, error } = useGetJobListing();
   const selector = useSelector((store) => store.user);
+  const [showModal, setShowModal] = useState(false);
+
+  const handleOpenModal = () => setShowModal(true);
+  const handleCloseModal = () => setShowModal(false);
   const dispatch = useDispatch();
   const [bookmarkLoading, setBookmarkLoading] = useState(null);
   const {
@@ -96,7 +106,21 @@ const FilterJobBox = () => {
     }
   };
 
-  // Check if any filters are active
+  const handleSubmitModal = async (frequency) => {
+    if (!selector?.user?.uid) {
+      errorToast("Please log in to create job alerts.");
+      return;
+    }
+
+    const result = await createJobAlert(selector?.user?.uid, frequency);
+    if (result.success) {
+      successToast("Job alert created successfully!");
+    } else {
+      errorToast(result.error || "Failed to create job alert.");
+    }
+    handleCloseModal();
+  };
+
   const hasActiveFilters =
     searchTerm ||
     locationTerm ||
@@ -276,7 +300,13 @@ const FilterJobBox = () => {
             <strong>{filteredJobs?.length || 0}</strong> jobs
           </div>
         </div>
+
         <div className="sort-by">
+          {/* {selector?.userType === "Candidate" && (
+            <button className="btn btn-danger" onClick={handleOpenModal}>
+              Create Job Alerts
+            </button>
+          )} */}
           {hasActiveFilters && (
             <button
               onClick={clearAll}
@@ -348,6 +378,13 @@ const FilterJobBox = () => {
         </div>
       )}
       <ListingShowing />
+      {showModal && selector?.userType === "Candidate" && (
+        <JobAlertModal
+          show={showModal}
+          handleClose={handleCloseModal}
+          onSubmit={handleSubmitModal}
+        />
+      )}
     </>
   );
 };

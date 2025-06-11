@@ -12,6 +12,7 @@ import {
   increment,
   query,
   setDoc,
+  Timestamp,
   updateDoc,
   where,
 } from "firebase/firestore";
@@ -475,6 +476,37 @@ export const updateApplicationStatus = async (applicationId, newStatus) => {
   } catch (error) {
     errorToast("Couldn't change application status, please try again");
     console.error("Error updating application status:", error);
+    return { success: false, error: error.message };
+  }
+};
+
+export const createJobAlert = async (
+  userId,
+  frequency,
+  categories = [],
+  locations = []
+) => {
+  try {
+    if (!userId) {
+      errorToast("You need to login as a candidate to create job alerts");
+      return;
+    }
+    const userDoc = await getDoc(doc(db, "users", userId));
+    if (!userDoc.exists() || userDoc.data().userType !== "Candidate") {
+      errorToast("Only candidates can create job alerts.");
+      return;
+    }
+    const alertRef = await addDoc(collection(db, `users/${userId}/jobAlerts`), {
+      frequency,
+      categories,
+      locations,
+      createdAt: Timestamp.now(),
+      status: "active",
+    });
+    return { id: alertRef.id, success: true };
+  } catch (error) {
+    console.error("Error creating job alert:", error);
+    errorToast("Error creating job alert:", error);
     return { success: false, error: error.message };
   }
 };
