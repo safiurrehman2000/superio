@@ -24,6 +24,7 @@ import { useDispatch, useSelector } from "react-redux";
 import ListingShowing from "../components/ListingShowing";
 import "./jobList.css";
 import JobAlertModal from "./JobAlertModal";
+import Loading from "@/components/loading/Loading";
 
 const FilterJobBox = () => {
   const { data: jobs, loading, error } = useGetJobListing();
@@ -284,7 +285,7 @@ const FilterJobBox = () => {
   };
 
   if (loading) {
-    return <div>Loading jobs...</div>;
+    return <Loading />;
   }
 
   if (error) {
@@ -323,8 +324,8 @@ const FilterJobBox = () => {
             value={sortOrder}
           >
             <option value="">Sort by (default)</option>
-            <option value="asc">Newest</option>
-            <option value="desc">Oldest</option> {/* Fixed "des" to "desc" */}
+            <option value="asc">Oldest</option>
+            <option value="desc">Newest</option> {/* Fixed "des" to "desc" */}
           </select>
 
           <select

@@ -1,7 +1,6 @@
 import { useApplyForJob } from "@/APIs/auth/jobs";
 import { useDeleteResume, useUploadResume } from "@/APIs/auth/resume";
 import CircularLoader from "@/components/circular-loading/CircularLoading";
-import Loading from "@/components/loading/Loading";
 import "@/styles/customStyles.css";
 import { checkFileSize, checkFileTypes } from "@/utils/resumeHelperFunctions";
 import { errorToast } from "@/utils/toast";
@@ -112,6 +111,12 @@ const ApplyJobModalContent = ({ onApplicationSuccess }) => {
     }
   };
 
+  const handleDeleteResume = async (e, fileId) => {
+    e.preventDefault();
+    e.stopPropagation();
+    await useDeleteResume(fileId, selector?.user?.uid, dispatch);
+  };
+
   return (
     <form className="default-form job-apply-form" onSubmit={handleSubmit}>
       {!showError && (
@@ -159,14 +164,10 @@ const ApplyJobModalContent = ({ onApplicationSuccess }) => {
               {file.fileName}
             </span>
             <div className="edit-btns">
-              <button disabled>
-                <span className="la la-pencil"></span>
-              </button>
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  useDeleteResume(file.id, selector?.user?.uid, dispatch);
-                }}
+                onClick={(e) => handleDeleteResume(e, file.id)}
+                type="button"
+                style={{ cursor: "pointer" }}
               >
                 <span className="la la-trash"></span>
               </button>
@@ -175,31 +176,28 @@ const ApplyJobModalContent = ({ onApplicationSuccess }) => {
         ))}
       </div>
       <div className="row">
-        {loading ? (
-          <Loading />
-        ) : (
-          <div className="col-lg-12 col-md-12 col-sm-12 form-group">
-            <div className="uploading-outer apply-cv-outer">
-              <div className="uploadButton">
-                <input
-                  className="uploadButton-input"
-                  type="file"
-                  name="attachments[]"
-                  accept=".doc,.docx,application/pdf"
-                  id="upload"
-                  multiple=""
-                  onChange={cvManagerHandler}
-                />
-                <label
-                  className="uploadButton-button ripple-effect"
-                  htmlFor="upload"
-                >
-                  Upload CV (doc, docx, pdf)
-                </label>
-              </div>
+        <div className="col-lg-12 col-md-12 col-sm-12 form-group">
+          <div className="uploading-outer apply-cv-outer">
+            <div className="uploadButton">
+              <input
+                className="uploadButton-input"
+                type="file"
+                name="attachments[]"
+                accept=".doc,.docx,application/pdf"
+                id="upload"
+                multiple=""
+                onChange={cvManagerHandler}
+              />
+              <label
+                className="uploadButton-button ripple-effect"
+                htmlFor="upload"
+              >
+                Upload CV (doc, docx, pdf)
+              </label>
             </div>
           </div>
-        )}
+        </div>
+
         {/* End .col */}
 
         <div className="col-lg-12 col-md-12 col-sm-12 form-group">
