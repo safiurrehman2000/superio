@@ -145,13 +145,6 @@ export const employerMenuData = [
   },
 
   {
-    id: 9,
-    name: "Resume Alerts",
-    icon: "la-bell",
-    routePath: "/employers-dashboard/resume-alerts",
-    active: "",
-  },
-  {
     id: 10,
     name: "Change Password",
     icon: "la-lock",

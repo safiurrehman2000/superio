@@ -1,13 +1,11 @@
-import MobileMenu from "../../../header/MobileMenu";
-import DashboardHeader from "../../../header/DashboardHeader";
+import DefaulHeader2 from "@/components/header/DefaulHeader2";
 import LoginPopup from "../../../common/form/login/LoginPopup";
 import DashboardEmployerSidebar from "../../../header/DashboardEmployerSidebar";
+import MobileMenu from "../../../header/MobileMenu";
 import BreadCrumb from "../../BreadCrumb";
 import CopyrightFooter from "../../CopyrightFooter";
-import PostJobSteps from "./components/PostJobSteps";
-import PostBoxForm from "./components/PostBoxForm";
 import MenuToggler from "../../MenuToggler";
-import DefaulHeader2 from "@/components/header/DefaulHeader2";
+import PostBoxForm from "./components/PostBoxForm";
 
 const index = () => {
   return (
@@ -44,8 +42,6 @@ const index = () => {
                   </div>
 
                   <div className="widget-content">
-                    <PostJobSteps />
-                    {/* End job steps form */}
                     <PostBoxForm />
                     {/* End post box form */}
                   </div>

@@ -1,16 +1,36 @@
+"use client";
+
+import { useFetchApplications, useFetchEmployerJobs } from "@/APIs/auth/jobs";
+
+import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+
 const TopCardBlock = () => {
+  const selector = useSelector((store) => store.user);
+  const [jobCount, setJobCount] = useState(0);
+  const { applications } = useFetchApplications(selector?.user?.uid);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const jobs = await useFetchEmployerJobs(selector?.user?.uid);
+      setJobCount(jobs?.length || 0);
+    };
+
+    fetchData();
+  }, [selector?.user?.uid]);
+
   const cardContent = [
     {
       id: 1,
       icon: "flaticon-briefcase",
-      countNumber: "22",
+      countNumber: jobCount,
       metaName: "Posted Jobs",
       uiClass: "ui-blue",
     },
     {
       id: 2,
       icon: "la-file-invoice",
-      countNumber: "9382",
+      countNumber: applications?.length || 0,
       metaName: "Application",
       uiClass: "ui-red",
     },
@@ -20,13 +40,6 @@ const TopCardBlock = () => {
       countNumber: "74",
       metaName: "Messages",
       uiClass: "ui-yellow",
-    },
-    {
-      id: 4,
-      icon: "la-bookmark-o",
-      countNumber: "32",
-      metaName: "Shortlist",
-      uiClass: "ui-green",
     },
   ];
 

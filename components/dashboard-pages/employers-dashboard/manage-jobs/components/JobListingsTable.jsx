@@ -7,7 +7,7 @@ import { useSelector } from "react-redux";
 
 const JobListingsTable = async () => {
   const selector = useSelector((store) => store.user);
-  const jobs = await useFetchEmployerJobs(selector.user.uid);
+  const jobs = await useFetchEmployerJobs(selector.user?.uid);
 
   return (
     <div className="tabs-box">

@@ -1,49 +1,34 @@
+"use client";
+
+import { useGetRecentApplications } from "@/APIs/auth/database";
+import { useSelector } from "react-redux";
+
 const Notification = () => {
+  const selector = useSelector((store) => store.user);
+  const { applications, loading } = useGetRecentApplications(
+    selector?.user?.uid
+  );
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (applications.length === 0) {
+    return <div>No recent applications</div>;
+  }
+
   return (
     <ul className="notification-list">
-      <li>
-        <span className="icon flaticon-briefcase"></span>
-        <strong>Henry Wilson</strong> applied for a job
-        <span className="colored"> Product Designer</span>
-      </li>
-      {/* End li */}
-
-      <li className="success">
-        <span className="icon flaticon-briefcase"></span>
-        <strong>Raul Costa</strong> applied for a job
-        <span className="colored"> Product Manager, Risk</span>
-      </li>
-      {/* End li */}
-
-      <li>
-        <span className="icon flaticon-briefcase"></span>
-        <strong>Jack Milk</strong> applied for a job
-        <span className="colored"> Technical Architect</span>
-      </li>
-      {/* End li */}
-
-      <li className="success">
-        <span className="icon flaticon-briefcase"></span>
-        <strong>Michel Arian</strong>
-        applied for a job
-        <span className="colored"> Software Engineer</span>
-      </li>
-      {/* End li */}
-
-      <li>
-        <span className="icon flaticon-briefcase"></span>
-        <strong>Wade Warren</strong> applied for a job
-        <span className="colored"> Web Developer</span>
-      </li>
-      {/* End li */}
-
-      <li className="success">
-        <span className="icon flaticon-briefcase"></span>
-        <strong>Michel Arian</strong>
-        applied for a job
-        <span className="colored"> Software Engineer</span>
-      </li>
-      {/* End li */}
+      {applications.map((application) => (
+        <li
+          key={application.id}
+          className={application.status === "Accepted" ? "success" : ""}
+        >
+          <span className="icon flaticon-briefcase"></span>
+          <strong>{application.candidateName}</strong> applied for a job
+          <span className="colored"> {application.jobTitle}</span>
+        </li>
+      ))}
     </ul>
   );
 };
