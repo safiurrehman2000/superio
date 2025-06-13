@@ -3,6 +3,7 @@ import { useForgetPassword } from "@/APIs/auth/auth";
 import CircularLoader from "@/components/circular-loading/CircularLoading";
 import { InputField } from "@/components/inputfield/InputField";
 import { LOGO } from "@/utils/constants";
+import Timer from "@/utils/Timer";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -17,14 +18,21 @@ const FormContent2 = () => {
   } = methods;
 
   const [loading, setLoading] = useState(false);
+  const [showTimer, setShowTimer] = useState(false);
+
   const onSubmit = async (data) => {
-    setLoading((prev) => !prev);
+    setLoading(true);
     const { success } = await useForgetPassword(data.email);
-    setLoading((prev) => !prev);
+    setLoading(false);
     if (success) {
-      push("/login");
+      setShowTimer(true);
     }
   };
+
+  const handleTimerComplete = () => {
+    setShowTimer(false);
+  };
+
   return (
     <FormProvider {...methods}>
       <form onSubmit={handleSubmit(onSubmit)}>
@@ -52,14 +60,15 @@ const FormContent2 = () => {
 
           <div className="form-group">
             <button
-              disabled={loading || !isValid}
+              disabled={loading || !isValid || showTimer}
               className={`theme-btn btn-style-one btn ${
                 loading ? "btn-secondary disabled" : ""
               }`}
               type="submit"
               name="reset-password"
               style={{
-                cursor: loading || !isValid ? "not-allowed" : "pointer",
+                cursor:
+                  loading || !isValid || showTimer ? "not-allowed" : "pointer",
               }}
             >
               {loading ? (
@@ -75,6 +84,27 @@ const FormContent2 = () => {
             </button>
           </div>
           {/* login */}
+
+          {showTimer && (
+            <div className="mt-3">
+              <Timer duration={60} onComplete={handleTimerComplete} />
+            </div>
+          )}
+
+          <div className="text-center mt-3">
+            <p className="mb-0">
+              <span
+                onClick={() => push("/login")}
+                style={{
+                  color: "#FA5508",
+                  cursor: "pointer",
+                  textDecoration: "none",
+                }}
+              >
+                Back to Login
+              </span>
+            </p>
+          </div>
 
           {/* End form */}
 

@@ -1,6 +1,7 @@
 "use client";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 export const InputField = ({
   label,
@@ -13,7 +14,13 @@ export const InputField = ({
   defaultValue,
   disabled,
 }) => {
-  const { control, setValue, clearErrors } = useFormContext();
+  const [showPassword, setShowPassword] = useState(false);
+  const {
+    control,
+    setValue,
+    clearErrors,
+    formState: { errors },
+  } = useFormContext();
 
   const fieldValue = useWatch({ name, control });
 
@@ -54,6 +61,10 @@ export const InputField = ({
     return undefined;
   };
 
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
   return (
     <div className="form-group">
       {label && (
@@ -66,34 +77,78 @@ export const InputField = ({
           )}
         </label>
       )}
-      <Controller
-        disabled={disabled}
-        name={name}
-        control={control}
-        rules={{
-          required: required ? `${label || "This field"} is required!` : false,
-          validate: validateField,
-        }}
-        defaultValue={defaultValue}
-        render={({ field }) => (
-          <input
-            {...field}
-            type={type}
-            placeholder={placeholder}
-            required={required}
-            className={`form-control ${className} ${
-              getError() ? "is-invalid" : ""
-            }`}
-            onChange={(e) => {
-              field.onChange(e);
-              if (getError()) {
-                clearErrors(name);
+      <div className="position-relative">
+        <Controller
+          disabled={disabled}
+          name={name}
+          control={control}
+          rules={{
+            required: required
+              ? `${label || "This field"} is required!`
+              : false,
+            validate: validateField,
+          }}
+          defaultValue={defaultValue}
+          render={({ field }) => (
+            <input
+              {...field}
+              type={
+                fieldType === "Password"
+                  ? showPassword
+                    ? "text"
+                    : "password"
+                  : type
               }
+              placeholder={placeholder}
+              required={required}
+              className={`form-control ${className} ${
+                getError() ? "border-danger" : ""
+              }`}
+              style={{
+                paddingRight: fieldType === "Password" ? "3rem" : "0.75rem",
+              }}
+              onChange={(e) => {
+                field.onChange(e);
+                const error = validateField(e.target.value);
+                if (!error) {
+                  clearErrors(name);
+                }
+              }}
+              onBlur={(e) => {
+                field.onBlur();
+                const error = validateField(e.target.value);
+                if (!error) {
+                  clearErrors(name);
+                }
+              }}
+            />
+          )}
+        />
+        {fieldType === "Password" && (
+          <button
+            type="button"
+            className="btn btn-link position-absolute end-0 top-50 translate-middle-y"
+            style={{
+              textDecoration: "none",
+              color: "#6c757d",
+              padding: "0.375rem 0.75rem",
+              marginRight: "0.5rem",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              zIndex: 2,
             }}
-          />
+            onClick={togglePasswordVisibility}
+          >
+            {showPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+          </button>
         )}
-      />
-      {getError() && <p className="text-danger mt-2">{getError()}</p>}
+      </div>
+      {getError() && (
+        <p className="text-danger mt-2" style={{ fontSize: "0.875rem" }}>
+          {getError()}
+        </p>
+      )}
     </div>
   );
 };

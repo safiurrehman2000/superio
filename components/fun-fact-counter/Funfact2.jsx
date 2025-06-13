@@ -1,43 +1,52 @@
+"use client";
 
-'use client'
-
-import { useState } from "react";
+import { subscribeToCounts } from "@/APIs/auth/database";
+import { useEffect, useState } from "react";
 import CountUp from "react-countup";
 import { InView } from "react-intersection-observer";
 
 const Funfact2 = () => {
   const [focus, setFocus] = useState(false);
-
-  const counterUpContent = [
+  const [counterUpContent, setCounterUpContent] = useState([
     {
       id: 1,
       startCount: "0",
-      endCount: "97216",
-      meta: "Jobs",
+      endCount: "0",
+      meta: "Users",
       animationDelay: "700",
     },
     {
       id: 2,
       startCount: "0",
-      endCount: "4782",
-      meta: "Members",
+      endCount: "0",
+      meta: "Companies",
       animationDelay: "800",
     },
     {
       id: 3,
       startCount: "0",
-      endCount: "5322",
-      meta: "Resume",
+      endCount: "0",
+      meta: "Resumes",
       animationDelay: "900",
     },
     {
       id: 4,
       startCount: "0",
-      endCount: "6329",
-      meta: "Company",
+      endCount: "0",
+      meta: "Candidates",
       animationDelay: "1000",
     },
-  ];
+  ]);
+
+  useEffect(() => {
+    // Subscribe to real-time updates
+    const unsubscribe = subscribeToCounts((newCounts) => {
+      setCounterUpContent(newCounts);
+    });
+
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
+  }, []);
 
   return (
     <>
