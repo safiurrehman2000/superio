@@ -12,6 +12,9 @@ import {
   getDoc,
   getDocs,
   setDoc,
+  query,
+  where,
+  onSnapshot,
 } from "firebase/firestore";
 import { useEffect, useState } from "react";
 
@@ -166,4 +169,96 @@ export const useDeleteUserAccount = async (userId) => {
     console.error("Error deleting user:", error.message);
     throw error;
   }
+};
+
+export const useGetRecentApplications = (employerId) => {
+  const [applications, setApplications] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!employerId) {
+      setLoading(false);
+      return;
+    }
+
+    const fetchData = async () => {
+      try {
+        // First get all jobs for this employer
+        const jobsRef = collection(db, "jobs");
+        const jobsQuery = query(jobsRef, where("employerId", "==", employerId));
+        const jobsSnapshot = await getDocs(jobsQuery);
+        const jobIds = jobsSnapshot.docs.map((doc) => doc.id);
+
+        if (jobIds.length === 0) {
+          setApplications([]);
+          setLoading(false);
+          return;
+        }
+
+        // Get all applications for these jobs
+        const applicationsRef = collection(db, "applications");
+        const applicationsQuery = query(
+          applicationsRef,
+          where("jobId", "in", jobIds)
+        );
+
+        // Set up real-time listener
+        const unsubscribe = onSnapshot(applicationsQuery, async (snapshot) => {
+          // Get all unique candidate IDs
+          const candidateIds = [
+            ...new Set(snapshot.docs.map((doc) => doc.data().candidateId)),
+          ];
+
+          // Get candidate details
+          const candidatesRef = collection(db, "users");
+          const candidatesQuery = query(
+            candidatesRef,
+            where("__name__", "in", candidateIds)
+          );
+          const candidatesSnapshot = await getDocs(candidatesQuery);
+          const candidatesMap = {};
+          candidatesSnapshot.docs.forEach((doc) => {
+            candidatesMap[doc.id] = doc.data();
+          });
+
+          // Combine application data with candidate and job data
+          const applications = snapshot.docs.map((doc) => {
+            const application = doc.data();
+            const candidate = candidatesMap[application.candidateId];
+            const job = jobsSnapshot.docs
+              .find((jobDoc) => jobDoc.id === application.jobId)
+              ?.data();
+
+            return {
+              id: doc.id,
+              candidateName:
+                candidate?.name ||
+                candidate?.email?.split("@")[0] ||
+                "Anonymous",
+              jobTitle: job?.title || "Unknown Job",
+              appliedAt: application.appliedAt,
+              status: application.status,
+            };
+          });
+
+          // Sort by appliedAt in descending order and take first 6
+          setApplications(
+            applications.sort((a, b) => b.appliedAt - a.appliedAt).slice(0, 6)
+          );
+          setLoading(false);
+        });
+
+        // Cleanup subscription on unmount
+        return () => unsubscribe();
+      } catch (error) {
+        console.error("Error fetching recent applications:", error);
+        setApplications([]);
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [employerId]);
+
+  return { applications, loading };
 };
