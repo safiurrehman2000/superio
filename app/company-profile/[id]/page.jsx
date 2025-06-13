@@ -2,7 +2,6 @@
 import { useGetUserById } from "@/APIs/auth/database";
 import { useGetCompanyJobListings } from "@/APIs/auth/jobs";
 import LoginPopup from "@/components/common/form/login/LoginPopup";
-import RelatedJobs from "@/components/employer-single-pages/related-jobs/RelatedJobs";
 import PrivateMessageBox from "@/components/employer-single-pages/shared-components/PrivateMessageBox";
 import DefaulHeader2 from "@/components/header/DefaulHeader2";
 import MobileMenu from "@/components/header/MobileMenu";
@@ -13,12 +12,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
 
 const EmployersSingleV1 = () => {
   const params = useParams();
   const [jobs, setJobs] = useState([]);
-
+  console.log("jobs", jobs);
   useEffect(() => {
     const fetchJobs = async () => {
       try {
@@ -35,6 +33,7 @@ const EmployersSingleV1 = () => {
   }, [params?.id]);
 
   const { data, loading, error } = useGetUserById(params?.id);
+  console.log("data", data);
   const logoSrc = data?.logo
     ? data.logo.startsWith("data:image")
       ? data.logo // Already a Data URL
@@ -83,34 +82,34 @@ const EmployersSingleV1 = () => {
                       }}
                     />
                   </span>
-                  <h4>{formatString(data?.company_name)}</h4>
+                  <h4>{formatString(data?.company_name) || "N/A"}</h4>
 
                   <ul className="job-info">
                     <li>
                       <span className="icon flaticon-map-locator"></span>
-                      {formatString(data?.company_location)}
+                      {formatString(data?.company_location) || "N/A"}
                     </li>
                     {/* compnay info */}
                     <li>
                       <span className="icon flaticon-briefcase"></span>
-                      {formatString(data?.company_type?.[0]?.value)}
+                      {formatString(data?.company_type?.[0]?.value) || "N/A"}
                     </li>
                     {/* location info */}
                     <li>
                       <span className="icon flaticon-telephone-1"></span>
-                      {data?.phone}
+                      {data?.phone || "N/A"}
                     </li>
                     {/* time info */}
                     <li>
                       <span className="icon flaticon-mail"></span>
-                      {data?.email}
+                      {data?.email || "N/A"}
                     </li>
                     {/* salary info */}
                   </ul>
                   {/* End .job-info */}
 
                   <ul className="job-other-info">
-                    <li className="time">Open Jobs – </li>
+                    <li className="time">Open Jobs – {jobs?.length || 0}</li>
                   </ul>
                   {/* End .job-other-info */}
                 </div>
@@ -141,7 +140,8 @@ const EmployersSingleV1 = () => {
                     <div className="apply-modal-content modal-content">
                       <div className="text-center">
                         <h3 className="title">
-                          Send message to {data?.company_name}
+                          Send message to{" "}
+                          {formatString(data?.company_name) || "N/A"}
                         </h3>
                         <button
                           type="button"
@@ -174,82 +174,99 @@ const EmployersSingleV1 = () => {
                 {/*  job-detail */}
                 <div className="job-detail">
                   <h4>About Company</h4>
-                  <p>{data?.description}</p>
+                  <p>
+                    {data?.description || "No company description available."}
+                  </p>
                 </div>
                 {/* End job-detail */}
 
                 {/* <!-- Related Jobs --> */}
                 <div className="related-jobs">
                   <div className="title-box">
-                    <h3>{jobs?.length} Others jobs available</h3>
+                    <h3>{jobs?.length || 0} Others jobs available</h3>
                   </div>
                   {/* End .title-box */}
 
-                  {jobs?.map((item) => (
-                    <div className="job-block" key={item.id}>
-                      <div className="inner-box">
-                        <div className="content">
-                          <span className="company-logo">
-                            <Image
-                              width={50}
-                              height={50}
-                              src={logoSrc}
-                              alt="resource"
-                              style={{
-                                height: "50px",
-                                width: "50px",
-                                borderRadius: "50%",
-                                objectFit: "cover",
-                              }}
-                            />
-                          </span>
-                          <h4>
-                            <Link href={`/job-list/${item.id}`}>
-                              {formatString(item?.title)}
-                            </Link>
-                          </h4>
+                  {jobs?.length > 0 ? (
+                    jobs?.map((item) => (
+                      <div className="job-block" key={item.id}>
+                        <div className="inner-box">
+                          <div className="content">
+                            <span className="company-logo">
+                              <Image
+                                width={50}
+                                height={50}
+                                src={logoSrc}
+                                alt="resource"
+                                style={{
+                                  height: "50px",
+                                  width: "50px",
+                                  borderRadius: "50%",
+                                  objectFit: "cover",
+                                }}
+                              />
+                            </span>
+                            <h4>
+                              <Link href={`/job-list/${item.id}`}>
+                                {formatString(item?.title) ||
+                                  "Untitled Position"}
+                              </Link>
+                            </h4>
 
-                          <ul className="job-info">
-                            <li>
-                              <span className="icon flaticon-briefcase"></span>
-                              {formatString(data?.company_name)}
-                            </li>
-                            {/* compnay info */}
-                            <li>
-                              <span className="icon flaticon-map-locator"></span>
-                              {formatString(item?.location)}
-                            </li>
-                            {/* location info */}
-                            <li>
-                              <span className="icon flaticon-clock-3"></span>{" "}
-                              {new Date(item?.createdAt)?.toLocaleDateString()}
-                            </li>
-                            {/* time info */}
-                          </ul>
-                          {/* End .job-info */}
+                            <ul className="job-info">
+                              <li>
+                                <span className="icon flaticon-briefcase"></span>
+                                {formatString(item?.jobType) || "N/A"}
+                              </li>
+                              {/* compnay info */}
+                              <li>
+                                <span className="icon flaticon-map-locator"></span>
+                                {formatString(item?.location) || "N/A"}
+                              </li>
+                              {/* location info */}
+                              <li>
+                                <span className="icon flaticon-clock-3"></span>{" "}
+                                {item?.createdAt
+                                  ? new Date(
+                                      item?.createdAt
+                                    )?.toLocaleDateString()
+                                  : "N/A"}
+                              </li>
+                              {/* time info */}
+                            </ul>
+                            {/* End .job-info */}
 
-                          <ul className="job-other-info">
-                            {item?.tags?.map((val, i) => {
-                              let styleClass = "";
-                              if (i % 3 === 0) {
-                                styleClass = "time";
-                              } else if (i % 3 === 1) {
-                                styleClass = "privacy";
-                              } else {
-                                styleClass = "required";
-                              }
+                            <ul className="job-other-info">
+                              {item?.tags?.length > 0 ? (
+                                item?.tags?.map((val, i) => {
+                                  let styleClass = "";
+                                  if (i % 3 === 0) {
+                                    styleClass = "time";
+                                  } else if (i % 3 === 1) {
+                                    styleClass = "privacy";
+                                  } else {
+                                    styleClass = "required";
+                                  }
 
-                              return (
-                                <li key={i} className={styleClass}>
-                                  {formatString(val)}
-                                </li>
-                              );
-                            })}
-                          </ul>
+                                  return (
+                                    <li key={i} className={styleClass}>
+                                      {formatString(val) || "N/A"}
+                                    </li>
+                                  );
+                                })
+                              ) : (
+                                <li className="time">No tags available</li>
+                              )}
+                            </ul>
+                          </div>
                         </div>
                       </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-4">
+                      <p>No jobs available at the moment.</p>
                     </div>
-                  ))}
+                  )}
                   {/* End RelatedJobs */}
                 </div>
                 {/* <!-- Related Jobs --> */}
