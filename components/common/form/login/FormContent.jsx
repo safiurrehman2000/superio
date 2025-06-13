@@ -19,7 +19,11 @@ const FormContent = () => {
     mode: "onChange",
   });
   const searchParams = useSearchParams();
-  const { handleSubmit, setValue, formState: isValid } = methods;
+  const {
+    handleSubmit,
+    setValue,
+    formState: { errors, isValid },
+  } = methods;
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState("");
   const { push } = useRouter();
@@ -115,7 +119,7 @@ const FormContent = () => {
 
       <div className="bottom-box">
         <div className="text d-flex justify-content-center">
-          Don't have an account? 
+          Don't have an account?&nbsp;
           <div
             style={{ cursor: "pointer" }}
             onClick={() => {

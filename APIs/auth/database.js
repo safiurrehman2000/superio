@@ -262,3 +262,117 @@ export const useGetRecentApplications = (employerId) => {
 
   return { applications, loading };
 };
+
+// Function to get total users count
+export const getTotalUsersCount = (callback) => {
+  const usersRef = collection(db, "users");
+  return onSnapshot(usersRef, (snapshot) => {
+    const totalUsers = snapshot.size;
+    callback({ totalUsers });
+  });
+};
+
+// Function to get employers (companies) count
+export const getEmployersCount = (callback) => {
+  const usersRef = collection(db, "users");
+  const q = query(usersRef, where("userType", "==", "Employer"));
+
+  return onSnapshot(q, (snapshot) => {
+    const employersCount = snapshot.size;
+    callback({ employersCount });
+  });
+};
+
+// Function to get candidates count and their resumes
+export const getCandidatesAndResumesCount = (callback) => {
+  const usersRef = collection(db, "users");
+  const q = query(usersRef, where("userType", "==", "Candidate"));
+
+  return onSnapshot(q, async (snapshot) => {
+    const candidatesCount = snapshot.size;
+    let totalResumes = 0;
+
+    // Get all candidates' resumes
+    const candidates = snapshot.docs;
+    for (const candidate of candidates) {
+      const resumesRef = collection(db, "users", candidate.id, "resumes");
+      const resumesSnapshot = await getDocs(resumesRef);
+      totalResumes += resumesSnapshot.size;
+    }
+
+    callback({ candidatesCount, totalResumes });
+  });
+};
+
+// Function to get all counts (users, companies, resumes)
+export const getAllCounts = (callback) => {
+  const usersRef = collection(db, "users");
+
+  return onSnapshot(usersRef, async (snapshot) => {
+    const totalUsers = snapshot.size;
+    let employersCount = 0;
+    let candidatesCount = 0;
+    let totalResumes = 0;
+
+    // Process each user
+    const users = snapshot.docs;
+    for (const user of users) {
+      const userData = user.data();
+
+      if (userData.userType === "Employer") {
+        employersCount++;
+      } else if (userData.userType === "Candidate") {
+        candidatesCount++;
+        // Get resumes for this candidate
+        const resumesRef = collection(db, "users", user.id, "resumes");
+        const resumesSnapshot = await getDocs(resumesRef);
+        totalResumes += resumesSnapshot.size;
+      }
+    }
+
+    callback({
+      totalUsers,
+      employersCount,
+      candidatesCount,
+      totalResumes,
+    });
+  });
+};
+
+// Function to update the Funfact2 component with real-time counts
+export const subscribeToCounts = (callback) => {
+  return getAllCounts((counts) => {
+    const counterUpContent = [
+      {
+        id: 1,
+        startCount: "0",
+        endCount: counts.totalUsers.toString(),
+        meta: "Users",
+        animationDelay: "700",
+      },
+      {
+        id: 2,
+        startCount: "0",
+        endCount: counts.employersCount.toString(),
+        meta: "Companies",
+        animationDelay: "800",
+      },
+      {
+        id: 3,
+        startCount: "0",
+        endCount: counts.totalResumes.toString(),
+        meta: "Resumes",
+        animationDelay: "900",
+      },
+      {
+        id: 4,
+        startCount: "0",
+        endCount: counts.candidatesCount.toString(),
+        meta: "Candidates",
+        animationDelay: "1000",
+      },
+    ];
+
+    callback(counterUpContent);
+  });
+};
