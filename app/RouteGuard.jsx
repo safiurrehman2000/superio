@@ -1,8 +1,7 @@
 "use client";
 import {
-  useFetchEmployerJobs,
   useGetAppliedJobs,
-  useGetSavedJobs,
+  useGetSavedJobs
 } from "@/APIs/auth/jobs";
 import { useGetUploadedResumes } from "@/APIs/auth/resume";
 import {
@@ -11,8 +10,7 @@ import {
   clearAppliedJobs,
   clearResumes,
   removeUser,
-  setEmployerJobs,
-  setSavedJobs,
+  setSavedJobs
 } from "@/slices/userSlice";
 import { LOGO } from "@/utils/constants";
 import { auth, db } from "@/utils/firebase";

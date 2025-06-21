@@ -3,7 +3,6 @@ import Breadcrumb from "../../common/Breadcrumb";
 import LoginPopup from "../../common/form/login/LoginPopup";
 import FooterDefault from "../../footer/common-footer";
 import MobileMenu from "../../header/MobileMenu";
-import Pricing from "../../pricing/Pricing";
 
 const index = () => {
   return (
@@ -28,9 +27,6 @@ const index = () => {
               Lorem ipsum dolor sit amet elit, sed do eiusmod tempor.
             </div>
           </div>
-          {/* End title */}
-          <Pricing />
-          {/* End .{/* <!--Pricing Tabs--> */}
         </div>
       </section>
       {/* <!-- End Pricing Section --> */}
