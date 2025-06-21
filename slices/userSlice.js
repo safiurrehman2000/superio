@@ -11,6 +11,7 @@ const userSlice = createSlice({
     savedJobs: [],
     employerJobs: [],
     isFirstTime: true,
+    hasPostedJob: false,
   },
   reducers: {
     addUser: (state, action) => {
@@ -19,6 +20,7 @@ const userSlice = createSlice({
       state.resumes = action.payload.resumes || state.resumes;
       state.appliedJobs = action.payload.appliedJobs || state.appliedJobs;
       state.savedJobs = action.payload.savedJobs || state.savedJobs;
+      state.hasPostedJob = action.payload.hasPostedJob || state.hasPostedJob;
     },
     removeUser: (state) => {
       state.user = null;
@@ -120,6 +122,12 @@ const userSlice = createSlice({
         state.user.employerJobs = state.employerJobs;
       }
     },
+    updateIsFirstTime: (state, action) => {
+      state.isFirstTime = action.payload;
+      if (state.user) {
+        state.user.isFirstTime = action.payload;
+      }
+    },
   },
 });
 
@@ -141,6 +149,7 @@ export const {
   clearSavedJobs,
   setEmployerJobs,
   addEmployerJob,
+  updateIsFirstTime,
 } = userSlice.actions;
 
 export default userSlice.reducer;

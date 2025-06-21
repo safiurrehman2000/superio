@@ -15,17 +15,22 @@ import {
   Timestamp,
   updateDoc,
   where,
+  writeBatch,
 } from "firebase/firestore";
 import { useEffect, useState, useRef } from "react";
 
 export const useCreateJobPost = async (payload) => {
   try {
-    await addDoc(collection(db, "jobs"), payload);
+    const docRef = await addDoc(collection(db, "jobs"), payload);
+    const jobData = {
+      id: docRef.id,
+      ...payload,
+    };
     successToast("Job Created Successfully");
-    return { success: true };
+    return { success: true, job: jobData };
   } catch (error) {
     errorToast("Couldn't create job post");
-    return { success: false };
+    return { success: false, error: error.message };
   }
 };
 
@@ -391,6 +396,13 @@ export const useFetchApplications = (employerId, selectedJobId, refreshKey) => {
           const jobsSnapshot = await getDocs(jobsQuery);
           const jobIds = jobsSnapshot.docs.map((doc) => doc.id);
 
+          // Check if jobIds is empty before using whereIn
+          if (jobIds.length === 0) {
+            setApplications([]);
+            setLoading(false);
+            return;
+          }
+
           // Then fetch all applications for these job IDs
           applicationsQuery = query(
             collection(db, "applications"),
@@ -507,6 +519,92 @@ export const createJobAlert = async (
   } catch (error) {
     console.error("Error creating job alert:", error);
     errorToast("Error creating job alert:", error);
+    return { success: false, error: error.message };
+  }
+};
+
+export const deleteJob = async (jobId, employerId) => {
+  try {
+    if (!jobId) {
+      throw new Error("Job ID is required");
+    }
+
+    if (!employerId) {
+      throw new Error("Employer ID is required");
+    }
+
+    // Verify the user is an employer
+    const userDoc = await getDoc(doc(db, "users", employerId));
+    if (!userDoc.exists()) {
+      throw new Error("User not found");
+    }
+
+    const userData = userDoc.data();
+    if (userData.userType !== "Employer") {
+      throw new Error("Only employers can delete job postings");
+    }
+
+    // Verify the job exists and belongs to the employer
+    const jobRef = doc(db, "jobs", jobId);
+    const jobDoc = await getDoc(jobRef);
+
+    if (!jobDoc.exists()) {
+      throw new Error("Job not found");
+    }
+
+    const jobData = jobDoc.data();
+    if (jobData.employerId !== employerId) {
+      throw new Error("You can only delete your own job postings");
+    }
+
+    // Start batch operations for atomic deletion
+    const batch = writeBatch(db);
+
+    // 1. Delete all applications for this job
+    const applicationsQuery = query(
+      collection(db, "applications"),
+      where("jobId", "==", jobId)
+    );
+    const applicationsSnapshot = await getDocs(applicationsQuery);
+    applicationsSnapshot.docs.forEach((doc) => {
+      batch.delete(doc.ref);
+    });
+
+    // 2. Delete all saved job entries for this job
+    const savedJobsQuery = query(
+      collection(db, "saved_jobs"),
+      where("jobId", "==", jobId)
+    );
+    const savedJobsSnapshot = await getDocs(savedJobsQuery);
+    savedJobsSnapshot.docs.forEach((doc) => {
+      batch.delete(doc.ref);
+    });
+
+    // 3. Delete all job view records for this job
+    const jobViewsQuery = query(collection(db, `jobViews/${jobId}/views`));
+    const jobViewsSnapshot = await getDocs(jobViewsQuery);
+    jobViewsSnapshot.docs.forEach((doc) => {
+      batch.delete(doc.ref);
+    });
+
+    // 4. Delete the job document itself
+    batch.delete(jobRef);
+
+    // Execute all deletions in a single batch
+    await batch.commit();
+
+    successToast("Job and all related data deleted successfully");
+    return {
+      success: true,
+      deletedCount: {
+        applications: applicationsSnapshot.size,
+        savedJobs: savedJobsSnapshot.size,
+        jobViews: jobViewsSnapshot.size,
+      },
+    };
+  } catch (error) {
+    console.error("Error deleting job:", error);
+    errorToast(error.message || "Failed to delete job");
     return { success: false, error: error.message };
   }
 };

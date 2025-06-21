@@ -18,9 +18,13 @@ import {
 } from "firebase/firestore";
 import { useEffect, useState } from "react";
 
-export const useUpdateIsFirstTime = async (id) => {
+export const useUpdateIsFirstTime = async (id, additionalFields = {}) => {
   try {
-    await setDoc(doc(db, "users", id), { isFirstTime: false }, { merge: true });
+    await setDoc(
+      doc(db, "users", id),
+      { isFirstTime: false, ...additionalFields },
+      { merge: true }
+    );
     return { success: true };
   } catch (error) {
     console.error(error);
@@ -208,6 +212,13 @@ export const useGetRecentApplications = (employerId) => {
           const candidateIds = [
             ...new Set(snapshot.docs.map((doc) => doc.data().candidateId)),
           ];
+
+          // Check if candidateIds is empty before using whereIn
+          if (candidateIds.length === 0) {
+            setApplications([]);
+            setLoading(false);
+            return;
+          }
 
           // Get candidate details
           const candidatesRef = collection(db, "users");
