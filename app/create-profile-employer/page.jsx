@@ -12,7 +12,6 @@ const page = () => {
         margin: "50px",
       }}
     >
-      {" "}
       <BreadCrumb title="Post a New Job!" />
       <PostBoxForm />
     </div>

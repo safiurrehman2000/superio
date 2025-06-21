@@ -35,7 +35,6 @@ const RouteGuard = ({ children }) => {
   useGetUploadedResumes(selector.user, selector.userType);
 
   useEffect(() => {
-    console.log("selector?.user?.uid :>> ", selector?.user?.uid);
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         const { uid, email } = user;
@@ -70,6 +69,7 @@ const RouteGuard = ({ children }) => {
               userType: userData?.userType || "Employer",
               createdAt: userData?.createdAt || null,
               isFirstTime: userData?.isFirstTime ?? false,
+              hasPostedJob: userData?.hasPostedJob ?? false,
               logo: userData?.logo || null,
               company_name: userData?.company_name || "",
               phone: userData?.phone || "",
@@ -105,6 +105,28 @@ const RouteGuard = ({ children }) => {
         // Handle Employer flow
         else if (userData.userType === "Employer") {
           if (userData.isFirstTime) {
+            // Store the last valid onboarding page
+            const validOnboardingPages = [
+              "/onboard-pricing",
+              "/onboard-cart",
+              "/onboard-checkout",
+              "/onboard-order-completed",
+            ];
+            const lastValidPage = validOnboardingPages.find(
+              (page) => pathname === page
+            );
+
+            if (!lastValidPage) {
+              // If current page is not a valid onboarding page, redirect to the last valid page or default to pricing
+              const lastPage =
+                localStorage.getItem("lastOnboardingPage") ||
+                "/onboard-pricing";
+              push(lastPage);
+            } else {
+              // If current page is valid, store it
+              localStorage.setItem("lastOnboardingPage", pathname);
+            }
+          } else if (!userData.hasPostedJob) {
             if (pathname !== "/create-profile-employer") {
               push("/create-profile-employer");
             }
@@ -114,7 +136,7 @@ const RouteGuard = ({ children }) => {
               pathname === "/create-profile-candidate" ||
               pathname === "/create-profile-employer"
             ) {
-              push("/pricing");
+              push("/create-profile-employer");
             }
           }
         }
