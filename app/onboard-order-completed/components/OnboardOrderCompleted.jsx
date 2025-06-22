@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { useUpdateIsFirstTime } from "@/APIs/auth/database";
@@ -11,9 +11,11 @@ const index = () => {
   const router = useRouter();
   const dispatch = useDispatch();
   const selector = useSelector((store) => store.user);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleProceedToProfile = async () => {
     try {
+      setIsLoading(true);
       // Update isFirstTime to false so user can proceed to profile creation
       await useUpdateIsFirstTime(selector.user.uid);
 
@@ -24,6 +26,8 @@ const index = () => {
       router.push("/create-profile-employer");
     } catch (error) {
       console.error("Error updating user status:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -37,8 +41,9 @@ const index = () => {
           style={{ marginTop: "12px" }}
           className="theme-btn btn-style-one"
           onClick={handleProceedToProfile}
+          disabled={isLoading}
         >
-          Proceed to posting a job
+          {isLoading ? "Processing..." : "Proceed to posting a job"}
         </button>
       </div>
       {/* End upper-box */}

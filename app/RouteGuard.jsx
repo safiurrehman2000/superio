@@ -1,8 +1,5 @@
 "use client";
-import {
-  useGetAppliedJobs,
-  useGetSavedJobs
-} from "@/APIs/auth/jobs";
+import { useGetAppliedJobs, useGetSavedJobs } from "@/APIs/auth/jobs";
 import { useGetUploadedResumes } from "@/APIs/auth/resume";
 import {
   addJobId,
@@ -10,7 +7,7 @@ import {
   clearAppliedJobs,
   clearResumes,
   removeUser,
-  setSavedJobs
+  setSavedJobs,
 } from "@/slices/userSlice";
 import { LOGO } from "@/utils/constants";
 import { auth, db } from "@/utils/firebase";
@@ -117,12 +114,12 @@ const RouteGuard = ({ children }) => {
             if (!lastValidPage) {
               // If current page is not a valid onboarding page, redirect to the last valid page or default to pricing
               const lastPage =
-                localStorage.getItem("lastOnboardingPage") ||
+                localStorage.getItem(`lastOnboardingPage_${uid}`) ||
                 "/onboard-pricing";
               push(lastPage);
             } else {
               // If current page is valid, store it
-              localStorage.setItem("lastOnboardingPage", pathname);
+              localStorage.setItem(`lastOnboardingPage_${uid}`, pathname);
             }
           } else if (!userData.hasPostedJob) {
             if (pathname !== "/create-profile-employer") {
@@ -148,6 +145,11 @@ const RouteGuard = ({ children }) => {
         dispatch(removeUser());
         dispatch(clearResumes());
         dispatch(clearAppliedJobs());
+
+        if (selector.user) {
+          localStorage.removeItem(`lastOnboardingPage_${selector.user}`);
+        }
+
         // Redirect unauthenticated users from private routes to login
         if (privateRoutes.some((route) => pathname.includes(route))) {
           push("/login");
