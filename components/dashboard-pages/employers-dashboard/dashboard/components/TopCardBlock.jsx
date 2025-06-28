@@ -12,8 +12,20 @@ const TopCardBlock = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const jobs = await useFetchEmployerJobs(selector?.user?.uid);
-      setJobCount(jobs?.length || 0);
+      // Only fetch data if user ID exists
+      if (!selector?.user?.uid) {
+        console.warn("TopCardBlock: User ID is undefined, skipping data fetch");
+        setJobCount(0);
+        return;
+      }
+
+      try {
+        const jobs = await useFetchEmployerJobs(selector.user.uid);
+        setJobCount(jobs?.length || 0);
+      } catch (error) {
+        console.error("Error fetching jobs in TopCardBlock:", error);
+        setJobCount(0);
+      }
     };
 
     fetchData();
