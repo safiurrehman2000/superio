@@ -139,6 +139,15 @@ export const useApplyForJob = async (
 };
 
 export const isAlreadyApplied = async (candidateId, jobId, appliedJobs) => {
+  // Validate required parameters
+  if (!candidateId) {
+    throw new Error("Candidate ID is required");
+  }
+
+  if (!jobId) {
+    throw new Error("Job ID is required");
+  }
+
   if (appliedJobs.includes(jobId)) {
     throw new Error("You have already applied to this job.");
   }
@@ -195,6 +204,12 @@ export const useGetAppliedJobs = async (candidateId, dispatch) => {
 
 export const useGetCompanyJobListings = async (employerId) => {
   try {
+    // Validate employerId before making the query
+    if (!employerId) {
+      console.warn("useGetCompanyJobListings: employerId is undefined or null");
+      return { jobs: [] };
+    }
+
     const jobsRef = collection(db, "jobs");
 
     const q = query(jobsRef, where("employerId", "==", employerId));
@@ -219,6 +234,15 @@ export const useGetCompanyJobListings = async (employerId) => {
 
 export const useSaveJob = async (userId, jobId) => {
   try {
+    // Validate required parameters
+    if (!userId) {
+      throw new Error("User ID is required");
+    }
+
+    if (!jobId) {
+      throw new Error("Job ID is required");
+    }
+
     // First check if the job is already saved
     const q = query(
       collection(db, "saved_jobs"),
@@ -252,6 +276,15 @@ export const useSaveJob = async (userId, jobId) => {
 
 export const useUnsaveJob = async (userId, jobId) => {
   try {
+    // Validate required parameters
+    if (!userId) {
+      throw new Error("User ID is required");
+    }
+
+    if (!jobId) {
+      throw new Error("Job ID is required");
+    }
+
     const q = query(
       collection(db, "saved_jobs"),
       where("userId", "==", userId),
@@ -355,6 +388,12 @@ export const useJobViewIncrement = (jobId, user) => {
 
 export const useFetchEmployerJobs = async (employerId) => {
   try {
+    // Validate employerId before making the query
+    if (!employerId) {
+      console.warn("useFetchEmployerJobs: employerId is undefined or null");
+      return [];
+    }
+
     const jobsRef = collection(db, "jobs");
     const q = query(jobsRef, where("employerId", "==", employerId));
     const querySnapshot = await getDocs(q);
@@ -379,6 +418,14 @@ export const useFetchApplications = (employerId, selectedJobId, refreshKey) => {
     const fetchApplications = async () => {
       setLoading(true);
       try {
+        // Validate employerId before making any queries
+        if (!employerId) {
+          console.warn("useFetchApplications: employerId is undefined or null");
+          setApplications([]);
+          setLoading(false);
+          return;
+        }
+
         let applicationsQuery;
 
         if (selectedJobId) {

@@ -81,8 +81,20 @@ const ProfileChart = () => {
 
   useEffect(() => {
     const fetchJobs = async () => {
-      const fetchedJobs = await useFetchEmployerJobs(selector?.user?.uid);
-      setJobs(fetchedJobs || []);
+      // Only fetch data if user ID exists
+      if (!selector?.user?.uid) {
+        console.warn("ProfileChart: User ID is undefined, skipping data fetch");
+        setJobs([]);
+        return;
+      }
+
+      try {
+        const fetchedJobs = await useFetchEmployerJobs(selector.user.uid);
+        setJobs(fetchedJobs || []);
+      } catch (error) {
+        console.error("Error fetching jobs in ProfileChart:", error);
+        setJobs([]);
+      }
     };
     fetchJobs();
   }, [selector?.user?.uid]);
