@@ -17,6 +17,14 @@ const OnboardCartItems = () => {
     },
   ]);
 
+  // Format Euro amounts
+  const formatEuroAmount = (amount) => {
+    return new Intl.NumberFormat("de-DE", {
+      style: "currency",
+      currency: "EUR",
+    }).format(amount);
+  };
+
   // delete cart item
   const deleteCartHandler = (id) => {
     setCartItems(cartItems.filter((item) => item.id !== id));
@@ -43,7 +51,7 @@ const OnboardCartItems = () => {
             <span>{item.title}</span>
           </td>
 
-          <td className="product-price">${item.price}</td>
+          <td className="product-price">{formatEuroAmount(item.price)}</td>
 
           <td className="product-quantity">
             <div className="item-quantity">
@@ -60,7 +68,7 @@ const OnboardCartItems = () => {
 
           <td className="product-subtotal">
             <span className="amount">
-              ${(item.qty * item.price).toFixed(2)}
+              {formatEuroAmount(item.qty * item.price)}
             </span>
           </td>
 

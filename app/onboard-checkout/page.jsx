@@ -1,12 +1,57 @@
 "use client";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { LOGO } from "@/utils/constants";
 import Image from "next/image";
+import { Elements } from "@stripe/react-stripe-js";
+import stripePromise from "@/utils/stripe";
 import OnboardBillingDetails from "./components/OnboardBillingDetails";
 import OnboardOrderDetails from "./components/OnboardOrderDetails";
 import OnboardPaymentOptions from "./components/OnboardPaymentOptions";
 
 const OnboardCheckoutPage = () => {
+  const [clientSecret, setClientSecret] = useState(null);
+  const [orderTotal, setOrderTotal] = useState(103.95); // Default total from order details
+
+  useEffect(() => {
+    // Create payment intent when component mounts
+    const createPaymentIntent = async () => {
+      try {
+        const response = await fetch("/api/create-payment-intent", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            amount: orderTotal,
+            currency: "eur",
+            metadata: {
+              order_type: "onboard_plan",
+            },
+          }),
+        });
+
+        const data = await response.json();
+        if (data.clientSecret) {
+          setClientSecret(data.clientSecret);
+        }
+      } catch (error) {
+        console.error("Error creating payment intent:", error);
+      }
+    };
+
+    createPaymentIntent();
+  }, [orderTotal]);
+
+  const handlePaymentSuccess = (paymentIntent) => {
+    console.log("Payment successful:", paymentIntent);
+    // Handle successful payment - update order status, redirect, etc.
+  };
+
+  const handlePaymentError = (error) => {
+    console.error("Payment failed:", error);
+    // Handle payment error - show error message, retry option, etc.
+  };
+
   return (
     <div
       style={{
@@ -49,7 +94,27 @@ const OnboardCheckoutPage = () => {
             <div className="column col-lg-4 col-md-12 col-sm-12">
               <OnboardOrderDetails />
               <div className="payment-box">
-                <OnboardPaymentOptions />
+                {clientSecret ? (
+                  <Elements
+                    stripe={stripePromise}
+                    options={{
+                      clientSecret,
+                      appearance: {
+                        theme: "stripe",
+                      },
+                    }}
+                  >
+                    <OnboardPaymentOptions
+                      amount={orderTotal}
+                      onPaymentSuccess={handlePaymentSuccess}
+                      onPaymentError={handlePaymentError}
+                    />
+                  </Elements>
+                ) : (
+                  <div className="loading-payment">
+                    <p>Loading payment options...</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>

@@ -23,6 +23,14 @@ const OnboardCartTotal = () => {
   const tax = subtotal * 0.05; // 5% tax
   const total = subtotal + tax;
 
+  // Format Euro amounts
+  const formatEuroAmount = (amount) => {
+    return new Intl.NumberFormat("de-DE", {
+      style: "currency",
+      currency: "EUR",
+    }).format(amount);
+  };
+
   const handleCheckout = () => {
     // Add payment processing logic here
     console.log("Processing payment...");
@@ -39,16 +47,16 @@ const OnboardCartTotal = () => {
 
         <li>
           <span className="col">Subtotal</span>
-          <span className="col price">${subtotal.toFixed(2)}</span>
+          <span className="col price">{formatEuroAmount(subtotal)}</span>
         </li>
         <li>
           <span className="col">Tax (5%)</span>
-          <span className="col price">${tax.toFixed(2)}</span>
+          <span className="col price">{formatEuroAmount(tax)}</span>
         </li>
 
         <li>
           <span className="col">Total</span>
-          <span className="col price">${total.toFixed(2)}</span>
+          <span className="col price">{formatEuroAmount(total)}</span>
         </li>
       </ul>
 
