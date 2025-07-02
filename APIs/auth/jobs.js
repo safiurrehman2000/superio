@@ -655,3 +655,23 @@ export const deleteJob = async (jobId, employerId) => {
     return { success: false, error: error.message };
   }
 };
+
+export const fetchJobViews = async (selectedJob) => {
+  const viewsRef = collection(db, `jobViews/${selectedJob}/views`);
+  const snapshot = await getDocs(viewsRef);
+  const monthMap = {};
+  snapshot.forEach((doc) => {
+    const data = doc.data();
+    if (data.timestamp) {
+      const month = getMonthYear(data.timestamp);
+      monthMap[month] = (monthMap[month] || 0) + 1;
+    }
+  });
+  const sortedMonths = Object.keys(monthMap).sort((a, b) => {
+    const [ma, ya] = a.split(" ");
+    const [mb, yb] = b.split(" ");
+    return new Date(`${ma} 1, ${ya}`) - new Date(`${mb} 1, ${yb}`);
+  });
+  setLabels(sortedMonths);
+  setViewCounts(sortedMonths.map((m) => monthMap[m]));
+};
