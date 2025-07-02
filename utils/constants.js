@@ -99,6 +99,23 @@ export const candidateMenuData = [
   },
 ];
 
+export const adminMenuData = [
+  {
+    id: 1,
+    name: "Admin",
+    icon: "la-file-invoice",
+    routePath: "/admin-dashboard/admin-dashboard",
+    active: "",
+  },
+  {
+    id: 2,
+    name: "Logout",
+    icon: "la-sign-out",
+    routePath: "/login",
+    active: "",
+  },
+];
+
 export const employerMenuData = [
   {
     id: 1,
@@ -336,3 +353,14 @@ export const transformJobData = (jobs) => {
 // Flex Orange – #FA5508
 // Bright Aqua – #10E7DC
 // Deep Blue – #0074E1
+
+// Debounce utility
+export function debounce(fn, delay) {
+  let timer;
+  return function (...args) {
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(() => {
+      fn.apply(this, args);
+    }, delay);
+  };
+}

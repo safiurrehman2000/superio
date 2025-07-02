@@ -1,0 +1,157 @@
+.admin-table-container {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06);
+  padding: 32px 24px;
+  margin-bottom: 48px;
+  overflow-x: auto;
+}
+
+.admin-table-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 24px;
+  color: #222;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: #fafbfc;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+  font-size: 1rem;
+}
+
+.admin-table th {
+  background: #f3f4f6;
+  font-weight: 700;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.admin-table tr:last-child td {
+  border-bottom: none;
+}
+
+.admin-table tbody tr {
+  transition: background 0.2s;
+}
+
+.admin-table tbody tr:hover {
+  background: #f0f6ff;
+}
+
+.admin-table-empty {
+  text-align: center;
+  color: #888;
+  padding: 32px 0;
+  font-size: 1.1rem;
+}
+
+.admin-table-loading {
+  text-align: center;
+  padding: 32px 0;
+}
+
+.admin-table-input {
+  padding: 10px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 1rem;
+  outline: none;
+  transition: border 0.2s;
+  background: #fff;
+}
+.admin-table-input:focus {
+  border-color: #2563eb;
+}
+
+.admin-table-checkbox {
+  accent-color: #2563eb;
+  width: 18px;
+  height: 18px;
+}
+
+.admin-table-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.admin-table-btn {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 20px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
+  box-shadow: 0 1px 4px rgba(37, 99, 235, 0.08);
+}
+.admin-table-btn:disabled {
+  background: #b6c6e3;
+  cursor: not-allowed;
+}
+.admin-table-btn:not(:disabled):hover {
+  background: #1746a2;
+}
+
+@media (max-width: 700px) {
+  .admin-table-container {
+    padding: 12px 2px;
+  }
+  .admin-table-title {
+    font-size: 1.1rem;
+    margin-bottom: 12px;
+  }
+  .admin-table th,
+  .admin-table td {
+    padding: 8px 6px;
+    font-size: 0.95rem;
+  }
+}
+
+.chip {
+  display: inline-block;
+  padding: 4px 14px;
+  border-radius: 999px;
+  font-size: 0.98rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: #fff;
+  background: #888;
+  margin: 0 2px;
+  vertical-align: middle;
+}
+.chip-candidate {
+  background: #fa5508;
+}
+.chip-employer {
+  background: #10e7dc;
+  color: #00313a;
+}
+.chip-admin {
+  background: #0074e1;
+}
+.chip-active {
+  background: #fa5508;
+}
+.chip-approved {
+  background: #22c55e;
+}
+.chip-rejected {
+  background: #ef4444;
+}

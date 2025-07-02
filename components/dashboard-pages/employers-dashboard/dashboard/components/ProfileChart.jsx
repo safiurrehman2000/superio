@@ -10,7 +10,7 @@ import {
   Legend,
 } from "chart.js";
 import { Line } from "react-chartjs-2";
-import { useFetchEmployerJobs } from "@/APIs/auth/jobs";
+import { fetchJobViews, useFetchEmployerJobs } from "@/APIs/auth/jobs";
 import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 // Firebase imports
@@ -107,26 +107,8 @@ const ProfileChart = () => {
       return;
     }
     setShowAllJobs(false);
-    const fetchJobViews = async () => {
-      const viewsRef = collection(db, `jobViews/${selectedJob}/views`);
-      const snapshot = await getDocs(viewsRef);
-      const monthMap = {};
-      snapshot.forEach((doc) => {
-        const data = doc.data();
-        if (data.timestamp) {
-          const month = getMonthYear(data.timestamp);
-          monthMap[month] = (monthMap[month] || 0) + 1;
-        }
-      });
-      const sortedMonths = Object.keys(monthMap).sort((a, b) => {
-        const [ma, ya] = a.split(" ");
-        const [mb, yb] = b.split(" ");
-        return new Date(`${ma} 1, ${ya}`) - new Date(`${mb} 1, ${yb}`);
-      });
-      setLabels(sortedMonths);
-      setViewCounts(sortedMonths.map((m) => monthMap[m]));
-    };
-    fetchJobViews();
+
+    fetchJobViews(selectedJob);
   }, [selectedJob]);
 
   const handleJobChange = (e) => {

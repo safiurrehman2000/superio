@@ -52,6 +52,8 @@ const HeaderNavContent = () => {
                     ? "/candidates-dashboard/my-profile"
                     : selector.userType === "Employer"
                     ? "/employers-dashboard/dashboard"
+                    : selector?.userType === "Admin"
+                    ? "/admin-dashboard/admin-dashboard"
                     : "/404"
                 }`}
               >
