@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { db } from "@/utils/firebase";
+import { addDoc, collection } from "firebase/firestore";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -42,8 +43,6 @@ export async function POST(req) {
 
     // Save to Firestore
     try {
-      // Firestore v9 modular syntax
-      const { collection, addDoc } = await import("firebase/firestore");
       await addDoc(collection(db, "receipts"), receipt);
       console.log("Receipt saved:", receipt);
     } catch (err) {
