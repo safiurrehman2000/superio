@@ -1,103 +1,80 @@
+"use client";
+import React, { useEffect, useState } from "react";
+import { db } from "@/utils/firebase";
+import { useSelector } from "react-redux";
+import { collection, query, where, orderBy, getDocs } from "firebase/firestore";
+
 const PackageDataTable = () => {
+  const [receipts, setReceipts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const user = useSelector((state) => state.user.user);
+
+  useEffect(() => {
+    if (!user?.uid) return;
+    setLoading(true);
+    const fetchReceipts = async () => {
+      try {
+        const q = query(
+          collection(db, "receipts"),
+          where("userId", "==", user.uid),
+          orderBy("createdAt", "desc")
+        );
+        const querySnapshot = await getDocs(q);
+        const data = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setReceipts(data);
+      } catch (err) {
+        setReceipts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchReceipts();
+  }, [user?.uid]);
+
   return (
     <table className="default-table manage-job-table">
       <thead>
         <tr>
           <th>#</th>
-          <th>Transaction id</th>
+          <th>Receipt ID</th>
           <th>Package</th>
-          <th>Expiry</th>
-          <th>Total Jobs/CVs</th>
-          <th>Used</th>
-          <th>Remaining</th>
+          <th>Amount</th>
           <th>Status</th>
+          <th>Date</th>
         </tr>
       </thead>
-
       <tbody>
-        <tr>
-          <td>1</td>
-          <td className="trans-id">#593677663</td>
-          <td className="package">
-            <a href="#">Super CV Pack</a>
-          </td>
-          <td className="expiry">Jan 11, 2021</td>
-          <td className="total-jobs">50</td>
-          <td className="used">8</td>
-          <td className="remaining">42</td>
-          <td className="status">Active</td>
-        </tr>
-        {/* End tr */}
-
-        <tr>
-          <td>2</td>
-          <td className="trans-id">#593677663</td>
-          <td className="package">
-            <a href="#">Gold Jobs package</a>
-          </td>
-          <td className="expiry">Jan 11, 2021</td>
-          <td className="total-jobs">50</td>
-          <td className="used">8</td>
-          <td className="remaining">42</td>
-          <td className="status">Active</td>
-        </tr>
-        {/* End tr */}
-
-        <tr>
-          <td>3</td>
-          <td className="trans-id">#593677663</td>
-          <td className="package">
-            <a href="#">Silver Jobs package</a>
-          </td>
-          <td className="expiry">Jan 11, 2021</td>
-          <td className="total-jobs">50</td>
-          <td className="used">8</td>
-          <td className="remaining">42</td>
-          <td className="status">Active</td>
-        </tr>
-        {/* End tr */}
-
-        <tr>
-          <td>4</td>
-          <td className="trans-id">#593677663</td>
-          <td className="package">
-            <a href="#">Super CV Pack</a>
-          </td>
-          <td className="expiry">Jan 11, 2021</td>
-          <td className="total-jobs">50</td>
-          <td className="used">8</td>
-          <td className="remaining">42</td>
-          <td className="status">Active</td>
-        </tr>
-        {/* End tr */}
-
-        <tr>
-          <td>5</td>
-          <td className="trans-id">#593677663</td>
-          <td className="package">
-            <a href="#">Gold Jobs package</a>
-          </td>
-          <td className="expiry">Jan 11, 2021</td>
-          <td className="total-jobs">50</td>
-          <td className="used">8</td>
-          <td className="remaining">42</td>
-          <td className="status">Active</td>
-        </tr>
-        {/* End tr */}
-
-        <tr>
-          <td>6</td>
-          <td className="trans-id">#593677663</td>
-          <td className="package">
-            <a href="#">Silver Jobs package</a>
-          </td>
-          <td className="expiry">Jan 11, 2021</td>
-          <td className="total-jobs">50</td>
-          <td className="used">8</td>
-          <td className="remaining">42</td>
-          <td className="status">Active</td>
-        </tr>
-        {/* End tr */}
+        {loading ? (
+          <tr>
+            <td colSpan={6} style={{ textAlign: "center" }}>
+              Loading receipts...
+            </td>
+          </tr>
+        ) : receipts.length === 0 ? (
+          <tr>
+            <td colSpan={6} style={{ textAlign: "center" }}>
+              No receipts found.
+            </td>
+          </tr>
+        ) : (
+          receipts.map((r, idx) => (
+            <tr key={r.id}>
+              <td>{idx + 1}</td>
+              <td>{r.receiptId}</td>
+              <td>{r.packageName}</td>
+              <td>
+                {r.amount === 0
+                  ? "Free"
+                  : `${r.amount} ${r.currency?.toUpperCase()}`}
+              </td>
+              <td>{r.status}</td>
+              <td>{new Date(r.createdAt).toLocaleString()}</td>
+            </tr>
+          ))
+        )}
       </tbody>
     </table>
   );
