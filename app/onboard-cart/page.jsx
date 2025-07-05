@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+import React, { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import OnboardCartTable from "./components/OnboardCartTable";
 import OnboardCoupon from "./components/OnboardCoupon";
 import OnboardCartTotal from "./components/OnboardCartTotal";
@@ -6,6 +8,23 @@ import { LOGO } from "@/utils/constants";
 import Image from "next/image";
 
 const OnboardCartPage = () => {
+  const searchParams = useSearchParams();
+  const [selectedPackage, setSelectedPackage] = useState(null);
+
+  useEffect(() => {
+    // Get package data from URL parameters
+    const packageParam = searchParams.get("package");
+    if (packageParam) {
+      try {
+        const packageData = JSON.parse(decodeURIComponent(packageParam));
+        setSelectedPackage(packageData);
+        console.log("Selected package:", packageData);
+      } catch (error) {
+        console.error("Error parsing package data:", error);
+      }
+    }
+  }, [searchParams]);
+
   return (
     <div
       style={{
@@ -15,7 +34,7 @@ const OnboardCartPage = () => {
         margin: "50px",
       }}
     >
-      <header className={`header-shaddow }`}>
+      <header className="header-shaddow">
         <div className="container-fluid">
           {/* <!-- Main box --> */}
           <div className="main-box">
@@ -49,7 +68,7 @@ const OnboardCartPage = () => {
               {/* <!--Cart Outer--> */}
               <div className="cart-outer">
                 <div className="table-outer">
-                  <OnboardCartTable />
+                  <OnboardCartTable selectedPackage={selectedPackage} />
                 </div>
                 {/* End table-outer */}
 
@@ -63,7 +82,7 @@ const OnboardCartPage = () => {
             {/* End .col-lg-8 */}
 
             <div className="column col-lg-4 col-md-12 col-sm-12">
-              <OnboardCartTotal />
+              <OnboardCartTotal selectedPackage={selectedPackage} />
             </div>
             {/* End .col-lg-4 */}
           </div>

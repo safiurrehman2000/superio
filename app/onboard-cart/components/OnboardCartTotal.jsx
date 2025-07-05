@@ -1,19 +1,36 @@
 "use client";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-const OnboardCartTotal = () => {
+const OnboardCartTotal = ({ selectedPackage }) => {
   const router = useRouter();
+  const [cartItems, setCartItems] = useState([]);
 
-  // Dummy cart data - in real app, this would come from props or context
-  const cartItems = [
-    {
-      id: 1,
-      title: "Basic Plan",
-      price: 99,
-      qty: 1,
-    },
-  ];
+  useEffect(() => {
+    if (selectedPackage) {
+      // Convert the selected package to cart item format
+      const cartItem = {
+        id: selectedPackage.id,
+        title: selectedPackage.packageType,
+        price:
+          selectedPackage.price === "Free"
+            ? 0
+            : parseFloat(selectedPackage.price),
+        qty: 1,
+      };
+      setCartItems([cartItem]);
+    } else {
+      // Fallback to dummy data if no package selected
+      setCartItems([
+        {
+          id: 1,
+          title: "Basic Plan",
+          price: 99,
+          qty: 1,
+        },
+      ]);
+    }
+  }, [selectedPackage]);
 
   // Calculate totals
   const subtotal = cartItems.reduce(
@@ -34,8 +51,15 @@ const OnboardCartTotal = () => {
   const handleCheckout = () => {
     // Add payment processing logic here
     console.log("Processing payment...");
-    // After successful payment
-    router.push("/onboard-checkout");
+
+    // Pass the selected package data to checkout page
+    if (selectedPackage) {
+      const packageParam = encodeURIComponent(JSON.stringify(selectedPackage));
+      router.push(`/onboard-checkout?package=${packageParam}`);
+    } else {
+      // Fallback to checkout without package data
+      router.push("/onboard-checkout");
+    }
   };
 
   return (
@@ -47,16 +71,22 @@ const OnboardCartTotal = () => {
 
         <li>
           <span className="col">Subtotal</span>
-          <span className="col price">{formatEuroAmount(subtotal)}</span>
+          <span className="col price">
+            {subtotal === 0 ? "Free" : formatEuroAmount(subtotal)}
+          </span>
         </li>
         <li>
           <span className="col">Tax (5%)</span>
-          <span className="col price">{formatEuroAmount(tax)}</span>
+          <span className="col price">
+            {subtotal === 0 ? "Free" : formatEuroAmount(tax)}
+          </span>
         </li>
 
         <li>
           <span className="col">Total</span>
-          <span className="col price">{formatEuroAmount(total)}</span>
+          <span className="col price">
+            {total === 0 ? "Free" : formatEuroAmount(total)}
+          </span>
         </li>
       </ul>
 

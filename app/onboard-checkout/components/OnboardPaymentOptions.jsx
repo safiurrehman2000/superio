@@ -12,6 +12,7 @@ const OnboardPaymentOptions = ({
   amount,
   onPaymentSuccess,
   onPaymentError,
+  selectedPackage,
 }) => {
   const stripe = useStripe();
   const elements = useElements();
@@ -63,7 +64,8 @@ const OnboardPaymentOptions = ({
           } else {
             onPaymentSuccess?.(event.paymentMethod);
             event.complete("success");
-            router.push("/onboard-order-completed");
+            // Stripe will handle the redirect automatically
+            // The return_url in confirmPayment will redirect to order completed page
           }
         } catch (err) {
           setError("An unexpected error occurred.");
@@ -106,7 +108,8 @@ const OnboardPaymentOptions = ({
           onPaymentError?.(stripeError);
         } else if (paymentIntent && paymentIntent.status === "succeeded") {
           onPaymentSuccess?.(paymentIntent);
-          router.push("/onboard-order-completed");
+          // Stripe will handle the redirect automatically
+          // The return_url in confirmPayment will redirect to order completed page
         }
       } else if (paymentMethod === "paypal") {
         // Handle PayPal payment

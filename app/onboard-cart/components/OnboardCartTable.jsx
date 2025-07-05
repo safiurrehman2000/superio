@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import OnboardCartItems from "./OnboardCardItems";
 
-const OnboardCartTable = () => {
+const OnboardCartTable = ({ selectedPackage }) => {
   const router = useRouter();
   const selector = useSelector((store) => store.user);
 
@@ -18,9 +18,8 @@ const OnboardCartTable = () => {
       <thead className="cart-header">
         <tr>
           <th className="product-name">Product</th>
-          <th className="product-thumbnail">&nbsp;</th>
+
           <th className="product-price">Price</th>
-          <th className="product-quantity">Quantity</th>
           <th className="product-subtotal">Subtotal</th>
           <th className="product-remove">&nbsp;</th>
         </tr>
@@ -28,7 +27,7 @@ const OnboardCartTable = () => {
       {/* End thead */}
 
       <tbody>
-        <OnboardCartItems />
+        <OnboardCartItems selectedPackage={selectedPackage} />
       </tbody>
       {/* End tbody */}
     </table>
