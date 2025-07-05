@@ -1,21 +1,42 @@
 "use client";
 
-import Link from "next/link";
-import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-const OnboardCartItems = () => {
-  // Dummy cart data
-  const [cartItems, setCartItems] = useState([
-    {
-      id: 1,
-      title: "Basic Plan",
-      price: 99,
-      qty: 1,
-      img: "/images/resource/plan-1.jpg",
-      duration: "1 Month",
-    },
-  ]);
+const OnboardCartItems = ({ selectedPackage }) => {
+  // Initialize cart with selected package or default data
+  const [cartItems, setCartItems] = useState([]);
+
+  useEffect(() => {
+    if (selectedPackage) {
+      // Convert the selected package to cart item format
+      const cartItem = {
+        id: selectedPackage.id,
+        title: selectedPackage.packageType,
+        price:
+          selectedPackage.price === "Free"
+            ? 0
+            : parseFloat(selectedPackage.price),
+        qty: 1,
+        img: "/images/resource/plan-1.jpg",
+        duration: "1 Month",
+        features: selectedPackage.features,
+        tag: selectedPackage.tag,
+      };
+      setCartItems([cartItem]);
+    } else {
+      // Fallback to dummy data if no package selected
+      setCartItems([
+        {
+          id: 1,
+          title: "Basic Plan",
+          price: 99,
+          qty: 1,
+          img: "/images/resource/plan-1.jpg",
+          duration: "1 Month",
+        },
+      ]);
+    }
+  }, [selectedPackage]);
 
   // Format Euro amounts
   const formatEuroAmount = (amount) => {
@@ -49,26 +70,18 @@ const OnboardCartItems = () => {
 
           <td className="product-name">
             <span>{item.title}</span>
+            {item.tag && <span className="tag">Recommended</span>}
           </td>
 
-          <td className="product-price">{formatEuroAmount(item.price)}</td>
-
-          <td className="product-quantity">
-            <div className="item-quantity">
-              <input
-                type="number"
-                className="qty"
-                name="qty"
-                defaultValue={item.qty}
-                min={1}
-                onChange={(e) => qtyHandler(item.id, e.target.value)}
-              />
-            </div>
+          <td className="product-price">
+            {item.price === 0 ? "Free" : formatEuroAmount(item.price)}
           </td>
 
           <td className="product-subtotal">
             <span className="amount">
-              {formatEuroAmount(item.qty * item.price)}
+              {item.price === 0
+                ? "Free"
+                : formatEuroAmount(item.qty * item.price)}
             </span>
           </td>
 

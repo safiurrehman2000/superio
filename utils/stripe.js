@@ -1,11 +1,20 @@
 import { loadStripe } from "@stripe/stripe-js";
 
-if (process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY === undefined) {
-  throw new Error("NEXT_PUBLIC_STRIPE_PUBLIC_KEY is not defined");
+// Check if Stripe key is available
+const stripePublishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+
+if (!stripePublishableKey) {
+  console.warn(
+    "⚠️ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY is not defined. Please add your Stripe publishable key to .env.local"
+  );
+  console.warn(
+    "Example: NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_your_key_here"
+  );
 }
-// Replace with your actual Stripe publishable key
-const stripePromise = loadStripe(
-  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
-);
+
+// Load Stripe with error handling
+const stripePromise = stripePublishableKey
+  ? loadStripe(stripePublishableKey)
+  : Promise.resolve(null);
 
 export default stripePromise;
