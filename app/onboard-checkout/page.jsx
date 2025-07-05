@@ -7,6 +7,7 @@ import { Elements } from "@stripe/react-stripe-js";
 import stripePromise from "@/utils/stripe";
 import OnboardOrderDetails from "./components/OnboardOrderDetails";
 import OnboardPaymentOptions from "./components/OnboardPaymentOptions";
+import { useSelector } from "react-redux";
 
 const OnboardCheckoutPage = () => {
   const searchParams = useSearchParams();
@@ -16,6 +17,7 @@ const OnboardCheckoutPage = () => {
   const [paymentError, setPaymentError] = useState(null);
   const [isPackageLoaded, setIsPackageLoaded] = useState(false);
   const { push } = useRouter();
+  const selector = useSelector((store) => store.user);
 
   useEffect(() => {
     // Get package data from URL parameters
@@ -74,6 +76,9 @@ const OnboardCheckoutPage = () => {
               metadata: {
                 order_type: "onboard_plan",
                 package_type: selectedPackage?.packageType || "unknown",
+                userId: selector.user?.uid || "",
+                packageName: selectedPackage?.name || "",
+                packageId: selectedPackage?.id || "",
               },
             }),
           });
@@ -99,7 +104,7 @@ const OnboardCheckoutPage = () => {
 
       createPaymentIntent();
     }
-  }, [orderTotal, selectedPackage, isPackageLoaded]);
+  }, [orderTotal, selectedPackage, isPackageLoaded, selector.user?.uid]);
 
   const handlePaymentSuccess = (paymentIntent) => {
     console.log("Payment successful:", paymentIntent);
@@ -354,6 +359,10 @@ STRIPE_SECRET_KEY=sk_test_your_secret_key_here`}
                                         package_type:
                                           selectedPackage?.packageType ||
                                           "unknown",
+                                        userId: selector.user?.uid || "",
+                                        packageName:
+                                          selectedPackage?.name || "",
+                                        packageId: selectedPackage?.id || "",
                                       },
                                     }),
                                   }

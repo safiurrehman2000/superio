@@ -19,13 +19,17 @@ const PackageDataTable = () => {
           where("userId", "==", user.uid),
           orderBy("createdAt", "desc")
         );
+
         const querySnapshot = await getDocs(q);
+        console.log("querSnapshot", querySnapshot);
         const data = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
+
         setReceipts(data);
       } catch (err) {
+        console.error(err);
         setReceipts([]);
       } finally {
         setLoading(false);
