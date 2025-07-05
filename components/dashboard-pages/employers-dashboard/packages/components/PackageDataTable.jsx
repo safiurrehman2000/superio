@@ -46,7 +46,7 @@ const PackageDataTable = () => {
           <th>Receipt ID</th>
           <th>Package</th>
           <th>Amount</th>
-          <th>Status</th>
+
           <th>Date</th>
         </tr>
       </thead>
@@ -74,7 +74,7 @@ const PackageDataTable = () => {
                   ? "Free"
                   : `${r.amount} ${r.currency?.toUpperCase()}`}
               </td>
-              <td>{r.status}</td>
+
               <td>{new Date(r.createdAt).toLocaleString()}</td>
             </tr>
           ))
