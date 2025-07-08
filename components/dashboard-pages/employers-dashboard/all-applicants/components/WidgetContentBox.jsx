@@ -42,7 +42,7 @@ const WidgetContentBox = () => {
 
   const handleJobChange = (e) => {
     const selectedTitle = e.target.value;
-    if (selectedTitle === "Select Jobs") {
+    if (selectedTitle === "Select a Job") {
       setSelectedJobId("");
     } else {
       const selectedJob = jobs.find((job) => job.title === selectedTitle);
@@ -108,13 +108,26 @@ const WidgetContentBox = () => {
         <Tabs>
           <div className="aplicants-upper-bar">
             <select
-              style={{ borderRadius: "4px", cursor: "pointer" }}
+              style={{
+                borderRadius: "6px",
+                cursor: "pointer",
+                padding: "8px 12px",
+                border: "1px solid #white",
+                background: "#f9f9f9",
+                fontSize: "1rem",
+                minWidth: "180px",
+                boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+                transition: "border-color 0.2s",
+                outline: "none",
+              }}
+              onFocus={(e) => (e.target.style.borderColor = "#FA5508")}
+              onBlur={(e) => (e.target.style.borderColor = "#ccc")}
               onChange={handleJobChange}
             >
               <option>Select Jobs</option>
-              {jobs?.map((item) => {
-                return <option key={item?.id}>{item?.title}</option>;
-              })}
+              {jobs?.map((item) => (
+                <option key={item?.id}>{item?.title}</option>
+              ))}
             </select>
 
             <TabList className="aplicantion-status tab-buttons clearfix">
