@@ -10,13 +10,14 @@ import { formatString } from "@/utils/constants";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const EmployersSingleV1 = () => {
   const params = useParams();
   const [jobs, setJobs] = useState([]);
-  console.log("jobs", jobs);
+  const { replace } = useRouter();
+
   useEffect(() => {
     const fetchJobs = async () => {
       try {
@@ -45,6 +46,15 @@ const EmployersSingleV1 = () => {
   }
   if (loading) {
     return <Loading />;
+  }
+  if (data && data.userType !== "Employer") {
+    // Option 1: Redirect to home or a 404 page
+    if (typeof window !== "undefined") {
+      replace("/");
+      return null;
+    }
+    // Option 2: Show an error message
+    return <div>Error: This profile is not a company profile.</div>;
   }
   return (
     <>
