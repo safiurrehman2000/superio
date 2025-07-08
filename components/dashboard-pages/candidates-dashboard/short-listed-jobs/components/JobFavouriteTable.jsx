@@ -3,10 +3,39 @@ import Link from "next/link.js";
 import Image from "next/image.js";
 import { useSelector } from "react-redux";
 import { formatString } from "@/utils/constants";
+import { useState } from "react";
 
 const JobFavouriteTable = () => {
   const selector = useSelector((store) => store.user);
   const jobs = selector?.savedJobs ?? [];
+
+  // Filter state
+  const [selectedFilter, setSelectedFilter] = useState("1"); // default to 1 month
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const jobsPerPage = 10;
+
+  // Filter jobs by selected months (using savedAt)
+  const now = new Date();
+  const months = parseInt(selectedFilter, 10);
+  const filteredJobs = jobs.filter((job) => {
+    if (!job.savedAt) return false;
+    const jobDate = new Date(job.savedAt);
+    const monthsAgo = new Date(
+      now.getFullYear(),
+      now.getMonth() - months,
+      now.getDate()
+    );
+    return jobDate >= monthsAgo;
+  });
+
+  const indexOfLastJob = currentPage * jobsPerPage;
+  const indexOfFirstJob = indexOfLastJob - jobsPerPage;
+  const paginatedJobs = filteredJobs.slice(indexOfFirstJob, indexOfLastJob);
+  const totalPages = Math.ceil(filteredJobs.length / jobsPerPage);
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
 
   return (
     <div className="tabs-box">
@@ -15,12 +44,19 @@ const JobFavouriteTable = () => {
 
         <div className="chosen-outer">
           {/* <!--Tabs Box--> */}
-          <select className="chosen-single form-select">
-            <option>Last 6 Months</option>
-            <option>Last 12 Months</option>
-            <option>Last 16 Months</option>
-            <option>Last 24 Months</option>
-            <option>Last 5 year</option>
+          <select
+            className="chosen-single form-select"
+            value={selectedFilter}
+            onChange={(e) => {
+              setSelectedFilter(e.target.value);
+              setCurrentPage(1); // Reset to first page on filter change
+            }}
+          >
+            <option value="1">Last 1 Month</option>
+            <option value="3">Last 3 Months</option>
+            <option value="6">Last 6 Months</option>
+            <option value="9">Last 9 Months</option>
+            <option value="12">Last 12 Months</option>
           </select>
         </div>
       </div>
@@ -41,7 +77,7 @@ const JobFavouriteTable = () => {
               </thead>
 
               <tbody>
-                {jobs?.map((item, index) => {
+                {paginatedJobs?.map((item, index) => {
                   const logoSrc = item?.logo
                     ? item?.logo.startsWith("data:image")
                       ? item?.logo // Already a Data URL
@@ -140,6 +176,41 @@ const JobFavouriteTable = () => {
             </table>
           </div>
         </div>
+        {/* Pagination Controls */}
+        {filteredJobs.length > jobsPerPage && (
+          <div
+            className="pagination-controls"
+            style={{ marginTop: 20, textAlign: "center" }}
+          >
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              style={{ marginRight: 8 }}
+            >
+              Previous
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => (
+              <button
+                key={i + 1}
+                onClick={() => handlePageChange(i + 1)}
+                disabled={currentPage === i + 1}
+                style={{
+                  fontWeight: currentPage === i + 1 ? "bold" : "normal",
+                  marginRight: 4,
+                }}
+              >
+                {i + 1}
+              </button>
+            ))}
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              style={{ marginLeft: 8 }}
+            >
+              Next
+            </button>
+          </div>
+        )}
       </div>
       {/* End table widget content */}
     </div>

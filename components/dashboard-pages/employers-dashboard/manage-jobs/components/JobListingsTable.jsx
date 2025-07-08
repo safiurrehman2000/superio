@@ -17,6 +17,35 @@ const JobListingsTable = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [jobToDelete, setJobToDelete] = useState(null);
   const { push } = useRouter();
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const jobsPerPage = 10;
+  // Filter state
+  const [selectedFilter, setSelectedFilter] = useState("6"); // default to 6 months
+
+  // Filter jobs by selected months
+  const now = new Date();
+  const months = parseInt(selectedFilter, 10);
+  const filteredJobs = jobs.filter((job) => {
+    if (!job.createdAt) return false;
+    const jobDate = new Date(job.createdAt);
+    const monthsAgo = new Date(
+      now.getFullYear(),
+      now.getMonth() - months,
+      now.getDate()
+    );
+    return jobDate >= monthsAgo;
+  });
+
+  const indexOfLastJob = currentPage * jobsPerPage;
+  const indexOfFirstJob = indexOfLastJob - jobsPerPage;
+  const paginatedJobs = filteredJobs.slice(indexOfFirstJob, indexOfLastJob);
+  const totalPages = Math.ceil(filteredJobs.length / jobsPerPage);
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
   useEffect(() => {
     const fetchJobs = async () => {
       try {
@@ -102,12 +131,19 @@ const JobListingsTable = () => {
 
           <div className="chosen-outer">
             {/* <!--Tabs Box--> */}
-            <select className="chosen-single form-select">
-              <option>Last 6 Months</option>
-              <option>Last 12 Months</option>
-              <option>Last 16 Months</option>
-              <option>Last 24 Months</option>
-              <option>Last 5 year</option>
+            <select
+              className="chosen-single form-select"
+              value={selectedFilter}
+              onChange={(e) => {
+                setSelectedFilter(e.target.value);
+                setCurrentPage(1); // Reset to first page on filter change
+              }}
+            >
+              <option value="6">Last 6 Months</option>
+              <option value="12">Last 12 Months</option>
+              <option value="16">Last 16 Months</option>
+              <option value="24">Last 24 Months</option>
+              <option value="60">Last 5 years</option>
             </select>
           </div>
         </div>
@@ -140,7 +176,7 @@ const JobListingsTable = () => {
                     </td>
                   </tr>
                 ) : (
-                  jobs?.map((item, index) => {
+                  paginatedJobs?.map((item, index) => {
                     const logoSrc = item?.logo
                       ? item.logo.startsWith("data:image")
                         ? item.logo
@@ -272,6 +308,42 @@ const JobListingsTable = () => {
         onConfirm={handleDeleteConfirm}
         isDeleting={deletingJobId === jobToDelete?.id}
       />
+
+      {/* Pagination Controls */}
+      {filteredJobs.length > jobsPerPage && (
+        <div
+          className="pagination-controls"
+          style={{ marginTop: 20, textAlign: "center" }}
+        >
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            style={{ marginRight: 8 }}
+          >
+            Previous
+          </button>
+          {Array.from({ length: totalPages }, (_, i) => (
+            <button
+              key={i + 1}
+              onClick={() => handlePageChange(i + 1)}
+              disabled={currentPage === i + 1}
+              style={{
+                fontWeight: currentPage === i + 1 ? "bold" : "normal",
+                marginRight: 4,
+              }}
+            >
+              {i + 1}
+            </button>
+          ))}
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            style={{ marginLeft: 8 }}
+          >
+            Next
+          </button>
+        </div>
+      )}
     </>
   );
 };
