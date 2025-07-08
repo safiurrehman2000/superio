@@ -37,6 +37,17 @@ const RouteGuard = ({ children }) => {
         const userData = userDoc.exists() ? userDoc.data() : {};
 
         if (userData.userType === "Candidate") {
+          // Restrict Candidate from Employer/Admin routes
+          const employerPrefixes = [
+            "/employers-dashboard",
+            "/create-profile-employer",
+            "/admin-dashboard",
+          ];
+          if (employerPrefixes.some((prefix) => pathname.startsWith(prefix))) {
+            push("/candidates-dashboard/my-profile");
+            setLoading(false);
+            return;
+          }
           useGetAppliedJobs(user.uid, dispatch);
           const savedJobs = await useGetSavedJobs(user.uid);
           dispatch(setSavedJobs(savedJobs));
@@ -57,6 +68,17 @@ const RouteGuard = ({ children }) => {
             })
           );
         } else {
+          // Restrict Employer from Candidate/Admin routes
+          const candidatePrefixes = [
+            "/candidates-dashboard",
+            "/create-profile-candidate",
+            "/admin-dashboard",
+          ];
+          if (candidatePrefixes.some((prefix) => pathname.startsWith(prefix))) {
+            push("/employers-dashboard/company-profile");
+            setLoading(false);
+            return;
+          }
           dispatch(
             addUser({
               uid,
@@ -74,6 +96,21 @@ const RouteGuard = ({ children }) => {
               company_location: userData?.company_location || "",
             })
           );
+        }
+
+        // Restrict Admin from Candidate/Employer routes
+        if (userData.userType === "Admin") {
+          const nonAdminPrefixes = [
+            "/candidates-dashboard",
+            "/create-profile-candidate",
+            "/employers-dashboard",
+            "/create-profile-employer",
+          ];
+          if (nonAdminPrefixes.some((prefix) => pathname.startsWith(prefix))) {
+            push("/admin-dashboard/admin-dashboard");
+            setLoading(false);
+            return;
+          }
         }
 
         // Handle Candidate flow

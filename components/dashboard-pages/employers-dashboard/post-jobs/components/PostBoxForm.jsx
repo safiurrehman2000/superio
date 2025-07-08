@@ -39,6 +39,7 @@ const PostBoxForm = () => {
   } = methods;
 
   const onSubmit = async (data) => {
+    if (loading) return;
     setLoading(true);
     setError(null);
 
@@ -76,7 +77,6 @@ const PostBoxForm = () => {
         err.message || "An unexpected error occurred. Please try again."
       );
       console.error("Error during job post creation:", err);
-    } finally {
       setLoading(false);
     }
   };
