@@ -35,7 +35,14 @@ const FormContent2 = () => {
 
   return (
     <FormProvider {...methods}>
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            handleSubmit(onSubmit)();
+          }
+        }}
+        onSubmit={handleSubmit(onSubmit)}
+      >
         <div className="form-inner">
           <div className="text-center mb-5">
             <Image

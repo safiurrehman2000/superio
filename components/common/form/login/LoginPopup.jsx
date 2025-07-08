@@ -1,7 +1,21 @@
+"use client";
 import Register from "../register/Register";
 import FormContentModal from "./FormContentModal";
 
+
 const LoginPopup = () => {
+  // Function to close the modal after successful login
+  const handleLoginSuccess = () => {
+    console.log("Login success, attempting to close modal");
+    if (typeof window !== "undefined" && window.bootstrap) {
+      const modalEl = document.getElementById("loginPopupModal");
+      if (modalEl) {
+        const modal = window.bootstrap.Modal.getInstance(modalEl) || new window.bootstrap.Modal(modalEl);
+        modal.hide();
+      }
+    }
+  };
+
   return (
     <>
       <div className="modal fade" id="loginPopupModal">
@@ -19,7 +33,7 @@ const LoginPopup = () => {
               <div id="login-modal">
                 {/* <!-- Login Form --> */}
                 <div className="login-form default-form">
-                  <FormContentModal />
+                  <FormContentModal onLoginSuccess={handleLoginSuccess} />
                 </div>
                 {/* <!--End Login Form --> */}
               </div>

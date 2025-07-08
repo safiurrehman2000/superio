@@ -46,17 +46,17 @@ const index = () => {
               </div>
               {/* <!-- Ls widget --> */}
 
-              <div className="ls-widget">
+              {/* <div className="ls-widget">
                 <div className="tabs-box">
                   <div className="widget-title">
                     <h4>Social Network</h4>
                   </div>
-                  {/* End .widget-title */}
+                
                   <div className="widget-content">
                     <SocialNetworkBox />
                   </div>
                 </div>
-              </div>
+              </div> */}
               {/* <!-- Ls widget --> */}
 
               {/* <!-- Ls widget --> */}

@@ -83,7 +83,15 @@ const PostBoxForm = () => {
 
   return (
     <FormProvider {...methods}>
-      <form onSubmit={handleSubmit(onSubmit)} className="default-form">
+      <form
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            handleSubmit(onSubmit)();
+          }
+        }}
+        onSubmit={handleSubmit(onSubmit)}
+        className="default-form"
+      >
         <div className="row">
           {/* <!-- Input --> */}
           <div className="form-group col-lg-12 col-md-12">
@@ -167,7 +175,7 @@ const PostBoxForm = () => {
                   <p style={{ margin: 0 }}>Creating Job Post...</p>
                 </div>
               ) : (
-                "Next"
+                "Post Job"
               )}
             </button>
           </div>
