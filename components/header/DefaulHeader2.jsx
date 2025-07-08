@@ -1,7 +1,7 @@
 "use client";
 
 import { useSignOut } from "@/APIs/auth/auth";
-import { candidateMenuData, employerMenuData, LOGO } from "@/utils/constants";
+import { adminMenuData, candidateMenuData, employerMenuData, LOGO } from "@/utils/constants";
 import { isActiveLink } from "@/utils/linkActiveChecker";
 import Image from "next/image";
 import Link from "next/link";
@@ -123,7 +123,7 @@ const DefaulHeader2 = () => {
                   </li>
                 ))}
               </ul>
-            ) : (
+            ) : selector.userType == "Employer" ? (
               <ul className="dropdown-menu">
                 {employerMenuData.map((item) => (
                   <li
@@ -150,6 +150,36 @@ const DefaulHeader2 = () => {
                     )}
                   </li>
                 ))}
+              </ul>
+            ) : (
+              <ul className="dropdown-menu">
+                {
+                  adminMenuData?.map((item) =>
+                    <li
+                      className={`${
+                        isActiveLink(item.routePath, usePathname())
+                          ? "active"
+                          : ""
+                      } mb-1`}
+                      key={item.id}
+                    >
+                      {item.name === "Logout" ? (
+                        <Link
+                          onClick={() => {
+                            const { success } = useSignOut();
+                          }}
+                          href={item.routePath}
+                        >
+                          <i className={`la ${item.icon}`}></i> {item.name}
+                        </Link>
+                      ) : (
+                        <Link href={item.routePath}>
+                          <i className={`la ${item.icon}`}></i> {item.name}
+                        </Link>
+                      )}
+                    </li>
+                  )
+                }
               </ul>
             )}
           </div>

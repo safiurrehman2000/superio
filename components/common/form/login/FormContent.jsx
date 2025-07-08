@@ -8,7 +8,6 @@ import { InputField } from "@/components/inputfield/InputField";
 import { LOGO } from "@/utils/constants";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
-import LoginWithSocial from "./LoginWithSocial";
 
 const FormContent = () => {
   const methods = useForm({
@@ -61,7 +60,15 @@ const FormContent = () => {
       <h3 className="text-center">Login to Flexijobber</h3>
 
       <FormProvider {...methods}>
-        <form onSubmit={handleSubmit(onSubmit)} method="post">
+        <form
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              handleSubmit(onSubmit)();
+            }
+          }}
+          onSubmit={handleSubmit(onSubmit)}
+          method="post"
+        >
           <InputField
             label="Email"
             name="email"
@@ -86,7 +93,11 @@ const FormContent = () => {
                   <span className="custom-checkbox"></span> Remember me
                 </label>
               </div>
-              <a href="/forgot-password" className="pwd">
+              <a
+                href="/forgot-password"
+                className="pwd"
+                style={{ textDecoration: "underline", color: "#fa5508" }}
+              >
                 Forgot password?
               </a>
             </div>
@@ -121,7 +132,11 @@ const FormContent = () => {
         <div className="text d-flex justify-content-center">
           Don't have an account?&nbsp;
           <div
-            style={{ cursor: "pointer" }}
+            style={{
+              cursor: "pointer",
+              textDecoration: "underline",
+              color: "#FA5508",
+            }}
             onClick={() => {
               if (searchParams.get("id")) {
                 push(`/register?id=${searchParams.get("id")}`);
@@ -131,10 +146,6 @@ const FormContent = () => {
             Signup
           </div>
         </div>
-        <div className="divider">
-          <span>or</span>
-        </div>
-        <LoginWithSocial />
       </div>
     </div>
   );
