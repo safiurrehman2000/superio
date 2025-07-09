@@ -1,5 +1,5 @@
 "use client";
-import { useLogIn } from "@/APIs/auth/auth";
+import { setAuthPersistence, useLogIn } from "@/APIs/auth/auth";
 import CircularLoader from "@/components/circular-loading/CircularLoading";
 import { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
@@ -14,6 +14,7 @@ const FormContent = () => {
     defaultValues: {
       email: "",
       password: "",
+      rememberMe: false,
     },
     mode: "onChange",
   });
@@ -21,6 +22,7 @@ const FormContent = () => {
   const {
     handleSubmit,
     setValue,
+    register,
     formState: { errors, isValid },
   } = methods;
   const [isLoading, setIsLoading] = useState(false);
@@ -30,6 +32,14 @@ const FormContent = () => {
   const onSubmit = async (data) => {
     setIsLoading(true);
     setApiError("");
+
+    try {
+      await setAuthPersistence(data.rememberMe);
+    } catch (e) {
+      setApiError("Failed to set authentication persistence.");
+      setIsLoading(false);
+      return;
+    }
 
     const result = await useLogIn(data.email, data.password);
 
@@ -88,7 +98,16 @@ const FormContent = () => {
           <div className="form-group">
             <div className="field-outer">
               <div className="input-group checkboxes square">
-                <input type="checkbox" name="remember-me" id="remember" />
+                <input
+                  {...register("rememberMe")}
+                  type="checkbox"
+                  name="rememberMe"
+                  id="remember"
+                  checked={methods.watch("rememberMe")}
+                  onChange={(e) =>
+                    methods.setValue("rememberMe", e.target.checked)
+                  }
+                />
                 <label htmlFor="remember" className="remember">
                   <span className="custom-checkbox"></span> Remember me
                 </label>

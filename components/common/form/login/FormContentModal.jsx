@@ -9,16 +9,24 @@ import { InputField } from "@/components/inputfield/InputField";
 import { LOGO } from "@/utils/constants";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { setAuthPersistence } from "@/APIs/auth/auth";
 
 const FormContentModal = ({ onLoginSuccess }) => {
   const methods = useForm({
     defaultValues: {
       email: "",
       password: "",
+      rememberMe: false,
     },
-    mode: "onChange", 
+    mode: "onChange",
   });
-  const { handleSubmit, setValue, formState: isValid } = methods;
+  const {
+    handleSubmit,
+    setValue,
+    formState: isValid,
+    register,
+    watch,
+  } = methods;
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState("");
   const { push } = useRouter();
@@ -26,6 +34,14 @@ const FormContentModal = ({ onLoginSuccess }) => {
   const onSubmit = async (data) => {
     setIsLoading(true);
     setApiError("");
+
+    try {
+      await setAuthPersistence(data.rememberMe);
+    } catch (e) {
+      setApiError("Failed to set authentication persistence.");
+      setIsLoading(false);
+      return;
+    }
 
     const result = await useLogIn(data.email, data.password);
 
@@ -76,7 +92,14 @@ const FormContentModal = ({ onLoginSuccess }) => {
           <div className="form-group">
             <div className="field-outer">
               <div className="input-group checkboxes square">
-                <input type="checkbox" name="remember-me" id="remember" />
+                <input
+                  {...register("rememberMe")}
+                  type="checkbox"
+                  name="rememberMe"
+                  id="remember"
+                  checked={watch("rememberMe")}
+                  onChange={(e) => setValue("rememberMe", e.target.checked)}
+                />
                 <label htmlFor="remember" className="remember">
                   <span className="custom-checkbox"></span> Remember me
                 </label>
@@ -124,8 +147,6 @@ const FormContentModal = ({ onLoginSuccess }) => {
             Signup
           </div>
         </div>
-        
-      
       </div>
     </div>
   );

@@ -73,3 +73,13 @@ export const useForgetPassword = async (email) => {
     return { success: false, error: `${errorCode}: ${errorMessage}` };
   }
 };
+
+export const setAuthPersistence = async (rememberMe) => {
+  const { setPersistence, browserLocalPersistence, browserSessionPersistence } =
+    await import("firebase/auth");
+  const { auth } = await import("@/utils/firebase");
+  await setPersistence(
+    auth,
+    rememberMe ? browserLocalPersistence : browserSessionPersistence
+  );
+};
