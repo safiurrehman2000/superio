@@ -67,7 +67,7 @@ const RouteGuard = ({ children }) => {
               logo: userData.logo || null,
             })
           );
-        } else {
+        } else if (userData.userType === "Employer") {
           // Restrict Employer from Candidate/Admin routes
           const candidatePrefixes = [
             "/candidates-dashboard",
@@ -96,10 +96,8 @@ const RouteGuard = ({ children }) => {
               company_location: userData?.company_location || "",
             })
           );
-        }
-
-        // Restrict Admin from Candidate/Employer routes
-        if (userData.userType === "Admin") {
+        } else if (userData.userType === "Admin") {
+          // Restrict Admin from Candidate/Employer routes
           const nonAdminPrefixes = [
             "/candidates-dashboard",
             "/create-profile-candidate",
@@ -111,6 +109,14 @@ const RouteGuard = ({ children }) => {
             setLoading(false);
             return;
           }
+          dispatch(
+            addUser({
+              uid,
+              email,
+              userType: "Admin",
+              createdAt: userData.createdAt || null,
+            })
+          );
         }
 
         // Handle Candidate flow
