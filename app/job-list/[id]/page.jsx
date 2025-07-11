@@ -15,6 +15,7 @@ import CompnayInfo from "@/components/job-single-pages/shared-components/Company
 import JobDetailsDescriptions from "@/components/job-single-pages/shared-components/JobDetailsDescriptions";
 import SocialTwo from "@/components/job-single-pages/social/SocialTwo";
 import Loading from "@/components/loading/Loading";
+import JobSingleSkeleton from "@/components/job-single-pages/shared-components/JobSingleSkeleton";
 import { addSavedJob, removeSavedJob } from "@/slices/userSlice";
 import { formatString } from "@/utils/constants";
 import { errorToast } from "@/utils/toast";
@@ -101,7 +102,7 @@ const JobSingleDynamicV3 = ({ params }) => {
 
   const { push } = useRouter();
 
-  if (loading) return <Loading />;
+  if (loading) return <JobSingleSkeleton />;
   if (error) return <div>Error: {error}</div>;
   if (!job) return <div>No job found</div>;
 

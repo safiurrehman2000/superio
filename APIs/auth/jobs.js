@@ -672,6 +672,8 @@ export const fetchJobViews = async (selectedJob) => {
     const [mb, yb] = b.split(" ");
     return new Date(`${ma} 1, ${ya}`) - new Date(`${mb} 1, ${yb}`);
   });
-  setLabels(sortedMonths);
-  setViewCounts(sortedMonths.map((m) => monthMap[m]));
+  return {
+    labels: sortedMonths,
+    viewCounts: sortedMonths.map((m) => monthMap[m]),
+  };
 };

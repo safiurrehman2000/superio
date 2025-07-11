@@ -8,6 +8,7 @@ import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
 import { DeleteConfirmationModal } from "./DeleteModal";
+import ManageJobsSkeleton from "./ManageJobsSkeleton";
 
 const JobListingsTable = () => {
   const selector = useSelector((store) => store.user);
@@ -109,18 +110,7 @@ const JobListingsTable = () => {
   };
 
   if (loading) {
-    return (
-      <div className="tabs-box">
-        <div className="widget-content">
-          <div style={{ textAlign: "center", padding: "40px" }}>
-            <div className="spinner-border" role="status">
-              <span className="visually-hidden">Loading...</span>
-            </div>
-            <p style={{ marginTop: "10px" }}>Loading job listings...</p>
-          </div>
-        </div>
-      </div>
-    );
+    return <ManageJobsSkeleton />;
   }
 
   return (
