@@ -1,21 +1,18 @@
 "use client";
+import { fetchJobViews, useFetchEmployerJobs } from "@/APIs/auth/jobs";
 import {
-  Chart as ChartJS,
   CategoryScale,
+  Chart as ChartJS,
+  Legend,
   LinearScale,
-  PointElement,
   LineElement,
+  PointElement,
   Title,
   Tooltip,
-  Legend,
 } from "chart.js";
-import { Line } from "react-chartjs-2";
-import { fetchJobViews, useFetchEmployerJobs } from "@/APIs/auth/jobs";
-import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
-// Firebase imports
-import { getFirestore, collection, getDocs } from "firebase/firestore";
-import { db } from "@/utils/firebase";
+import { Line } from "react-chartjs-2";
+import { useSelector } from "react-redux";
 
 ChartJS.register(
   CategoryScale,
@@ -108,7 +105,11 @@ const ProfileChart = () => {
     }
     setShowAllJobs(false);
 
-    fetchJobViews(selectedJob);
+    (async () => {
+      const { labels, viewCounts } = await fetchJobViews(selectedJob);
+      setLabels(labels);
+      setViewCounts(viewCounts);
+    })();
   }, [selectedJob]);
 
   const handleJobChange = (e) => {

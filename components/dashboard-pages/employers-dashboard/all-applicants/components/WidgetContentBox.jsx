@@ -11,6 +11,7 @@ import { useSelector } from "react-redux";
 import { Tab, TabList, TabPanel, Tabs } from "react-tabs";
 import { ResumeModal } from "./ResumeModal";
 import { ConfirmationModal } from "./ConfirmationModal";
+import AllApplicantsSkeleton from "./AllApplicantsSkeleton";
 
 const WidgetContentBox = () => {
   const selector = useSelector((store) => store.user);
@@ -146,7 +147,7 @@ const WidgetContentBox = () => {
             </TabList>
           </div>
           {jobsLoading || loading ? (
-            <Loading />
+            <AllApplicantsSkeleton />
           ) : (
             <div className="tabs-content">
               <TabPanel>

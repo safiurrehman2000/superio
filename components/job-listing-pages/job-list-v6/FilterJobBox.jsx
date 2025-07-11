@@ -25,6 +25,7 @@ import ListingShowing from "../components/ListingShowing";
 import "./jobList.css";
 import JobAlertModal from "./JobAlertModal";
 import Loading from "@/components/loading/Loading";
+import JobListSkeleton from "./JobListSkeleton";
 
 const FilterJobBox = () => {
   const { data: jobs, loading, error } = useGetJobListing();
@@ -285,7 +286,7 @@ const FilterJobBox = () => {
   };
 
   if (loading) {
-    return <Loading />;
+    return <JobListSkeleton count={4} />;
   }
 
   if (error) {
