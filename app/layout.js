@@ -8,7 +8,7 @@ import { Provider } from "react-redux";
 import ScrollToTop from "../components/common/ScrollTop";
 import { store } from "../store/store";
 import "../styles/index.scss";
-import "../styles/stripe.css";
+
 import RouteGuard from "./RouteGuard";
 
 if (typeof window !== "undefined") {

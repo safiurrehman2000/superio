@@ -5,13 +5,31 @@ import { LOGO } from "@/utils/constants";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { loadStripe } from "@stripe/stripe-js";
 
+const stripePromise = loadStripe(
+  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+);
 const Pricing = () => {
   const [pricingContent, setPricingContent] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  // const [initMessage, setInitMessage] = useState(null);
+  const handleSubmit = async (priceId) => {
+    const stripe = await stripePromise;
+    const { sessionId } = await fetch("/api/create-checkout-session", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ priceId }),
+    }).then((res) => res.json());
 
+    const result = await stripe.redirectToCheckout({ sessionId });
+
+    if (result.error) {
+      console.error(result.error);
+    }
+  };
   useEffect(() => {
     const fetchPricingPackages = async () => {
       try {
@@ -184,21 +202,16 @@ const Pricing = () => {
                     ))}
                   </ul>
                 </div>
-                <div className="table-footer">
-                  <Link
-                    href={`/onboard-cart?package=${encodeURIComponent(
-                      JSON.stringify({
-                        id: item.id,
-                        packageType: item.packageType,
-                        price: item.price,
-                        features: item.features,
-                        tag: item.tag,
-                      })
-                    )}`}
+                <div style={{ width: "100%" }}>
+                  <button
                     className="theme-btn btn-style-three"
+                    style={{ margin: "auto" }}
+                    onClick={() => {
+                      handleSubmit(item?.stripePriceId);
+                    }}
                   >
-                    Add to Cart
-                  </Link>
+                    Buy
+                  </button>
                 </div>
               </div>
             </div>
