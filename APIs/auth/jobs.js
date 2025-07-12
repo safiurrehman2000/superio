@@ -656,6 +656,42 @@ export const deleteJob = async (jobId, employerId) => {
   }
 };
 
+export const updateJob = async (jobId, updateData) => {
+  try {
+    if (!jobId) {
+      throw new Error("Job ID is required");
+    }
+
+    if (!updateData || Object.keys(updateData).length === 0) {
+      throw new Error("Update data is required");
+    }
+
+    // Verify the job exists
+    const jobRef = doc(db, "jobs", jobId);
+    const jobDoc = await getDoc(jobRef);
+
+    if (!jobDoc.exists()) {
+      throw new Error("Job not found");
+    }
+
+    // Prepare the update data with timestamp
+    const updatePayload = {
+      ...updateData,
+      updatedAt: Date.now(),
+    };
+
+    // Update the job document
+    await updateDoc(jobRef, updatePayload);
+
+    successToast("Job updated successfully");
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating job:", error);
+    errorToast(error.message || "Failed to update job");
+    return { success: false, error: error.message };
+  }
+};
+
 export const fetchJobViews = async (selectedJob) => {
   const viewsRef = collection(db, `jobViews/${selectedJob}/views`);
   const snapshot = await getDocs(viewsRef);

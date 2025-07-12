@@ -1,4 +1,4 @@
-import Admin from "@/components/dashboard-pages/employers-dashboard/admin-page/index";
+import Admin from "@/components/admin-dashboard-pages/admin-page/index";
 
 const index = () => {
   return (
