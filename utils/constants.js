@@ -109,6 +109,13 @@ export const adminMenuData = [
   },
   {
     id: 2,
+    name: "Edit Job Posts",
+    icon: "la-edit",
+    routePath: "/admin-dashboard/edit-job-posts",
+    active: "",
+  },
+  {
+    id: 3,
     name: "Logout",
     icon: "la-sign-out",
     routePath: "/login",

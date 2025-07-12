@@ -1,11 +1,11 @@
 "use client";
 import DefaulHeader2 from "@/components/header/DefaulHeader2";
-import LoginPopup from "../../../common/form/login/LoginPopup";
-import DashboardAdmin from "../../../header/DashboardAdminSidebar";
-import MobileMenu from "../../../header/MobileMenu";
-import BreadCrumb from "../../BreadCrumb";
-import CopyrightFooter from "../../CopyrightFooter";
-import MenuToggler from "../../MenuToggler";
+import LoginPopup from "../../common/form/login/LoginPopup";
+import DashboardAdmin from "../../header/DashboardAdminSidebar";
+import MobileMenu from "../../header/MobileMenu";
+import BreadCrumb from "../../dashboard-pages/BreadCrumb";
+import CopyrightFooter from "../../dashboard-pages/CopyrightFooter";
+import MenuToggler from "../../dashboard-pages/MenuToggler";
 import Admin from "./components/Admin";
 import { useState, useEffect } from "react";
 import AdminSkeleton from "./components/AdminSkeleton";
@@ -41,7 +41,7 @@ const Index = () => {
           {/* Collapsible sidebar button */}
 
           <div className="row">
-            {loading ? <AdminSkeleton /> : <Admin loading={loading} />}
+            <EditJobPost />
           </div>
           {/* End .row profile and notificatins */}
         </div>
