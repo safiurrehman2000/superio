@@ -146,8 +146,6 @@ const RouteGuard = ({ children }) => {
             // Store the last valid onboarding page
             const validOnboardingPages = [
               "/onboard-pricing",
-              "/onboard-cart",
-              "/onboard-checkout",
               "/onboard-order-completed",
             ];
             const lastValidPage = validOnboardingPages.find(
