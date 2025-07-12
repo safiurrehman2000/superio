@@ -186,10 +186,9 @@ const EditUser = () => {
         throw new Error(apiError || "Failed to update user.");
       }
 
-      // Reset form and selection after successful update
+      // Reset form and reload the selected user's data after successful update
       reset();
-      setSelectedUserId("");
-      push("/admin-dashboard/edit-users");
+      handleUserSelection(selectedUserId);
     } catch (err) {
       setError(
         err.message || "An unexpected error occurred. Please try again."
