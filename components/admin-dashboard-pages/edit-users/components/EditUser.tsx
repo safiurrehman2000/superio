@@ -16,7 +16,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
-import LogoUpload from "@/components/dashboard-pages/candidates-dashboard/my-profile/components/my-profile/LogoUpload";
+import AdminLogoUpload from "./AdminLogoUpload";
 
 const EditUser = () => {
   const [selectedUserId, setSelectedUserId] = useState("");
@@ -30,11 +30,10 @@ const EditUser = () => {
   } = useGetAllUsers();
 
   const methods = useForm({
-    mode: "onBlur",
+    mode: "onChange",
     defaultValues: {
       // Common fields
       email: "",
-      logo: null,
 
       // Candidate fields
       name: "",
@@ -46,6 +45,7 @@ const EditUser = () => {
       description: "",
 
       // Employer fields
+      logo: null,
       company_name: "",
       phone: "",
       website: "",
@@ -66,22 +66,18 @@ const EditUser = () => {
   const selectedUser = users.find((user) => user.id === selectedUserId);
   const userType = selectedUser?.userType;
 
+  console.log("selectedUser", selectedUser);
+
   const handleUserSelection = (userId) => {
     setSelectedUserId(userId);
     if (userId) {
       const selectedUser = users.find((user) => user.id === userId);
       if (selectedUser) {
-        console.log("selectedUser", selectedUser);
-
         // Reset form first
         reset();
-
         // Set common fields
         setValue("email", selectedUser.email || "");
-        setValue("logo", selectedUser.logo || null);
-
         if (selectedUser.userType === "Candidate") {
-          // Set candidate fields
           setValue("name", selectedUser.name || "");
           setValue("title", selectedUser.title || "");
           setValue("phone_number", selectedUser.phone_number || "");
@@ -90,7 +86,17 @@ const EditUser = () => {
           setValue("profile_visibility", selectedUser.profile_visibility || "");
           setValue("description", selectedUser.description || "");
         } else if (selectedUser.userType === "Employer") {
-          // Set employer fields
+          // Parse logo value for preview
+          if (selectedUser.logo) {
+            setValue(
+              "logo",
+              selectedUser.logo.startsWith("data:image")
+                ? selectedUser.logo
+                : `data:image/jpeg;base64,${selectedUser.logo}`
+            );
+          } else {
+            setValue("logo", null);
+          }
           setValue("company_name", selectedUser.company_name || "");
           setValue("phone", selectedUser.phone || "");
           setValue("website", selectedUser.website || "");
@@ -115,12 +121,36 @@ const EditUser = () => {
     setError(null);
 
     try {
-      // Prepare payload based on user type
+      console.log("Form data:", data);
+      console.log("Form logo value:", data.logo);
+
+      // Helper function to clean undefined and empty string values for optional fields
+      const cleanData = (obj) => {
+        const cleaned = {};
+        const optionalFields = [
+          "title",
+          "phone_number",
+          "website",
+          "company_type",
+          "company_location",
+          "description",
+        ];
+
+        Object.keys(obj).forEach((key) => {
+          if (obj[key] !== undefined) {
+            if (optionalFields.includes(key) && obj[key] === "") {
+              cleaned[key] = null;
+            } else {
+              cleaned[key] = obj[key];
+            }
+          }
+        });
+        return cleaned;
+      };
+
       let payload: any = { email: data.email };
 
-      if (data.logo !== null) {
-        payload.logo = data.logo;
-      }
+      payload.logo = data.logo;
 
       if (userType === "Candidate") {
         payload = {
@@ -144,6 +174,9 @@ const EditUser = () => {
           description: data.description,
         };
       }
+
+      // Clean the payload to remove undefined values
+      payload = cleanData(payload);
 
       const { success, error: apiError } = await updateUserByAdmin(
         selectedUserId,
@@ -253,7 +286,7 @@ const EditUser = () => {
                 <div className="row">
                   {userType === "Employer" && (
                     <div className="form-group col-lg-12 col-md-12">
-                      <LogoUpload />
+                      <AdminLogoUpload />
                     </div>
                   )}
 
