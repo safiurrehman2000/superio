@@ -32,20 +32,27 @@ const AutoSelect = ({
         control={control}
         defaultValue={defaultValue}
         rules={{
-          required: "Full name is required",
+          required: required ? `${label || "This field"} is required!` : false,
         }}
-        render={({ field }) => (
+        render={({ field, fieldState }) => (
           <>
             <Select
               {...field}
               placeholder={placeholder}
               isMulti={isMulti}
               options={options}
-              className="basic-multi-select"
+              className={`basic-multi-select ${
+                fieldState.error ? "border-danger" : ""
+              }`}
               classNamePrefix="select"
               value={field.value}
               onChange={(val) => field.onChange(val)}
             />
+            {fieldState.error && (
+              <p className="text-danger mt-2" style={{ fontSize: "0.875rem" }}>
+                {fieldState.error.message}
+              </p>
+            )}
           </>
         )}
       />

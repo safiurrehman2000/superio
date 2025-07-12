@@ -19,6 +19,7 @@ export const InputField = ({
     control,
     setValue,
     clearErrors,
+    setError,
     formState: { errors },
   } = useFormContext();
 
@@ -110,14 +111,18 @@ export const InputField = ({
               onChange={(e) => {
                 field.onChange(e);
                 const error = validateField(e.target.value);
-                if (!error) {
+                if (error) {
+                  setError(name, { type: "manual", message: error });
+                } else {
                   clearErrors(name);
                 }
               }}
               onBlur={(e) => {
                 field.onBlur();
                 const error = validateField(e.target.value);
-                if (!error) {
+                if (error) {
+                  setError(name, { type: "manual", message: error });
+                } else {
                   clearErrors(name);
                 }
               }}

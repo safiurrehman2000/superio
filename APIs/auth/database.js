@@ -387,3 +387,73 @@ export const subscribeToCounts = (callback) => {
     callback(counterUpContent);
   });
 };
+
+export const useGetAllUsers = () => {
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const usersRef = collection(db, "users");
+        const usersSnap = await getDocs(usersRef);
+
+        const users = usersSnap.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        // Sort users by creation date (newest first)
+        users.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+        setData(users);
+      } catch (err) {
+        setError(err);
+        console.error("Error fetching users:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
+  return { data, loading, error };
+};
+
+export const updateUserByAdmin = async (userId, updateData) => {
+  try {
+    if (!userId) {
+      throw new Error("User ID is required");
+    }
+
+    if (!updateData || Object.keys(updateData).length === 0) {
+      throw new Error("Update data is required");
+    }
+
+    // Verify the user exists
+    const userRef = doc(db, "users", userId);
+    const userDoc = await getDoc(userRef);
+
+    if (!userDoc.exists()) {
+      throw new Error("User not found");
+    }
+
+    // Prepare the update data with timestamp
+    const updatePayload = {
+      ...updateData,
+      updatedAt: Date.now(),
+    };
+
+    // Update the user document
+    await setDoc(userRef, updatePayload, { merge: true });
+
+    successToast("User updated successfully");
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating user:", error);
+    errorToast(error.message || "Failed to update user");
+    return { success: false, error: error.message };
+  }
+};

@@ -116,6 +116,13 @@ export const adminMenuData = [
   },
   {
     id: 3,
+    name: "Edit Users",
+    icon: "la-users",
+    routePath: "/admin-dashboard/edit-users",
+    active: "",
+  },
+  {
+    id: 4,
     name: "Logout",
     icon: "la-sign-out",
     routePath: "/login",
@@ -352,7 +359,6 @@ export const transformJobData = (jobs) => {
       value: tag,
       label: findLabel(SECTORS, tag),
     })),
-    // Convert createdAt to a Date object or ISO string
     createdAt: new Date(job.createdAt)?.toISOString(),
   }));
 };

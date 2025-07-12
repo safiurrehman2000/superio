@@ -6,7 +6,12 @@ import CircularLoader from "@/components/circular-loading/CircularLoading";
 import { InputField } from "@/components/inputfield/InputField";
 import { SelectField } from "@/components/selectfield/SelectField";
 import { TextAreaField } from "@/components/textarea/TextArea";
-import { JOB_TYPE_OPTIONS, SECTORS, STATES } from "@/utils/constants";
+import {
+  formatString,
+  JOB_TYPE_OPTIONS,
+  SECTORS,
+  STATES,
+} from "@/utils/constants";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
@@ -36,19 +41,19 @@ const EditJobPost = () => {
 
   const {
     handleSubmit,
-    formState: { isValid },
+    formState: { isValid, errors },
     setError: setFormError,
     reset,
     setValue,
+    trigger,
   } = methods;
 
-  // Handle job selection
   const handleJobSelection = (jobId) => {
     setSelectedJobId(jobId);
     if (jobId) {
       const selectedJob = jobs.find((job) => job.id === jobId);
       if (selectedJob) {
-        // Populate form with selected job data
+        console.log("selectedJob", selectedJob);
         setValue("name", selectedJob.title || "");
         setValue("description", selectedJob.description || "");
         setValue("email", selectedJob.email || "");
@@ -57,12 +62,14 @@ const EditJobPost = () => {
         setValue(
           "tags",
           selectedJob.tags
-            ? selectedJob.tags.map((tag) => ({ value: tag, label: tag }))
+            ? selectedJob.tags.map((tag) => ({
+                value: tag,
+                label: formatString(tag),
+              }))
             : []
         );
       }
     } else {
-      // Reset form when no job is selected
       reset();
     }
   };
@@ -95,7 +102,6 @@ const EditJobPost = () => {
         throw new Error(apiError || "Failed to update job post.");
       }
 
-      // Reset form and selection after successful update
       reset();
       setSelectedJobId("");
       push("/admin-dashboard/edit-job-posts");
@@ -157,9 +163,7 @@ const EditJobPost = () => {
         </div>
 
         <div className="widget-content">
-          {/* Job Selection */}
           <div className="form-group col-lg-12 col-md-12 mb-4">
-            <label>Select Job to Edit</label>
             <select
               className="chosen-single form-select"
               value={selectedJobId}
@@ -175,7 +179,6 @@ const EditJobPost = () => {
             </select>
           </div>
 
-          {/* Edit Form */}
           {selectedJobId && (
             <FormProvider {...methods}>
               <form
@@ -188,7 +191,6 @@ const EditJobPost = () => {
                 className="default-form"
               >
                 <div className="row">
-                  {/* Job Title */}
                   <div className="form-group col-lg-12 col-md-12">
                     <InputField
                       name="name"
@@ -201,7 +203,6 @@ const EditJobPost = () => {
                     />
                   </div>
 
-                  {/* Description */}
                   <div className="form-group col-lg-12 col-md-12">
                     <TextAreaField
                       label="Description"
@@ -213,7 +214,6 @@ const EditJobPost = () => {
                     />
                   </div>
 
-                  {/* Email */}
                   <div className="form-group col-lg-6 col-md-12">
                     <InputField
                       label="Email"
@@ -226,7 +226,6 @@ const EditJobPost = () => {
                     />
                   </div>
 
-                  {/* Job Type */}
                   <div className="form-group col-lg-6 col-md-12">
                     <SelectField
                       label="Job Type"
@@ -237,7 +236,6 @@ const EditJobPost = () => {
                     />
                   </div>
 
-                  {/* State */}
                   <div className="form-group col-lg-6 col-md-12">
                     <SelectField
                       label="State"
@@ -248,7 +246,6 @@ const EditJobPost = () => {
                     />
                   </div>
 
-                  {/* Job Tags */}
                   <div className="form-group col-lg-6 col-md-12">
                     <AutoSelect
                       label="Job Tags"
@@ -260,14 +257,6 @@ const EditJobPost = () => {
                     />
                   </div>
 
-                  {/* Display error message if exists */}
-                  {error && (
-                    <div className="form-group col-12" style={{ color: "red" }}>
-                      {error}
-                    </div>
-                  )}
-
-                  {/* Submit Button */}
                   <div className="form-group col-lg-12 col-md-12 text-right">
                     <button
                       className={`theme-btn ${
@@ -295,7 +284,6 @@ const EditJobPost = () => {
             </FormProvider>
           )}
 
-          {/* Instructions when no job is selected */}
           {!selectedJobId && (
             <div
               className="text-center"
