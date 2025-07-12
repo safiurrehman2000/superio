@@ -28,6 +28,7 @@ export default function page() {
       const paymentIntentClientSecret = searchParams.get(
         "payment_intent_client_secret"
       );
+      const sessionId = searchParams.get("session_id");
 
       // Allow access if payment was successful or if it's a free package
       if (paymentStatus === "succeeded" || paymentStatus === "free_completed") {
@@ -37,6 +38,32 @@ export default function page() {
         // Additional verification could be done here with backend
         console.log("Order ID present, allowing access");
         setIsAuthorized(true);
+      } else if (sessionId) {
+        // Stripe redirect - verify the session
+        console.log("Stripe session_id detected, verifying session");
+        try {
+          const response = await fetch("/api/check-session", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ sessionId }),
+          });
+
+          const data = await response.json();
+          if (data.session && data.session.payment_status === "paid") {
+            console.log("Stripe session verified successfully");
+            setIsAuthorized(true);
+          } else {
+            console.log("Stripe session verification failed");
+            router.push("/onboard-pricing");
+            return;
+          }
+        } catch (error) {
+          console.error("Error verifying Stripe session:", error);
+          router.push("/onboard-pricing");
+          return;
+        }
       } else if (paymentIntent && paymentIntentClientSecret) {
         // Stripe redirect - verify the payment intent
         console.log("Stripe redirect detected, verifying payment intent");
