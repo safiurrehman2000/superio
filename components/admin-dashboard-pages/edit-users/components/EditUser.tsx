@@ -1,0 +1,480 @@
+"use client";
+
+import { useGetAllUsers, updateUserByAdmin } from "@/APIs/auth/database";
+import AutoSelect from "@/components/autoselect/AutoSelect";
+import CircularLoader from "@/components/circular-loading/CircularLoading";
+import { InputField } from "@/components/inputfield/InputField";
+import { SelectField } from "@/components/selectfield/SelectField";
+import { TextAreaField } from "@/components/textarea/TextArea";
+import {
+  AGE_OPTIONS,
+  GENDERS,
+  PROFILE_VISIBILITY_OPTIONS,
+  SECTORS,
+  STATES,
+} from "@/utils/constants";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { FormProvider, useForm } from "react-hook-form";
+import LogoUpload from "@/components/dashboard-pages/candidates-dashboard/my-profile/components/my-profile/LogoUpload";
+
+const EditUser = () => {
+  const [selectedUserId, setSelectedUserId] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const { push } = useRouter();
+  const {
+    data: users,
+    loading: usersLoading,
+    error: usersError,
+  } = useGetAllUsers();
+
+  const methods = useForm({
+    mode: "onBlur",
+    defaultValues: {
+      // Common fields
+      email: "",
+      logo: null,
+
+      // Candidate fields
+      name: "",
+      title: "",
+      phone_number: "",
+      gender: "",
+      age: "",
+      profile_visibility: "",
+      description: "",
+
+      // Employer fields
+      company_name: "",
+      phone: "",
+      website: "",
+      company_type: [],
+      company_location: "",
+    },
+  });
+
+  const {
+    handleSubmit,
+    formState: { errors },
+    setError: setFormError,
+    reset,
+    setValue,
+    watch,
+  } = methods;
+
+  const selectedUser = users.find((user) => user.id === selectedUserId);
+  const userType = selectedUser?.userType;
+
+  const handleUserSelection = (userId) => {
+    setSelectedUserId(userId);
+    if (userId) {
+      const selectedUser = users.find((user) => user.id === userId);
+      if (selectedUser) {
+        console.log("selectedUser", selectedUser);
+
+        // Reset form first
+        reset();
+
+        // Set common fields
+        setValue("email", selectedUser.email || "");
+        setValue("logo", selectedUser.logo || null);
+
+        if (selectedUser.userType === "Candidate") {
+          // Set candidate fields
+          setValue("name", selectedUser.name || "");
+          setValue("title", selectedUser.title || "");
+          setValue("phone_number", selectedUser.phone_number || "");
+          setValue("gender", selectedUser.gender || "");
+          setValue("age", selectedUser.age || "");
+          setValue("profile_visibility", selectedUser.profile_visibility || "");
+          setValue("description", selectedUser.description || "");
+        } else if (selectedUser.userType === "Employer") {
+          // Set employer fields
+          setValue("company_name", selectedUser.company_name || "");
+          setValue("phone", selectedUser.phone || "");
+          setValue("website", selectedUser.website || "");
+          setValue("company_type", selectedUser.company_type || []);
+          setValue("company_location", selectedUser.company_location || "");
+          setValue("description", selectedUser.description || "");
+        }
+      }
+    } else {
+      reset();
+    }
+  };
+
+  const onSubmit = async (data) => {
+    if (loading) return;
+    if (!selectedUserId) {
+      setError("Please select a user to edit");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Prepare payload based on user type
+      let payload: any = { email: data.email };
+
+      if (data.logo !== null) {
+        payload.logo = data.logo;
+      }
+
+      if (userType === "Candidate") {
+        payload = {
+          ...payload,
+          name: data.name,
+          title: data.title,
+          phone_number: data.phone_number,
+          gender: data.gender,
+          age: data.age,
+          profile_visibility: data.profile_visibility,
+          description: data.description,
+        };
+      } else if (userType === "Employer") {
+        payload = {
+          ...payload,
+          company_name: data.company_name,
+          phone: data.phone,
+          website: data.website,
+          company_type: data.company_type,
+          company_location: data.company_location,
+          description: data.description,
+        };
+      }
+
+      const { success, error: apiError } = await updateUserByAdmin(
+        selectedUserId,
+        payload
+      );
+      if (!success) {
+        throw new Error(apiError || "Failed to update user.");
+      }
+
+      // Reset form and selection after successful update
+      reset();
+      setSelectedUserId("");
+      push("/admin-dashboard/edit-users");
+    } catch (err) {
+      setError(
+        err.message || "An unexpected error occurred. Please try again."
+      );
+      console.error("Error during user update:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (usersLoading) {
+    return (
+      <div className="ls-widget">
+        <div className="tabs-box">
+          <div className="widget-title">
+            <h4>Edit Users</h4>
+          </div>
+          <div className="widget-content">
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                padding: "50px",
+              }}
+            >
+              <CircularLoader />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (usersError) {
+    return (
+      <div className="ls-widget">
+        <div className="tabs-box">
+          <div className="widget-title">
+            <h4>Edit Users</h4>
+          </div>
+          <div className="widget-content">
+            <div style={{ color: "red", textAlign: "center", padding: "20px" }}>
+              Error loading users: {usersError.message}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="ls-widget">
+      <div className="tabs-box">
+        <div className="widget-title">
+          <h4>Edit Users</h4>
+        </div>
+
+        <div className="widget-content">
+          {/* User Selection */}
+          <div className="form-group col-lg-12 col-md-12 mb-4">
+            <label>Select User to Edit</label>
+            <select
+              className="chosen-single form-select"
+              value={selectedUserId}
+              onChange={(e) => handleUserSelection(e.target.value)}
+            >
+              <option value="">Select a user to edit...</option>
+              {users.map((user) => (
+                <option key={user.id} value={user.id}>
+                  {user.userType === "Candidate"
+                    ? `${user.name || "Unknown"} (Candidate) - ${user.email}`
+                    : `${user.company_name || "Unknown Company"} (Employer) - ${
+                        user.email
+                      }`}{" "}
+                  ({new Date(user.createdAt || Date.now()).toLocaleDateString()}
+                  )
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Edit Form */}
+          {selectedUserId && (
+            <FormProvider {...methods}>
+              <form
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleSubmit(onSubmit)();
+                  }
+                }}
+                onSubmit={handleSubmit(onSubmit)}
+                className="default-form"
+              >
+                <div className="row">
+                  {userType === "Employer" && (
+                    <div className="form-group col-lg-12 col-md-12">
+                      <LogoUpload />
+                    </div>
+                  )}
+
+                  {/* Common Fields */}
+                  <div className="form-group col-lg-6 col-md-12">
+                    <InputField
+                      label="Email"
+                      name="email"
+                      placeholder="user@example.com"
+                      required
+                      fieldType="Email"
+                      defaultValue=""
+                      disabled={false}
+                    />
+                  </div>
+
+                  {/* Conditional Fields Based on User Type */}
+                  {userType === "Candidate" ? (
+                    <>
+                      {/* Candidate Fields */}
+                      <div className="form-group col-lg-6 col-md-12">
+                        <InputField
+                          label="Full Name"
+                          name="name"
+                          placeholder="John Doe"
+                          required
+                          fieldType="text"
+                          defaultValue=""
+                          disabled={false}
+                        />
+                      </div>
+
+                      <div className="form-group col-lg-6 col-md-12">
+                        <InputField
+                          label="Job Title"
+                          name="title"
+                          placeholder="Software Developer"
+                          fieldType="text"
+                          defaultValue=""
+                          disabled={false}
+                          required={false}
+                        />
+                      </div>
+
+                      <div className="form-group col-lg-6 col-md-12">
+                        <InputField
+                          label="Phone"
+                          name="phone_number"
+                          placeholder="1234567890"
+                          fieldType="text"
+                          defaultValue=""
+                          disabled={false}
+                          required={false}
+                        />
+                      </div>
+
+                      <div className="form-group col-lg-6 col-md-12">
+                        <SelectField
+                          label="Gender"
+                          name="gender"
+                          options={GENDERS}
+                          placeholder="Select a gender"
+                          required={false}
+                        />
+                      </div>
+
+                      <div className="form-group col-lg-6 col-md-12">
+                        <SelectField
+                          label="Age"
+                          name="age"
+                          options={AGE_OPTIONS}
+                          placeholder="Select age"
+                          required={false}
+                        />
+                      </div>
+
+                      <div className="form-group col-lg-6 col-md-12">
+                        <SelectField
+                          label="Profile Visibility"
+                          name="profile_visibility"
+                          options={PROFILE_VISIBILITY_OPTIONS}
+                          placeholder="Select visibility"
+                          required={false}
+                        />
+                      </div>
+
+                      <div className="form-group col-lg-12 col-md-12">
+                        <TextAreaField
+                          label="Description"
+                          name="description"
+                          placeholder="Tell us about yourself..."
+                          minLength={10}
+                          maxLength={1000}
+                          required={false}
+                        />
+                      </div>
+                    </>
+                  ) : userType === "Employer" ? (
+                    <>
+                      {/* Employer Fields */}
+                      <div className="form-group col-lg-6 col-md-12">
+                        <InputField
+                          label="Company Name"
+                          name="company_name"
+                          placeholder="Company Name"
+                          required
+                          fieldType="text"
+                          defaultValue=""
+                          disabled={false}
+                        />
+                      </div>
+
+                      <div className="form-group col-lg-6 col-md-12">
+                        <InputField
+                          label="Phone"
+                          name="phone"
+                          placeholder="1234567890"
+                          required
+                          fieldType="text"
+                          defaultValue=""
+                          disabled={false}
+                        />
+                      </div>
+
+                      <div className="form-group col-lg-6 col-md-12">
+                        <InputField
+                          label="Website"
+                          name="website"
+                          placeholder="www.example.com"
+                          fieldType="text"
+                          defaultValue=""
+                          disabled={false}
+                          required={false}
+                        />
+                      </div>
+
+                      <div className="form-group col-lg-6 col-md-12">
+                        <AutoSelect
+                          label="Company Type"
+                          placeholder="Select company types"
+                          name="company_type"
+                          options={SECTORS}
+                          required
+                          defaultValue={[]}
+                        />
+                      </div>
+
+                      <div className="form-group col-lg-6 col-md-12">
+                        <SelectField
+                          label="Location"
+                          name="company_location"
+                          options={STATES}
+                          placeholder="Select a state"
+                          required
+                        />
+                      </div>
+
+                      <div className="form-group col-lg-12 col-md-12">
+                        <TextAreaField
+                          label="About Company"
+                          name="description"
+                          placeholder="Tell us about your company..."
+                          minLength={10}
+                          maxLength={1000}
+                          required={false}
+                        />
+                      </div>
+                    </>
+                  ) : null}
+
+                  {/* Display error message if exists */}
+                  {error && (
+                    <div className="form-group col-12" style={{ color: "red" }}>
+                      {error}
+                    </div>
+                  )}
+
+                  {/* Submit Button */}
+                  <div className="form-group col-lg-12 col-md-12 text-right">
+                    <button
+                      className={`theme-btn ${
+                        loading ? "btn-style-three" : "btn-style-one"
+                      }`}
+                    >
+                      {loading ? (
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "10px",
+                          }}
+                        >
+                          <CircularLoader />
+                          <p style={{ margin: 0 }}>Updating User...</p>
+                        </div>
+                      ) : (
+                        "Update User"
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </FormProvider>
+          )}
+
+          {/* Instructions when no user is selected */}
+          {!selectedUserId && (
+            <div
+              className="text-center"
+              style={{ padding: "40px", color: "#666" }}
+            >
+              <p>
+                Please select a user from the dropdown above to edit their
+                information.
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default EditUser;
