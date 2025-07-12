@@ -27,7 +27,7 @@ export const InputField = ({
 
   useEffect(() => {
     if (!required && fieldValue === "") {
-      setValue(name, undefined);
+      setValue(name, "");
     }
   }, [fieldValue, name, required, setValue]);
 

@@ -440,11 +440,30 @@ export const updateUserByAdmin = async (userId, updateData) => {
       throw new Error("User not found");
     }
 
-    // Prepare the update data with timestamp
-    const updatePayload = {
-      ...updateData,
-      updatedAt: Date.now(),
-    };
+    let updatePayload = { ...updateData };
+
+    // Handle logo - if it's a data URL, extract just the base64 part
+    if (updateData.logo && typeof updateData.logo === "string") {
+      if (updateData.logo.startsWith("data:image")) {
+        // Extract base64 part from data URL
+        const base64Part = updateData.logo.split(",")[1];
+        updatePayload.logo = base64Part;
+      } else {
+        // Already a base64 string, keep as is
+        updatePayload.logo = updateData.logo;
+      }
+    } else if (updateData.logo === null) {
+      updatePayload.logo = null; // Clear logo if removed
+    }
+
+    Object.keys(updatePayload).forEach((key) => {
+      if (updatePayload[key] === undefined) {
+        delete updatePayload[key];
+      }
+    });
+
+    // Add timestamp
+    updatePayload.updatedAt = Date.now();
 
     // Update the user document
     await setDoc(userRef, updatePayload, { merge: true });
