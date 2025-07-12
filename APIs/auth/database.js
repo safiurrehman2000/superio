@@ -394,29 +394,38 @@ export const useGetAllUsers = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const usersRef = collection(db, "users");
-        const usersSnap = await getDocs(usersRef);
+    const usersRef = collection(db, "users");
 
-        const users = usersSnap.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
+    // Use onSnapshot for real-time updates
+    const unsubscribe = onSnapshot(
+      usersRef,
+      (snapshot) => {
+        try {
+          const users = snapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
 
-        // Sort users by creation date (newest first)
-        users.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+          // Sort users by creation date (newest first)
+          users.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
 
-        setData(users);
-      } catch (err) {
+          setData(users);
+          setLoading(false);
+        } catch (err) {
+          setError(err);
+          console.error("Error processing users:", err);
+          setLoading(false);
+        }
+      },
+      (err) => {
         setError(err);
         console.error("Error fetching users:", err);
-      } finally {
         setLoading(false);
       }
-    };
+    );
 
-    fetchUsers();
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
   }, []);
 
   return { data, loading, error };
