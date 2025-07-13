@@ -17,11 +17,10 @@ const PackageDataTable = () => {
         const q = query(
           collection(db, "receipts"),
           where("userId", "==", user.uid),
-          orderBy("createdAt", "desc")
+          orderBy("created", "desc")
         );
 
         const querySnapshot = await getDocs(q);
-        console.log("querSnapshot", querySnapshot);
         const data = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
@@ -46,8 +45,8 @@ const PackageDataTable = () => {
           <th>Receipt ID</th>
           <th>Package</th>
           <th>Amount</th>
-
           <th>Date</th>
+          <th>Receipt PDF</th>
         </tr>
       </thead>
       <tbody>
@@ -67,15 +66,35 @@ const PackageDataTable = () => {
           receipts.map((r, idx) => (
             <tr key={r.id}>
               <td>{idx + 1}</td>
-              <td>{r.receiptId}</td>
-              <td>{r.packageName}</td>
+              <td>{r.id}</td> {/* Firestore doc ID */}
+              <td>{r.planId}</td> {/* Plan ID */}
               <td>
                 {r.amount === 0
                   ? "Free"
                   : `${r.amount} ${r.currency?.toUpperCase()}`}
               </td>
-
-              <td>{new Date(r.createdAt).toLocaleString()}</td>
+              <td>
+                {r.created
+                  ? (r.created.seconds
+                      ? new Date(r.created.seconds * 1000)
+                      : new Date(r.created)
+                    ).toLocaleString()
+                  : ""}
+              </td>
+              <td>
+                {r.receipt_pdf_url ? (
+                  <a
+                    href={r.receipt_pdf_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: "#fa5508", textDecoration: "underline" }}
+                  >
+                    Download PDF
+                  </a>
+                ) : (
+                  "N/A"
+                )}
+              </td>
             </tr>
           ))
         )}

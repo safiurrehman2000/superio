@@ -10,9 +10,7 @@ export async function POST(request) {
   try {
     const session = await stripe.checkout.sessions.retrieve(sessionId);
 
-    console.log("im outside", session);
     if (session.payment_status === "paid") {
-      console.log("im in");
       const userId = session.client_reference_id;
       const planId = session.metadata.planId;
 
