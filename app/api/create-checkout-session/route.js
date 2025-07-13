@@ -4,7 +4,7 @@ import Stripe from "stripe";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export async function POST(request) {
-  const { priceId } = await request.json();
+  const { priceId, userId, planId } = await request.json();
 
   try {
     const session = await stripe.checkout.sessions.create({
@@ -16,9 +16,12 @@ export async function POST(request) {
           quantity: 1,
         },
       ],
-
       subscription_data: {
         trial_period_days: 30,
+      },
+      client_reference_id: userId, // <-- THIS IS CRITICAL
+      metadata: {
+        planId: planId, // <-- Store planId in metadata
       },
       success_url: `${request.headers.get(
         "origin"

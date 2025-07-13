@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { loadStripe } from "@stripe/stripe-js";
+import { useSelector } from "react-redux";
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
@@ -14,14 +15,15 @@ const Pricing = () => {
   const [pricingContent, setPricingContent] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const handleSubmit = async (priceId) => {
+  const selector = useSelector((store) => store.user);
+  const handleSubmit = async (priceId, planId) => {
     const stripe = await stripePromise;
     const { sessionId } = await fetch("/api/create-checkout-session", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ priceId }),
+      body: JSON.stringify({ priceId, userId: selector.user?.uid, planId }),
     }).then((res) => res.json());
 
     const result = await stripe.redirectToCheckout({ sessionId });
@@ -207,7 +209,7 @@ const Pricing = () => {
                     className="theme-btn btn-style-three"
                     style={{ margin: "auto" }}
                     onClick={() => {
-                      handleSubmit(item?.stripePriceId);
+                      handleSubmit(item?.stripePriceId, item?.id);
                     }}
                   >
                     Buy
