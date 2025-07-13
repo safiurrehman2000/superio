@@ -7,7 +7,29 @@ import { collection, query, where, orderBy, getDocs } from "firebase/firestore";
 const PackageDataTable = () => {
   const [receipts, setReceipts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [packages, setPackages] = useState({});
   const user = useSelector((state) => state.user.user);
+
+  useEffect(() => {
+    const fetchPackages = async () => {
+      try {
+        const q = query(collection(db, "pricingPackages"));
+        const querySnapshot = await getDocs(q);
+        const pkgMap = {};
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          if (data && data.id && data.packageType) {
+            pkgMap[data.id] = data.packageType;
+          }
+        });
+        setPackages(pkgMap);
+      } catch (err) {
+        console.error("Error fetching packages:", err);
+        setPackages({});
+      }
+    };
+    fetchPackages();
+  }, []);
 
   useEffect(() => {
     if (!user?.uid) return;
@@ -67,7 +89,8 @@ const PackageDataTable = () => {
             <tr key={r.id}>
               <td>{idx + 1}</td>
               <td>{r.id}</td> {/* Firestore doc ID */}
-              <td>{r.planId}</td> {/* Plan ID */}
+              <td>{packages[r.planId] || r.planId || "N/A"}</td>{" "}
+              {/* Package name or planId */}
               <td>
                 {r.amount === 0
                   ? "Free"
