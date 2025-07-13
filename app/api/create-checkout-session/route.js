@@ -7,6 +7,7 @@ export async function POST(request) {
   const { priceId, userId, planId } = await request.json();
 
   try {
+    console.log("Creating Stripe session for userId:", userId);
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       payment_method_types: ["card"],
@@ -18,10 +19,15 @@ export async function POST(request) {
       ],
       subscription_data: {
         trial_period_days: 30,
+        metadata: {
+          userId,
+          planId,
+        },
       },
-      client_reference_id: userId, // <-- THIS IS CRITICAL
+      client_reference_id: userId, // your user ID
       metadata: {
-        planId: planId, // <-- Store planId in metadata
+        userId, // your user ID from your DB
+        planId, // your plan ID from your DB
       },
       success_url: `${request.headers.get(
         "origin"

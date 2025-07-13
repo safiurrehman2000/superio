@@ -17,6 +17,7 @@ const Pricing = () => {
   const [error, setError] = useState(null);
   const selector = useSelector((store) => store.user);
   const handleSubmit = async (priceId, planId) => {
+    console.log("selector.user.uid", selector?.user?.uid);
     const stripe = await stripePromise;
     const { sessionId } = await fetch("/api/create-checkout-session", {
       method: "POST",
