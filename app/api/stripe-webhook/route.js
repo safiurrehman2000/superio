@@ -32,12 +32,16 @@ export async function POST(request) {
       subscription.metadata?.userId ||
       subscription.metadata?.client_reference_id ||
       subscription.client_reference_id;
+    const status = subscription.status;
 
     if (userId) {
-      await adminDb.collection("users").doc(userId).update({
-        subscriptionStatus: "cancelled",
-        subscriptionUpdatedAt: new Date(),
-      });
+      await adminDb
+        .collection("users")
+        .doc(userId)
+        .update({
+          subscriptionStatus: status || "cancelled",
+          subscriptionUpdatedAt: new Date(),
+        });
     }
   } else if (event.type === "customer.subscription.updated") {
     const subscription = event.data.object;
@@ -45,11 +49,12 @@ export async function POST(request) {
       subscription.metadata?.userId ||
       subscription.metadata?.client_reference_id ||
       subscription.client_reference_id;
-    const planId = subscription.items.data[0]?.price.id;
+    const planId = subscription.metadata?.planId || null;
+    const status = subscription.status;
 
     if (userId) {
       await adminDb.collection("users").doc(userId).update({
-        subscriptionStatus: subscription.status,
+        subscriptionStatus: status,
         planId: planId,
         subscriptionUpdatedAt: new Date(),
       });
