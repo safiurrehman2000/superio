@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
+import { adminDb } from "@/utils/firebase-admin";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -9,10 +10,17 @@ export async function POST(request) {
   try {
     const session = await stripe.checkout.sessions.retrieve(sessionId);
 
-    console.log(session);
+    console.log("im outside", session);
     if (session.payment_status === "paid") {
-      // Update your database to mark the user as subscribed
-      // await updateUserSubscriptionStatus(session.client_reference_id, 'active');
+      console.log("im in");
+      const userId = session.client_reference_id;
+      const planId = session.metadata.planId;
+
+      await adminDb.collection("users").doc(userId).update({
+        subscriptionStatus: "active",
+        planId: planId,
+        subscriptionUpdatedAt: new Date(),
+      });
     }
 
     return NextResponse.json({ session });
