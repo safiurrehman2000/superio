@@ -485,3 +485,113 @@ export const updateUserByAdmin = async (userId, updateData) => {
     return { success: false, error: error.message };
   }
 };
+
+/**
+ * Delete a user and all related data (cascading) for both Candidates and Employers.
+ * @param {string} userId - The ID of the user to delete.
+ * @returns {Promise<{success: boolean, error?: string}>}
+ */
+export const deleteUserByAdmin = async (userId) => {
+  try {
+    if (!userId) throw new Error("User ID is required");
+    const userRef = doc(db, "users", userId);
+    const userSnap = await getDoc(userRef);
+    if (!userSnap.exists()) throw new Error("User not found");
+    const userData = userSnap.data();
+    const userType = userData.userType;
+
+    // --- Delete resume subcollection (for candidates) ---
+    if (userType === "Candidate") {
+      const resumeColRef = collection(db, "users", userId, "resume");
+      const resumeDocs = await getDocs(resumeColRef);
+      await Promise.all(resumeDocs.docs.map((d) => deleteDoc(d.ref)));
+    }
+
+    // --- Delete user document ---
+    await deleteDoc(userRef);
+
+    // --- Delete saved_jobs (for candidates) ---
+    if (userType === "Candidate") {
+      const savedJobsRef = collection(db, "saved_jobs");
+      const savedJobsQuery = query(savedJobsRef, where("userId", "==", userId));
+      const savedJobsSnap = await getDocs(savedJobsQuery);
+      await Promise.all(savedJobsSnap.docs.map((d) => deleteDoc(d.ref)));
+    }
+
+    // --- Delete receipts (for employers) ---
+    if (userType === "Employer") {
+      const receiptsRef = collection(db, "receipts");
+      const receiptsQuery = query(receiptsRef, where("userId", "==", userId));
+      const receiptsSnap = await getDocs(receiptsQuery);
+      await Promise.all(receiptsSnap.docs.map((d) => deleteDoc(d.ref)));
+    }
+
+    // --- Delete applications ---
+    if (userType === "Candidate") {
+      // Applications where candidateId == userId
+      const applicationsRef = collection(db, "applications");
+      const appsQuery = query(
+        applicationsRef,
+        where("candidateId", "==", userId)
+      );
+      const appsSnap = await getDocs(appsQuery);
+      await Promise.all(appsSnap.docs.map((d) => deleteDoc(d.ref)));
+    } else if (userType === "Employer") {
+      // Find all jobs by this employer
+      const jobsRef = collection(db, "jobs");
+      const jobsQuery = query(jobsRef, where("employerId", "==", userId));
+      const jobsSnap = await getDocs(jobsQuery);
+      const jobIds = jobsSnap.docs.map((d) => d.id);
+      // Delete all jobs
+      await Promise.all(jobsSnap.docs.map((d) => deleteDoc(d.ref)));
+      // Delete all applications for these jobs
+      if (jobIds.length > 0) {
+        const applicationsRef = collection(db, "applications");
+        // Firestore 'in' queries limited to 10, so batch if needed
+        for (let i = 0; i < jobIds.length; i += 10) {
+          const batchIds = jobIds.slice(i, i + 10);
+          const appsQuery = query(
+            applicationsRef,
+            where("jobId", "in", batchIds)
+          );
+          const appsSnap = await getDocs(appsQuery);
+          await Promise.all(appsSnap.docs.map((d) => deleteDoc(d.ref)));
+        }
+      }
+    }
+
+    // --- Delete jobViews/views subcollection where userId matches (for candidates) ---
+    if (userType === "Candidate") {
+      const jobViewsRef = collection(db, "jobViews");
+      const jobViewsSnap = await getDocs(jobViewsRef);
+      for (const jobViewDoc of jobViewsSnap.docs) {
+        const viewsColRef = collection(db, "jobViews", jobViewDoc.id, "views");
+        const viewsSnap = await getDocs(viewsColRef);
+        const toDelete = viewsSnap.docs.filter(
+          (v) => v.data().userId === userId
+        );
+        await Promise.all(toDelete.map((v) => deleteDoc(v.ref)));
+      }
+    }
+
+    // --- Delete jobViews for jobs posted by employer (for employers) ---
+    if (userType === "Employer") {
+      const jobsRef = collection(db, "jobs");
+      const jobsQuery = query(jobsRef, where("employerId", "==", userId));
+      const jobsSnap = await getDocs(jobsQuery);
+      for (const jobDoc of jobsSnap.docs) {
+        // Delete jobViews doc and its views subcollection
+        const jobViewRef = doc(db, "jobViews", jobDoc.id);
+        const viewsColRef = collection(db, "jobViews", jobDoc.id, "views");
+        const viewsSnap = await getDocs(viewsColRef);
+        await Promise.all(viewsSnap.docs.map((v) => deleteDoc(v.ref)));
+        await deleteDoc(jobViewRef);
+      }
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting user and related data:", error);
+    return { success: false, error: error.message };
+  }
+};

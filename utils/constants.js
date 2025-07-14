@@ -128,6 +128,13 @@ export const adminMenuData = [
     routePath: "/login",
     active: "",
   },
+  {
+    id: 5,
+    name: "Post Job for Employer",
+    icon: "la-paper-plane",
+    routePath: "/admin-dashboard/post-job-for-employer",
+    active: "",
+  },
 ];
 
 export const employerMenuData = [

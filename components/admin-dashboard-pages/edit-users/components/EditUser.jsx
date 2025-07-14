@@ -1,6 +1,10 @@
 "use client";
 
-import { useGetAllUsers, updateUserByAdmin } from "@/APIs/auth/database";
+import {
+  useGetAllUsers,
+  updateUserByAdmin,
+  deleteUserByAdmin,
+} from "@/APIs/auth/database";
 import AutoSelect from "@/components/autoselect/AutoSelect";
 import CircularLoader from "@/components/circular-loading/CircularLoading";
 import { InputField } from "@/components/inputfield/InputField";
@@ -17,6 +21,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import AdminLogoUpload from "./AdminLogoUpload";
+import { successToast } from "@/utils/toast";
 
 const EditUser = () => {
   const [selectedUserId, setSelectedUserId] = useState("");
@@ -28,6 +33,10 @@ const EditUser = () => {
     loading: usersLoading,
     error: usersError,
   } = useGetAllUsers();
+
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState(null);
 
   const methods = useForm({
     mode: "onChange",
@@ -148,7 +157,7 @@ const EditUser = () => {
         return cleaned;
       };
 
-      let payload: any = { email: data.email };
+      let payload = { email: data.email };
 
       payload.logo = data.logo;
 
@@ -196,6 +205,24 @@ const EditUser = () => {
       console.error("Error during user update:", err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteUser = async () => {
+    if (!selectedUserId) return;
+    setDeleteLoading(true);
+    setDeleteError(null);
+    try {
+      const { success, error } = await deleteUserByAdmin(selectedUserId);
+      if (!success) throw new Error(error || "Failed to delete user.");
+      setShowDeleteModal(false);
+      setSelectedUserId("");
+      reset();
+      successToast("User and all related data deleted successfully.");
+    } catch (err) {
+      setDeleteError(err.message || "An unexpected error occurred.");
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -249,7 +276,6 @@ const EditUser = () => {
         <div className="widget-content">
           {/* User Selection */}
           <div className="form-group col-lg-12 col-md-12 mb-4">
-            <label>Select User to Edit</label>
             <select
               className="chosen-single form-select"
               value={selectedUserId}
@@ -464,11 +490,16 @@ const EditUser = () => {
                   )}
 
                   {/* Submit Button */}
-                  <div className="form-group col-lg-12 col-md-12 text-right">
+                  <div
+                    className="form-group col-lg-12 col-md-12 d-flex justify-content-between align-items-center"
+                    style={{ marginTop: 20, gap: 16 }}
+                  >
                     <button
                       className={`theme-btn ${
                         loading ? "btn-style-three" : "btn-style-one"
                       }`}
+                      type="submit"
+                      disabled={loading || deleteLoading}
                     >
                       {loading ? (
                         <div
@@ -485,10 +516,97 @@ const EditUser = () => {
                         "Update User"
                       )}
                     </button>
+                    <button
+                      type="button"
+                      className="theme-btn btn-style-one"
+                      style={{ background: "#dc3545", color: "#fff" }}
+                      onClick={() => setShowDeleteModal(true)}
+                      disabled={loading || deleteLoading}
+                    >
+                      {deleteLoading ? "Deleting..." : "Delete Account"}
+                    </button>
                   </div>
                 </div>
               </form>
             </FormProvider>
+          )}
+
+          {/* Delete Account Button and Modal */}
+          {selectedUserId && (
+            <>
+              <div
+                className="form-group col-lg-12 col-md-12 text-left"
+                style={{ marginTop: 20 }}
+              >
+                {/* This button is now part of the form's submit row */}
+              </div>
+              {showDeleteModal && (
+                <div
+                  className="modal-overlay"
+                  style={{
+                    position: "fixed",
+                    top: 0,
+                    left: 0,
+                    width: "100vw",
+                    height: "100vh",
+                    background: "rgba(0,0,0,0.4)",
+                    zIndex: 9999,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <div
+                    className="modal-content"
+                    style={{
+                      background: "#fff",
+                      padding: 32,
+                      borderRadius: 8,
+                      maxWidth: 400,
+                      width: "100%",
+                      boxShadow: "0 2px 16px rgba(0,0,0,0.2)",
+                    }}
+                  >
+                    <h4 style={{ marginBottom: 16 }}>Confirm Deletion</h4>
+                    <p>
+                      Are you sure you want to delete this user and all related
+                      data? This action cannot be undone.
+                    </p>
+                    {deleteError && (
+                      <div style={{ color: "red", marginBottom: 8 }}>
+                        {deleteError}
+                      </div>
+                    )}
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "flex-end",
+                        gap: 12,
+                        marginTop: 24,
+                      }}
+                    >
+                      <button
+                        type="button"
+                        className="theme-btn btn-style-one"
+                        onClick={() => setShowDeleteModal(false)}
+                        disabled={deleteLoading}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        className="theme-btn btn-style-one"
+                        style={{ background: "#dc3545", color: "#fff" }}
+                        onClick={handleDeleteUser}
+                        disabled={deleteLoading}
+                      >
+                        {deleteLoading ? "Deleting..." : "Yes, Delete"}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>
           )}
 
           {/* Instructions when no user is selected */}
