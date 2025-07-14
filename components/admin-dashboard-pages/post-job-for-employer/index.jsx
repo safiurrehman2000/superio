@@ -1,13 +1,14 @@
+"use client";
 import DefaulHeader2 from "@/components/header/DefaulHeader2";
-import LoginPopup from "@/components/common/form/login/LoginPopup";
-import DashboardAdminSidebar from "@/components/header/DashboardAdminSidebar";
-import MobileMenu from "@/components/header/MobileMenu";
-import BreadCrumb from "@/components/dashboard-pages/BreadCrumb";
-import CopyrightFooter from "@/components/dashboard-pages/CopyrightFooter";
-import MenuToggler from "@/components/dashboard-pages/MenuToggler";
-import EditUser from "@/components/admin-dashboard-pages/edit-users/components/EditUser";
+import LoginPopup from "../../common/form/login/LoginPopup";
+import BreadCrumb from "../../dashboard-pages/BreadCrumb";
+import CopyrightFooter from "../../dashboard-pages/CopyrightFooter";
+import MenuToggler from "../../dashboard-pages/MenuToggler";
+import DashboardAdmin from "../../header/DashboardAdminSidebar";
+import MobileMenu from "../../header/MobileMenu";
+import PostJobForEmployer from "./components/PostJobForEmployer";
 
-const index = () => {
+const PostJobForEmployerIndex = () => {
   return (
     <div className="page-wrapper dashboard">
       {/* <!-- Header Span for hight --> */}
@@ -20,25 +21,22 @@ const index = () => {
       <MobileMenu />
       {/* End MobileMenu */}
 
-      <DashboardAdminSidebar />
+      <DashboardAdmin />
       {/* <!-- End User Sidebar Menu --> */}
 
       {/* <!-- Dashboard --> */}
       <section className="user-dashboard">
         <div className="dashboard-outer">
-          <BreadCrumb title="Edit Users" />
+          <BreadCrumb title="Admin Panel" />
           {/* breadCrumb */}
 
           <MenuToggler />
           {/* Collapsible sidebar button */}
 
           <div className="row">
-            <div className="col-lg-12">
-              {/* <!-- Ls widget --> */}
-              <EditUser />
-            </div>
+            <PostJobForEmployer />
           </div>
-          {/* End .row */}
+          {/* End .row profile and notificatins */}
         </div>
         {/* End dashboard-outer */}
       </section>
@@ -51,4 +49,4 @@ const index = () => {
   );
 };
 
-export default index;
+export default PostJobForEmployerIndex;
