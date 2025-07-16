@@ -1,14 +1,12 @@
 "use client";
 import DefaulHeader2 from "@/components/header/DefaulHeader2";
+import { useEffect, useState } from "react";
 import LoginPopup from "../../common/form/login/LoginPopup";
-import DashboardAdmin from "../../header/DashboardAdminSidebar";
-import MobileMenu from "../../header/MobileMenu";
 import BreadCrumb from "../../dashboard-pages/BreadCrumb";
 import CopyrightFooter from "../../dashboard-pages/CopyrightFooter";
 import MenuToggler from "../../dashboard-pages/MenuToggler";
-import Admin from "./components/Admin";
-import { useState, useEffect } from "react";
-import AdminSkeleton from "./components/AdminSkeleton";
+import DashboardAdmin from "../../header/DashboardAdminSidebar";
+import MobileMenu from "../../header/MobileMenu";
 
 const Index = () => {
   const [loading, setLoading] = useState(true);
