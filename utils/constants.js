@@ -123,16 +123,16 @@ export const adminMenuData = [
   },
   {
     id: 4,
-    name: "Logout",
-    icon: "la-sign-out",
-    routePath: "/login",
+    name: "Post Job for Employer",
+    icon: "la-paper-plane",
+    routePath: "/admin-dashboard/post-job-for-employer",
     active: "",
   },
   {
     id: 5,
-    name: "Post Job for Employer",
-    icon: "la-paper-plane",
-    routePath: "/admin-dashboard/post-job-for-employer",
+    name: "Logout",
+    icon: "la-sign-out",
+    routePath: "/login",
     active: "",
   },
 ];

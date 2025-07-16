@@ -1,6 +1,8 @@
 "use client";
 
-import { updateJob, useGetJobListing } from "@/APIs/auth/jobs";
+import { updateJob, deleteJob } from "@/APIs/auth/jobs";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "@/utils/firebase";
 import AutoSelect from "@/components/autoselect/AutoSelect";
 import CircularLoader from "@/components/circular-loading/CircularLoading";
 import { InputField } from "@/components/inputfield/InputField";
@@ -13,19 +15,40 @@ import {
   STATES,
 } from "@/utils/constants";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FormProvider, useForm } from "react-hook-form";
+import { useSelector } from "react-redux";
+import { DeleteConfirmationModal } from "@/components/dashboard-pages/employers-dashboard/manage-jobs/components/DeleteModal";
 
 const EditJobPost = () => {
   const [selectedJobId, setSelectedJobId] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const { push } = useRouter();
-  const {
-    data: jobs,
-    loading: jobsLoading,
-    error: jobsError,
-  } = useGetJobListing();
+  const selector = useSelector((store: any) => store.user);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [jobs, setJobs] = useState([]);
+  const [jobsLoading, setJobsLoading] = useState(true);
+  const [jobsError, setJobsError] = useState(null);
+  const fetchJobs = async () => {
+    setJobsLoading(true);
+    setJobsError(null);
+    try {
+      const jobsRef = collection(db, "jobs");
+      const jobsSnap = await getDocs(jobsRef);
+      const jobs = jobsSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      setJobs(jobs);
+    } catch (err) {
+      setJobsError(err);
+      setJobs([]);
+    } finally {
+      setJobsLoading(false);
+    }
+  };
+  useEffect(() => {
+    fetchJobs();
+  }, []);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const methods = useForm({
     mode: "onChange",
@@ -39,21 +62,13 @@ const EditJobPost = () => {
     },
   });
 
-  const {
-    handleSubmit,
-    formState: { isValid, errors },
-    setError: setFormError,
-    reset,
-    setValue,
-    trigger,
-  } = methods;
+  const { handleSubmit, reset, setValue } = methods;
 
   const handleJobSelection = (jobId) => {
     setSelectedJobId(jobId);
     if (jobId) {
       const selectedJob = jobs.find((job) => job.id === jobId);
       if (selectedJob) {
-        console.log("selectedJob", selectedJob);
         setValue("name", selectedJob.title || "");
         setValue("description", selectedJob.description || "");
         setValue("email", selectedJob.email || "");
@@ -110,6 +125,41 @@ const EditJobPost = () => {
         err.message || "An unexpected error occurred. Please try again."
       );
       console.error("Error during job post update:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (loading) return;
+    if (!selectedJobId) {
+      setError("Please select a job to delete");
+      return;
+    }
+    if (!selector?.user?.uid) {
+      setError("User authentication data is missing.");
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const { success, error: apiError } = await deleteJob(
+        selectedJobId,
+        selector.user.uid
+      );
+      if (!success) {
+        throw new Error(apiError || "Failed to delete job post.");
+      }
+      reset();
+      setSelectedJobId("");
+      fetchJobs();
+      push("/admin-dashboard/edit-job-posts");
+      setIsDeleteModalOpen(false);
+    } catch (err) {
+      setError(
+        err.message || "An unexpected error occurred. Please try again."
+      );
+      console.error("Error during job post delete:", err);
     } finally {
       setLoading(false);
     }
@@ -257,11 +307,16 @@ const EditJobPost = () => {
                     />
                   </div>
 
-                  <div className="form-group col-lg-12 col-md-12 text-right">
+                  <div
+                    className="form-group col-lg-12 col-md-12 text-right"
+                    style={{ display: "flex", justifyContent: "space-between" }}
+                  >
                     <button
                       className={`theme-btn ${
                         loading ? "btn-style-three" : "btn-style-one"
                       }`}
+                      type="submit"
+                      disabled={loading}
                     >
                       {loading ? (
                         <div
@@ -277,6 +332,15 @@ const EditJobPost = () => {
                       ) : (
                         "Update Job"
                       )}
+                    </button>
+                    <button
+                      type="button"
+                      className="theme-btn btn-style-two ml-2"
+                      style={{ background: "#dc3545", color: "#fff" }}
+                      onClick={() => setIsDeleteModalOpen(true)}
+                      disabled={loading}
+                    >
+                      {loading ? "Deleting..." : "Delete Job"}
                     </button>
                   </div>
                 </div>
@@ -295,8 +359,19 @@ const EditJobPost = () => {
               </p>
             </div>
           )}
+          {error && (
+            <div style={{ color: "red", textAlign: "center", marginTop: 10 }}>
+              {error}
+            </div>
+          )}
         </div>
       </div>
+      <DeleteConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDelete}
+        isDeleting={loading}
+      />
     </div>
   );
 };

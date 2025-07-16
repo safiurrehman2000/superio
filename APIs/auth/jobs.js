@@ -587,8 +587,8 @@ export const deleteJob = async (jobId, employerId) => {
     }
 
     const userData = userDoc.data();
-    if (userData.userType !== "Employer") {
-      throw new Error("Only employers can delete job postings");
+    if (userData.userType !== "Employer" && userData.userType !== "Admin") {
+      throw new Error("Only employers or admins can delete job postings");
     }
 
     // Verify the job exists and belongs to the employer
@@ -600,7 +600,8 @@ export const deleteJob = async (jobId, employerId) => {
     }
 
     const jobData = jobDoc.data();
-    if (jobData.employerId !== employerId) {
+    // If user is Employer, ensure they own the job. Admins can delete any job.
+    if (userData.userType === "Employer" && jobData.employerId !== employerId) {
       throw new Error("You can only delete your own job postings");
     }
 
