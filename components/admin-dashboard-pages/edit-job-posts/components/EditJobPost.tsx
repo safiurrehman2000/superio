@@ -26,7 +26,6 @@ const EditJobPost = () => {
   const [error, setError] = useState(null);
   const { push } = useRouter();
   const selector = useSelector((store: any) => store.user);
-  const [refreshKey, setRefreshKey] = useState(0);
   const [jobs, setJobs] = useState([]);
   const [jobsLoading, setJobsLoading] = useState(true);
   const [jobsError, setJobsError] = useState(null);
