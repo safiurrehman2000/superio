@@ -244,7 +244,13 @@ const JobListingsTable = () => {
                             : "N/A"}
                         </td>
                         <td className="status">
-                          {item?.isOpen === "False" ? "Expired" : "Active"}
+                          {item.status === "archived" ? (
+                            <span className="badge bg-secondary">Archived</span>
+                          ) : item?.isOpen === "False" ? (
+                            "Expired"
+                          ) : (
+                            "Active"
+                          )}
                         </td>
                         <td>
                           <div className="option-box">
