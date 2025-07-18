@@ -28,11 +28,25 @@ export async function POST(request) {
   // Handle subscription status changes
   if (event.type === "customer.subscription.deleted") {
     const subscription = event.data.object;
-    const userId =
+    console.log("subscription", subscription);
+    let userId =
       subscription.metadata?.userId ||
       subscription.metadata?.client_reference_id ||
       subscription.client_reference_id;
     const status = subscription.status;
+    const customerId = subscription.customer;
+    console.log("customerId", customerId);
+    if (customerId) {
+      const usersRef = adminDb.collection("users");
+      const employerQuery = await usersRef
+        .where("stripeCustomerId", "==", customerId)
+        .get();
+
+      console.log("employerQuery", employerQuery.docs);
+      if (!employerQuery.empty) {
+        userId = employerQuery.docs[0].id;
+      }
+    }
 
     if (userId) {
       await adminDb
@@ -42,15 +56,42 @@ export async function POST(request) {
           subscriptionStatus: status || "cancelled",
           subscriptionUpdatedAt: new Date(),
         });
+      // Archive all jobs for this employer
+
+      const jobsQuery = await adminDb
+        .collection("jobs")
+        .where("employerId", "==", userId)
+        .get();
+      console.log("jobsQuery", jobsQuery);
+      const batch = adminDb.batch();
+      jobsQuery.forEach((jobDoc) => {
+        batch.update(jobDoc.ref, {
+          status: "archived",
+          archivedAt: new Date(),
+        });
+      });
+      await batch.commit();
     }
   } else if (event.type === "customer.subscription.updated") {
     const subscription = event.data.object;
-    const userId =
+    let userId =
       subscription.metadata?.userId ||
       subscription.metadata?.client_reference_id ||
       subscription.client_reference_id;
     const planId = subscription.metadata?.planId || null;
     const status = subscription.status;
+    const customerId = subscription.customer;
+
+    // Fallback: If userId is not present, look up by Stripe customer ID
+    if (!userId && customerId) {
+      const usersRef = adminDb.collection("users");
+      const employerQuery = await usersRef
+        .where("stripeCustomerId", "==", customerId)
+        .get();
+      if (!employerQuery.empty) {
+        userId = employerQuery.docs[0].id;
+      }
+    }
 
     if (userId) {
       await adminDb.collection("users").doc(userId).update({
@@ -58,8 +99,55 @@ export async function POST(request) {
         planId: planId,
         subscriptionUpdatedAt: new Date(),
       });
+      // Archive all jobs if subscription is canceled or incomplete_expired
+      if (["canceled", "incomplete_expired"].includes(status)) {
+        const jobsQuery = await adminDb
+          .collection("jobs")
+          .where("employerId", "==", userId)
+          .get();
+        const batch = adminDb.batch();
+        jobsQuery.forEach((jobDoc) => {
+          batch.update(jobDoc.ref, {
+            status: "archived",
+            archivedAt: new Date(),
+          });
+        });
+        await batch.commit();
+      }
     }
   } else if (event.type === "checkout.session.completed") {
+    const session = event.data.object;
+
+    const userId =
+      session.metadata?.userId || session.client_reference_id || null;
+    const customerId = session.customer;
+
+    if (userId && customerId) {
+      // Fetch user doc
+      const userDoc = await adminDb.collection("users").doc(userId).get();
+      if (userDoc.exists && !userDoc.data().stripeCustomerId) {
+        await adminDb.collection("users").doc(userId).update({
+          stripeCustomerId: customerId,
+        });
+        // Patch any missing subscriptionId
+        const subscriptions = await stripe.subscriptions.list({
+          customer: customerId,
+          status: "all",
+          limit: 1,
+        });
+        if (subscriptions.data.length > 0) {
+          const latestSub = subscriptions.data[0];
+          await adminDb.collection("users").doc(userId).update({
+            stripeSubscriptionId: latestSub.id,
+          });
+          console.log(
+            "Patched missing stripeSubscriptionId for user (via checkout.session.completed)",
+            userId,
+            latestSub.id
+          );
+        }
+      }
+    }
     // No longer create a receipt here for subscriptions
     // Only handle any logic you need for one-time payments if required
   } else if (event.type === "invoice.paid") {
@@ -94,6 +182,69 @@ export async function POST(request) {
         console.log("Invoice receipt successfully written to Firestore");
       } catch (err) {
         console.error("Error writing invoice receipt to Firestore:", err);
+      }
+    }
+  } else if (event.type === "customer.subscription.created") {
+    const subscription = event.data.object;
+    console.log("subscription in subscription created", subscription.id);
+    console.log("subscription.customer", subscription.customer);
+    const subscriptionId = subscription.id; // Stripe subscription ID
+    const customerId = subscription.customer;
+
+    // Find the user by stripeCustomerId
+    const usersRef = adminDb.collection("users");
+    const employerQuery = await usersRef
+      .where("stripeCustomerId", "==", customerId)
+      .get();
+
+    if (!employerQuery.empty) {
+      const userId = employerQuery.docs[0].id;
+      await adminDb.collection("users").doc(userId).update({
+        stripeSubscriptionId: subscriptionId,
+      });
+      console.log("stripeSubscriptionId set for user", userId, subscriptionId);
+    } else {
+      // Fallback: user not found, log for retry/manual patch
+      console.warn(
+        `No user found with stripeCustomerId ${customerId} for subscription ${subscriptionId}. Will need to patch this user later.`
+      );
+      // Optionally, you could queue a retry here or write to a 'failedEvents' collection for later processing
+    }
+  } else if (event.type === "customer.created") {
+    const customer = event.data.object;
+    const customerId = customer.id;
+    // Try to get userId from metadata or client_reference_id if available (rare, but possible if you create customers directly with metadata)
+    const userId =
+      customer.metadata?.userId || customer.client_reference_id || null;
+    if (userId) {
+      // Set stripeCustomerId on user doc
+      const userDoc = await adminDb.collection("users").doc(userId).get();
+      if (userDoc.exists && !userDoc.data().stripeCustomerId) {
+        await adminDb.collection("users").doc(userId).update({
+          stripeCustomerId: customerId,
+        });
+        console.log(
+          "stripeCustomerId set for user (via customer.created)",
+          userId,
+          customerId
+        );
+        // Patch any missing subscriptionId
+        const subscriptions = await stripe.subscriptions.list({
+          customer: customerId,
+          status: "all",
+          limit: 1,
+        });
+        if (subscriptions.data.length > 0) {
+          const latestSub = subscriptions.data[0];
+          await adminDb.collection("users").doc(userId).update({
+            stripeSubscriptionId: latestSub.id,
+          });
+          console.log(
+            "Patched missing stripeSubscriptionId for user (via customer.created)",
+            userId,
+            latestSub.id
+          );
+        }
       }
     }
   }

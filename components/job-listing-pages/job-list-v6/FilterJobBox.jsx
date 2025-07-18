@@ -22,9 +22,8 @@ import { useEffect, useState } from "react";
 import { TbBookmark, TbBookmarkFilled } from "react-icons/tb";
 import { useDispatch, useSelector } from "react-redux";
 import ListingShowing from "../components/ListingShowing";
-import "./jobList.css";
 import JobAlertModal from "./JobAlertModal";
-import Loading from "@/components/loading/Loading";
+import "./jobList.css";
 import JobListSkeleton from "./JobListSkeleton";
 
 const FilterJobBox = () => {
