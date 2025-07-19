@@ -33,6 +33,7 @@ export async function POST(request) {
       subscription.metadata?.userId ||
       subscription.metadata?.client_reference_id ||
       subscription.client_reference_id;
+    console.log("userId", userId);
     const status = subscription.status;
     const customerId = subscription.customer;
     console.log("customerId", customerId);
@@ -55,6 +56,7 @@ export async function POST(request) {
         .update({
           subscriptionStatus: status || "cancelled",
           subscriptionUpdatedAt: new Date(),
+          planId: null, // Clear planId on cancellation
         });
       // Archive all jobs for this employer
 
@@ -78,7 +80,18 @@ export async function POST(request) {
       subscription.metadata?.userId ||
       subscription.metadata?.client_reference_id ||
       subscription.client_reference_id;
-    const planId = subscription.metadata?.planId || null;
+    const stripePriceId = subscription.items.data[0]?.price?.id || null;
+    let planId = null;
+    if (stripePriceId) {
+      const packagesRef = adminDb.collection("pricingPackages");
+      const pkgQuery = await packagesRef
+        .where("stripePriceId", "==", stripePriceId)
+        .get();
+      if (!pkgQuery.empty) {
+        planId = pkgQuery.docs[0].data().id;
+      }
+    }
+    console.log("planId is set", planId);
     const status = subscription.status;
     const customerId = subscription.customer;
 
@@ -94,11 +107,16 @@ export async function POST(request) {
     }
 
     if (userId) {
-      await adminDb.collection("users").doc(userId).update({
-        subscriptionStatus: status,
-        planId: planId,
-        subscriptionUpdatedAt: new Date(),
-      });
+      await adminDb
+        .collection("users")
+        .doc(userId)
+        .update({
+          subscriptionStatus: status,
+          planId: ["canceled", "incomplete_expired"].includes(status)
+            ? null
+            : planId,
+          subscriptionUpdatedAt: new Date(),
+        });
       // Archive all jobs if subscription is canceled or incomplete_expired
       if (["canceled", "incomplete_expired"].includes(status)) {
         const jobsQuery = await adminDb
@@ -111,6 +129,22 @@ export async function POST(request) {
             status: "archived",
             archivedAt: new Date(),
           });
+        });
+        await batch.commit();
+      } else {
+        // Reactivate archived jobs on subscription reactivation/change
+        const jobsQuery = await adminDb
+          .collection("jobs")
+          .where("employerId", "==", userId)
+          .get();
+        const batch = adminDb.batch();
+        jobsQuery.forEach((jobDoc) => {
+          if (jobDoc.data().status === "archived") {
+            batch.update(jobDoc.ref, {
+              status: "active",
+              reactivatedAt: new Date(),
+            });
+          }
         });
         await batch.commit();
       }
@@ -190,7 +224,8 @@ export async function POST(request) {
     console.log("subscription.customer", subscription.customer);
     const subscriptionId = subscription.id; // Stripe subscription ID
     const customerId = subscription.customer;
-    const trialEnd = subscription.trial_end; // If trial_end is set, it's a trial
+    const trialEnd = subscription.trial_end;
+    const status = subscription.status;
 
     // Find the user by stripeCustomerId
     const usersRef = adminDb.collection("users");
@@ -200,8 +235,21 @@ export async function POST(request) {
 
     if (!employerQuery.empty) {
       const userId = employerQuery.docs[0].id;
+      const stripePriceId = subscription.items.data[0]?.price?.id || null;
+      let planId = null;
+      if (stripePriceId) {
+        const packagesRef = adminDb.collection("pricingPackages");
+        const pkgQuery = await packagesRef
+          .where("stripePriceId", "==", stripePriceId)
+          .get();
+        if (!pkgQuery.empty) {
+          planId = pkgQuery.docs[0].data().id;
+        }
+      }
       await adminDb.collection("users").doc(userId).update({
         stripeSubscriptionId: subscriptionId,
+        isFirstTime: false, // Mark onboarding as complete after subscription
+        planId: planId, // Set planId to the local package id
       });
       console.log("stripeSubscriptionId set for user", userId, subscriptionId);
       // If this subscription has a trial, mark the user as having used their trial
@@ -210,6 +258,23 @@ export async function POST(request) {
           hasUsedTrial: true,
         });
         console.log("hasUsedTrial set to true for user", userId);
+      }
+      // Reactivate archived jobs on new subscription
+      if (!["canceled", "incomplete_expired"].includes(status)) {
+        const jobsQuery = await adminDb
+          .collection("jobs")
+          .where("employerId", "==", userId)
+          .get();
+        const batch = adminDb.batch();
+        jobsQuery.forEach((jobDoc) => {
+          if (jobDoc.data().status === "archived") {
+            batch.update(jobDoc.ref, {
+              status: "active",
+              reactivatedAt: new Date(),
+            });
+          }
+        });
+        await batch.commit();
       }
     } else {
       // Fallback: user not found, log for retry/manual patch
