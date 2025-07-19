@@ -78,6 +78,7 @@ const PackageDataTable = () => {
     if (!user?.uid) return;
     const fetchUserPlan = async () => {
       const userDoc = await getDoc(doc(db, "users", user.uid));
+      console.log("userDoc", userDoc);
       if (userDoc.exists()) {
         setPlanId(userDoc.data().planId || null);
       }
@@ -272,7 +273,7 @@ const PackageDataTable = () => {
                 <td>
                   {r.amount === 0
                     ? "Free"
-                    : `${r.amount} ${r.currency?.toUpperCase()}`}
+                    : `${r.amount / 100} ${r.currency?.toUpperCase()}`}
                 </td>
                 <td>
                   {r.created
