@@ -69,7 +69,9 @@ const FilterJobBox = () => {
   }, [filteredJobs, dispatch]);
   useEffect(() => {
     if (jobs) {
-      dispatch(setJobs(jobs));
+      // Filter out archived jobs
+      const activeJobs = jobs.filter((job) => job.status !== "archived");
+      dispatch(setJobs(activeJobs));
     }
   }, [jobs, dispatch]);
 
