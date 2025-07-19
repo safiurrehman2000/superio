@@ -67,34 +67,6 @@ const PricingPackages = () => {
 
   //     // Check if data already exists
   //     const packagesRef = collection(db, "pricingPackages");
-  //     const existingPackages = await getDocs(packagesRef);
-
-  //     if (!existingPackages.empty) {
-  //       setInitMessage("Pricing packages already exist in database!");
-  //       return;
-  //     }
-
-  //     // Upload each package
-  //     for (const packageData of fallbackPricing) {
-  //       await addDoc(packagesRef, {
-  //         ...packageData,
-  //         createdAt: new Date(),
-  //         updatedAt: new Date(),
-  //       });
-  //     }
-
-  //     setInitMessage("✅ Pricing packages uploaded successfully!");
-
-  //     // Refresh the data
-  //     const result = await getPricingPackages();
-  //     if (result.success) {
-  //       setPricingContent(result.data);
-  //     }
-  //   } catch (error) {
-  //     console.error("Error uploading pricing data:", error);
-  //     setInitMessage(`❌ Error: ${error.message}`);
-  //   }
-  // };
 
   if (loading) {
     return (

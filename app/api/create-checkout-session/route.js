@@ -5,15 +5,24 @@ import { adminDb } from "@/utils/firebase-admin";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export async function POST(request) {
-  const { priceId, userId, planId } = await request.json();
+  const { priceId, userId, planId, source } = await request.json();
 
   try {
     console.log("Creating Stripe session for userId:", userId);
-    // Fetch user from Firestore to get existing stripeCustomerId
+    // Fetch user from Firestore to get existing stripeCustomerId and hasUsedTrial
     const userDoc = await adminDb.collection("users").doc(userId).get();
     const stripeCustomerId = userDoc.exists
       ? userDoc.data().stripeCustomerId
       : null;
+    const hasUsedTrial = userDoc.exists ? userDoc.data().hasUsedTrial : false;
+    const origin = request.headers.get("origin");
+    const isOnboarding = source === "onboarding";
+    const successUrl = isOnboarding
+      ? `${origin}/onboard-order-completed?session_id={CHECKOUT_SESSION_ID}&source=onboarding`
+      : `${origin}/success?session_id={CHECKOUT_SESSION_ID}&source=pricing`;
+    const cancelUrl = isOnboarding
+      ? `${origin}/onboard-pricing`
+      : `${origin}/employers-dashboard/packages`;
 
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
@@ -25,7 +34,7 @@ export async function POST(request) {
         },
       ],
       subscription_data: {
-        trial_period_days: 30,
+        ...(hasUsedTrial ? {} : { trial_period_days: 30 }),
         metadata: {
           userId,
           planId,
@@ -36,16 +45,13 @@ export async function POST(request) {
         userId, // your user ID from your DB
         planId, // your plan ID from your DB
       },
-      success_url: `${request.headers.get(
-        "origin"
-      )}/onboard-order-completed?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${request.headers.get("origin")}/onboard-pricing`,
+      success_url: successUrl,
+      cancel_url: cancelUrl,
       ...(stripeCustomerId ? { customer: stripeCustomerId } : {}),
     });
 
     // Fetch the session to get the customer ID
     const sessionDetails = await stripe.checkout.sessions.retrieve(session.id);
-    console.log("sessionDetails", sessionDetails);
     if (sessionDetails.customer) {
       await adminDb.collection("users").doc(userId).update({
         stripeCustomerId: sessionDetails.customer,
