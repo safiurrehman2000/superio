@@ -190,6 +190,7 @@ export async function POST(request) {
     console.log("subscription.customer", subscription.customer);
     const subscriptionId = subscription.id; // Stripe subscription ID
     const customerId = subscription.customer;
+    const trialEnd = subscription.trial_end; // If trial_end is set, it's a trial
 
     // Find the user by stripeCustomerId
     const usersRef = adminDb.collection("users");
@@ -203,6 +204,13 @@ export async function POST(request) {
         stripeSubscriptionId: subscriptionId,
       });
       console.log("stripeSubscriptionId set for user", userId, subscriptionId);
+      // If this subscription has a trial, mark the user as having used their trial
+      if (trialEnd) {
+        await adminDb.collection("users").doc(userId).update({
+          hasUsedTrial: true,
+        });
+        console.log("hasUsedTrial set to true for user", userId);
+      }
     } else {
       // Fallback: user not found, log for retry/manual patch
       console.warn(
