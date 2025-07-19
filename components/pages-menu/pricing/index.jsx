@@ -3,6 +3,7 @@ import Breadcrumb from "../../common/Breadcrumb";
 import LoginPopup from "../../common/form/login/LoginPopup";
 import FooterDefault from "../../footer/common-footer";
 import MobileMenu from "../../header/MobileMenu";
+import PricingPackages from "./PricingPackages";
 
 const index = () => {
   return (
@@ -24,7 +25,7 @@ const index = () => {
           <div className="sec-title text-center">
             <h2>Pricing Packages</h2>
             <div className="text">
-              Lorem ipsum dolor sit amet elit, sed do eiusmod tempor.
+              <PricingPackages />
             </div>
           </div>
         </div>

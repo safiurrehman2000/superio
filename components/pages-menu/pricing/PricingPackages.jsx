@@ -1,16 +1,13 @@
 "use client";
 import { getPricingPackages } from "@/APIs/pricing/pricing";
-import BreadCrumb from "@/components/dashboard-pages/BreadCrumb";
-import { LOGO } from "@/utils/constants";
-import Image from "next/image";
-import { useEffect, useState } from "react";
 import { loadStripe } from "@stripe/stripe-js";
+import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
 );
-const Pricing = () => {
+const PricingPackages = () => {
   const [pricingContent, setPricingContent] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -134,52 +131,9 @@ const Pricing = () => {
         margin: "50px",
       }}
     >
-      <header className="header-shaddow">
-        <div className="container-fluid">
-          <div className="main-box">
-            <div className="nav-outer">
-              <div className="logo-box">
-                <div className="logo text-center">
-                  <Image
-                    alt="brand"
-                    src={LOGO}
-                    width={154}
-                    height={50}
-                    priority
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
-      <BreadCrumb title="Pricing Packages" />
-      <p>Please select a package to continue</p>
-
-      {/* Button to initialize pricing */}
-      {/* <div style={{ marginBottom: "20px" }}>
-        <button
-          onClick={uploadPricingToDB}
-          className="theme-btn btn-style-three"
-          style={{ marginRight: "10px" }}
-        >
-          Upload Pricing to Database
-        </button>
-        {initMessage && (
-          <p
-            style={{
-              color: initMessage.includes("Error") ? "red" : "green",
-              marginTop: "10px",
-            }}
-          >
-            {initMessage}
-          </p>
-        )}
-      </div> */}
-
       <div className="pricing-tabs tabs-box wow fadeInUp">
         <div className="row">
-          {pricingContent.map((item) => (
+          {pricingContent?.map((item) => (
             <div
               className={`pricing-table col-lg-4 col-md-6 col-sm-12 ${item.tag}`}
               key={item.id}
@@ -224,4 +178,4 @@ const Pricing = () => {
   );
 };
 
-export default Pricing;
+export default PricingPackages;
