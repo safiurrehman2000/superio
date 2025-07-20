@@ -25,6 +25,7 @@ const PackageDataTable = () => {
   const [planId, setPlanId] = useState(null);
   const [stripeSubscriptionId, setStripeSubscriptionId] = useState(null);
   const [hasArchivedJobs, setHasArchivedJobs] = useState(false);
+  const [currentPeriodEnd, setCurrentPeriodEnd] = useState(null);
   const user = useSelector((state) => state.user.user);
   const router = useRouter();
 
@@ -104,8 +105,42 @@ const PackageDataTable = () => {
     checkArchivedJobs();
   }, [user?.uid]);
 
+  useEffect(() => {
+    if (!user?.uid) return;
+    // Fetch subscription status from backend
+    const fetchSubscriptionStatus = async () => {
+      try {
+        const res = await fetch("/api/subscription-status", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: user.uid }),
+        });
+        const data = await res.json();
+        console.log("Subscription status API response:", data); // Debug log
+        if (data.active && data.current_period_end) {
+          setCurrentPeriodEnd(data.current_period_end);
+        } else {
+          setCurrentPeriodEnd(null);
+        }
+      } catch (err) {
+        setCurrentPeriodEnd(null);
+      }
+    };
+    fetchSubscriptionStatus();
+  }, [user?.uid]);
+
   const currentPlanName = planId ? packages[planId] || planId : "None";
   const hasActiveSubscription = Boolean(stripeSubscriptionId);
+
+  // Calculate days left
+  const daysLeft = currentPeriodEnd
+    ? Math.max(
+        0,
+        Math.ceil(
+          (currentPeriodEnd * 1000 - Date.now()) / (1000 * 60 * 60 * 24)
+        )
+      )
+    : null;
 
   const handleCancelSubscription = async () => {
     setCancelLoading(true);
@@ -268,7 +303,14 @@ const PackageDataTable = () => {
         <div>
           <strong>Current Subscription:</strong>{" "}
           {!cancelSuccess && (
-            <span style={{ color: "#fa5508" }}>{currentPlanName}</span>
+            <span style={{ color: "#fa5508" }}>
+              {currentPlanName}
+              {daysLeft !== null && daysLeft > 0 && (
+                <span style={{ marginLeft: 12, color: "#1976d2" }}>
+                  ({daysLeft} day{daysLeft > 1 ? "s" : ""} left)
+                </span>
+              )}
+            </span>
           )}
           {cancelSuccess && (
             <span style={{ color: "green", marginLeft: 16 }}>
