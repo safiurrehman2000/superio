@@ -24,6 +24,7 @@ const PackageDataTable = () => {
   const [showModal, setShowModal] = useState(false);
   const [planId, setPlanId] = useState(null);
   const [stripeSubscriptionId, setStripeSubscriptionId] = useState(null);
+  const [hasArchivedJobs, setHasArchivedJobs] = useState(false);
   const user = useSelector((state) => state.user.user);
   const router = useRouter();
 
@@ -76,7 +77,6 @@ const PackageDataTable = () => {
     fetchReceipts();
   }, [user?.uid]);
 
-  // Fetch planId and stripeSubscriptionId directly from Firestore
   useEffect(() => {
     if (!user?.uid) return;
     const fetchUserPlanAndSubscription = async () => {
@@ -89,10 +89,23 @@ const PackageDataTable = () => {
     fetchUserPlanAndSubscription();
   }, [user?.uid]);
 
+  useEffect(() => {
+    if (!user?.uid) return;
+    const checkArchivedJobs = async () => {
+      const jobsQuery = query(
+        collection(db, "jobs"),
+        where("employerId", "==", user.uid)
+      );
+      const jobsSnapshot = await getDocs(jobsQuery);
+      const jobs = jobsSnapshot.docs.map((doc) => doc.data());
+      const hasArchived = jobs.some((job) => job.status === "archived");
+      setHasArchivedJobs(hasArchived);
+    };
+    checkArchivedJobs();
+  }, [user?.uid]);
+
   const currentPlanName = planId ? packages[planId] || planId : "None";
   const hasActiveSubscription = Boolean(stripeSubscriptionId);
-
-  console.log("hasActiveSubscription", hasActiveSubscription);
 
   const handleCancelSubscription = async () => {
     setCancelLoading(true);
@@ -108,7 +121,20 @@ const PackageDataTable = () => {
         setCancelSuccess(true);
         setShowModal(false);
         successToast("Subscription cancelled!");
-        // Optionally, refresh user data here
+        setPlanId(null);
+        setStripeSubscriptionId(null);
+        // Fetch jobs and check for archived jobs
+        if (user?.uid) {
+          const jobsQuery = query(
+            collection(db, "jobs"),
+            where("employerId", "==", user.uid)
+          );
+          const jobsSnapshot = await getDocs(jobsQuery);
+          const jobs = jobsSnapshot.docs.map((doc) => doc.data());
+
+          const hasArchived = jobs.some((job) => job.status === "archived");
+          setHasArchivedJobs(hasArchived);
+        }
       } else {
         errorToast(data.error || "Failed to cancel subscription.");
       }
@@ -121,7 +147,6 @@ const PackageDataTable = () => {
 
   return (
     <>
-      {/* Confirmation Modal */}
       {showModal && (
         <div
           style={{
@@ -149,6 +174,10 @@ const PackageDataTable = () => {
           >
             <h3>Cancel Subscription</h3>
             <p>Are you sure you want to cancel your subscription?</p>
+            <p style={{ color: "#d32f2f", fontWeight: 500, marginTop: 12 }}>
+              Cancelling your subscription will archive your jobs and users
+              won't be able to see them.
+            </p>
             <div
               style={{
                 display: "flex",
@@ -189,6 +218,42 @@ const PackageDataTable = () => {
           </div>
         </div>
       )}
+
+      {hasArchivedJobs && currentPlanName === "None" && (
+        <div
+          style={{
+            width: "100%",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            marginBottom: 24,
+          }}
+        >
+          <div
+            style={{
+              background: "linear-gradient(90deg, #ff6f61 0%, #d32f2f 100%)",
+              color: "#fff",
+              padding: "20px 32px",
+              borderRadius: 14,
+              fontWeight: 600,
+              fontSize: "1.1rem",
+              boxShadow: "0 4px 16px rgba(211,47,47,0.08)",
+              display: "flex",
+              alignItems: "center",
+              gap: 16,
+              minWidth: 420,
+              justifyContent: "center",
+            }}
+          >
+            <span style={{ fontSize: 28, marginRight: 8, lineHeight: 1 }}>
+              ⚠️
+            </span>
+            <span>
+              Please buy a subscription to show your jobs off to people.
+            </span>
+          </div>
+        </div>
+      )}
       <div
         style={{
           marginBottom: "24px",
@@ -202,7 +267,9 @@ const PackageDataTable = () => {
       >
         <div>
           <strong>Current Subscription:</strong>{" "}
-          <span style={{ color: "#fa5508" }}>{currentPlanName}</span>
+          {!cancelSuccess && (
+            <span style={{ color: "#fa5508" }}>{currentPlanName}</span>
+          )}
           {cancelSuccess && (
             <span style={{ color: "green", marginLeft: 16 }}>
               Subscription cancelled!
@@ -218,20 +285,11 @@ const PackageDataTable = () => {
               ? "Buy Subscription"
               : "Change Subscription"}
           </button>
-          {hasActiveSubscription && (
+          {hasActiveSubscription && currentPlanName !== "None" && (
             <button
               onClick={() => setShowModal(true)}
               disabled={cancelLoading}
               className="theme-btn btn-style-three"
-              // style={{
-              //   background: cancelLoading ? "#ccc" : "#d32f2f",
-              //   color: "#fff",
-              //   border: "none",
-              //   padding: "10px 20px",
-              //   borderRadius: "4px",
-              //   cursor: cancelLoading ? "not-allowed" : "pointer",
-              //   fontWeight: "bold",
-              // }}
             >
               Cancel Subscription
             </button>
@@ -266,7 +324,7 @@ const PackageDataTable = () => {
             receipts.map((r, idx) => (
               <tr key={r.id}>
                 <td>{idx + 1}</td>
-                <td>{r.id}</td> {/* Firestore doc ID */}
+                <td>{r.id}</td>
                 <td>{packages[r.planId] || r.planId || "N/A"}</td>{" "}
                 {/* Package name or planId */}
                 <td>
