@@ -5,7 +5,6 @@ import { adminDb } from "@/utils/firebase-admin";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export async function POST(request) {
-  console.log("im here");
   const { userId } = await request.json();
   if (!userId) {
     return NextResponse.json({ error: "Missing userId" }, { status: 400 });
@@ -28,7 +27,7 @@ export async function POST(request) {
     const subscription = await stripe.subscriptions.retrieve(
       stripeSubscriptionId
     );
-    console.log("Stripe subscription object:", subscription); // Debug log
+
     const { current_period_end, billing_cycle_anchor, status, plan, items } =
       subscription;
     // Get plan name from items or plan
