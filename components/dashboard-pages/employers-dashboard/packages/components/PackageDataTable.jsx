@@ -12,6 +12,8 @@ import {
   getDoc,
 } from "firebase/firestore";
 import { useRouter } from "next/navigation";
+import CircularLoader from "@/components/circular-loading/CircularLoading";
+import { errorToast, successToast } from "@/utils/toast";
 
 const PackageDataTable = () => {
   const [receipts, setReceipts] = useState([]);
@@ -21,6 +23,7 @@ const PackageDataTable = () => {
   const [cancelSuccess, setCancelSuccess] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [planId, setPlanId] = useState(null);
+  const [stripeSubscriptionId, setStripeSubscriptionId] = useState(null);
   const user = useSelector((state) => state.user.user);
   const router = useRouter();
 
@@ -73,21 +76,23 @@ const PackageDataTable = () => {
     fetchReceipts();
   }, [user?.uid]);
 
-  // Fetch planId directly from Firestore
+  // Fetch planId and stripeSubscriptionId directly from Firestore
   useEffect(() => {
     if (!user?.uid) return;
-    const fetchUserPlan = async () => {
+    const fetchUserPlanAndSubscription = async () => {
       const userDoc = await getDoc(doc(db, "users", user.uid));
-      console.log("userDoc", userDoc);
       if (userDoc.exists()) {
         setPlanId(userDoc.data().planId || null);
+        setStripeSubscriptionId(userDoc.data().stripeSubscriptionId || null);
       }
     };
-    fetchUserPlan();
+    fetchUserPlanAndSubscription();
   }, [user?.uid]);
 
   const currentPlanName = planId ? packages[planId] || planId : "None";
-  const hasActiveSubscription = Boolean(user?.stripeSubscriptionId);
+  const hasActiveSubscription = Boolean(stripeSubscriptionId);
+
+  console.log("hasActiveSubscription", hasActiveSubscription);
 
   const handleCancelSubscription = async () => {
     setCancelLoading(true);
@@ -102,12 +107,13 @@ const PackageDataTable = () => {
       if (data.success) {
         setCancelSuccess(true);
         setShowModal(false);
+        successToast("Subscription cancelled!");
         // Optionally, refresh user data here
       } else {
-        alert(data.error || "Failed to cancel subscription.");
+        errorToast(data.error || "Failed to cancel subscription.");
       }
     } catch (err) {
-      alert("Error cancelling subscription.");
+      errorToast("Error cancelling subscription.");
     } finally {
       setCancelLoading(false);
     }
@@ -154,30 +160,28 @@ const PackageDataTable = () => {
               <button
                 onClick={handleCancelSubscription}
                 disabled={cancelLoading}
-                style={{
-                  background: cancelLoading ? "#ccc" : "#d32f2f",
-                  color: "#fff",
-                  border: "none",
-                  padding: "10px 20px",
-                  borderRadius: "4px",
-                  cursor: cancelLoading ? "not-allowed" : "pointer",
-                  fontWeight: "bold",
-                }}
+                className="theme-btn btn-style-one"
               >
-                {cancelLoading ? "Cancelling..." : "Yes, Cancel"}
+                {cancelLoading ? (
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      justifyContent: "center",
+                    }}
+                  >
+                    <CircularLoader size={18} strokeColor="#fa5508" />
+                    <span>Cancelling...</span>
+                  </div>
+                ) : (
+                  "Yes, Cancel"
+                )}
               </button>
               <button
                 onClick={() => setShowModal(false)}
                 disabled={cancelLoading}
-                style={{
-                  background: "#eee",
-                  color: "#333",
-                  border: "none",
-                  padding: "10px 20px",
-                  borderRadius: "4px",
-                  cursor: cancelLoading ? "not-allowed" : "pointer",
-                  fontWeight: "bold",
-                }}
+                className="theme-btn btn-style-three"
               >
                 No, Keep
               </button>
@@ -208,31 +212,26 @@ const PackageDataTable = () => {
         <div style={{ display: "flex", gap: 12 }}>
           <button
             onClick={() => router.push("/pricing")}
-            style={{
-              background: "#fa5508",
-              color: "#fff",
-              border: "none",
-              padding: "10px 20px",
-              borderRadius: "4px",
-              cursor: "pointer",
-              fontWeight: "bold",
-            }}
+            className="theme-btn btn-style-two"
           >
-            Change Subscription
+            {currentPlanName === "None"
+              ? "Buy Subscription"
+              : "Change Subscription"}
           </button>
           {hasActiveSubscription && (
             <button
               onClick={() => setShowModal(true)}
               disabled={cancelLoading}
-              style={{
-                background: cancelLoading ? "#ccc" : "#d32f2f",
-                color: "#fff",
-                border: "none",
-                padding: "10px 20px",
-                borderRadius: "4px",
-                cursor: cancelLoading ? "not-allowed" : "pointer",
-                fontWeight: "bold",
-              }}
+              className="theme-btn btn-style-three"
+              // style={{
+              //   background: cancelLoading ? "#ccc" : "#d32f2f",
+              //   color: "#fff",
+              //   border: "none",
+              //   padding: "10px 20px",
+              //   borderRadius: "4px",
+              //   cursor: cancelLoading ? "not-allowed" : "pointer",
+              //   fontWeight: "bold",
+              // }}
             >
               Cancel Subscription
             </button>

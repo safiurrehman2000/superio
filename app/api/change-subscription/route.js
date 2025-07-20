@@ -22,10 +22,19 @@ export async function POST(request) {
 
   try {
     if (cancel) {
-      // Cancel the subscription
-      await stripe.subscriptions.del(stripeSubscriptionId);
+      if (typeof stripe.subscriptions.cancel === "function") {
+        await stripe.subscriptions.cancel(stripeSubscriptionId);
+      } else if (typeof stripe.subscriptions.del === "function") {
+        await stripe.subscriptions.del(stripeSubscriptionId);
+      } else {
+        throw new Error(
+          "Stripe subscription cancellation method not found. Please check your Stripe SDK version."
+        );
+      }
       await adminDb.collection("users").doc(userId).update({
         subscriptionStatus: "canceled",
+        planId: null,
+        stripeSubscriptionId: null,
       });
       return NextResponse.json({ success: true, cancelled: true });
     } else {
