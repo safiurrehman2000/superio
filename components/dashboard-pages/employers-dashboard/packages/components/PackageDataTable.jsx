@@ -231,7 +231,7 @@ const PackageDataTable = () => {
         >
           <div
             style={{
-              background: "linear-gradient(90deg, #ff6f61 0%, #d32f2f 100%)",
+              background: "red",
               color: "#fff",
               padding: "20px 32px",
               borderRadius: 14,
