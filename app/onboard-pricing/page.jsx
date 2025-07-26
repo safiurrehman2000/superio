@@ -14,9 +14,11 @@ const Pricing = () => {
   const [pricingContent, setPricingContent] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [buyLoading, setBuyLoading] = useState({});
   const selector = useSelector((store) => store.user);
   const handleSubmit = async (priceId, planId) => {
     console.log("selector.user.uid", selector?.user?.uid);
+    setBuyLoading((prev) => ({ ...prev, [planId]: true }));
     const stripe = await stripePromise;
     const { sessionId } = await fetch("/api/create-checkout-session", {
       method: "POST",
@@ -35,6 +37,7 @@ const Pricing = () => {
 
     if (result.error) {
       console.error(result.error);
+      setBuyLoading((prev) => ({ ...prev, [planId]: false }));
     }
   };
   useEffect(() => {
@@ -216,8 +219,9 @@ const Pricing = () => {
                     onClick={() => {
                       handleSubmit(item?.stripePriceId, item?.id);
                     }}
+                    disabled={buyLoading[item?.id]}
                   >
-                    Buy
+                    {buyLoading[item?.id] ? "Loading..." : "Buy"}
                   </button>
                 </div>
               </div>
