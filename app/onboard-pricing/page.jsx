@@ -23,7 +23,12 @@ const Pricing = () => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ priceId, userId: selector.user?.uid, planId }),
+      body: JSON.stringify({
+        priceId,
+        userId: selector.user?.uid,
+        planId,
+        source: "onboarding",
+      }),
     }).then((res) => res.json());
 
     const result = await stripe.redirectToCheckout({ sessionId });
