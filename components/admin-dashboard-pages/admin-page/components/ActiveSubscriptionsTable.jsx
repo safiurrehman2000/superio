@@ -29,7 +29,9 @@ export default function ActiveSubscriptionsTable() {
   const [sortBy, setSortBy] = useState("email");
   const [sortDir, setSortDir] = useState("asc");
   const [showChangeModal, setShowChangeModal] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [userToCancel, setUserToCancel] = useState(null);
   const [availablePlans, setAvailablePlans] = useState([]);
   const [changingUserId, setChangingUserId] = useState(null);
   const [cancellingUserId, setCancellingUserId] = useState(null);
@@ -203,22 +205,29 @@ export default function ActiveSubscriptionsTable() {
     setShowChangeModal(true);
   };
 
-  const handleCancelSubscription = async (userId) => {
-    if (!confirm("Are you sure you want to cancel this subscription?")) return;
+  const handleCancelClick = (user) => {
+    setUserToCancel(user);
+    setShowCancelModal(true);
+  };
 
-    setCancellingUserId(userId);
+  const handleCancelSubscription = async () => {
+    if (!userToCancel) return;
+
+    setCancellingUserId(userToCancel.id);
     try {
       const res = await fetch("/api/change-subscription", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          userId,
+          userId: userToCancel.id,
           action: "cancel",
         }),
       });
 
       if (res.ok) {
         successToast("Subscription cancelled successfully");
+        setShowCancelModal(false);
+        setUserToCancel(null);
         fetchActiveUsers(); // Refresh the list
       } else {
         const error = await res.json();
@@ -229,6 +238,11 @@ export default function ActiveSubscriptionsTable() {
     } finally {
       setCancellingUserId(null);
     }
+  };
+
+  const handleCancelModalClose = () => {
+    setShowCancelModal(false);
+    setUserToCancel(null);
   };
 
   const handlePlanChange = async (newPlanId) => {
@@ -433,7 +447,7 @@ export default function ActiveSubscriptionsTable() {
                             : "Change"}
                         </button>
                         <button
-                          onClick={() => handleCancelSubscription(user.id)}
+                          onClick={() => handleCancelClick(user)}
                           className={styles["admin-table-btn"]}
                           style={{
                             fontSize: "12px",
@@ -565,6 +579,55 @@ export default function ActiveSubscriptionsTable() {
                 disabled={changingUserId === selectedUser?.id}
               >
                 Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cancel Subscription Modal */}
+      {showCancelModal && userToCancel && (
+        <div className={styles["admin-modal-overlay"]}>
+          <div className={styles["admin-modal"]}>
+            <h3>Cancel Subscription</h3>
+            <p>
+              Are you sure you want to cancel the subscription for{" "}
+              <strong>{userToCancel.email}</strong>?
+            </p>
+            <p style={{ color: "#666", fontSize: "14px" }}>
+              Current Plan: {userToCancel.planName}
+            </p>
+            <p
+              style={{ color: "#dc3545", fontSize: "14px", fontWeight: "bold" }}
+            >
+              This action cannot be undone. The user will lose access to premium
+              features immediately.
+            </p>
+
+            <div style={{ marginTop: 24, display: "flex", gap: 12 }}>
+              <button
+                onClick={handleCancelModalClose}
+                className={styles["admin-table-btn"]}
+                style={{
+                  backgroundColor: "#6c757d",
+                  color: "white",
+                }}
+                disabled={cancellingUserId === userToCancel?.id}
+              >
+                Keep Subscription
+              </button>
+              <button
+                onClick={handleCancelSubscription}
+                className={styles["admin-table-btn"]}
+                style={{
+                  backgroundColor: "#dc3545",
+                  color: "white",
+                }}
+                disabled={cancellingUserId === userToCancel?.id}
+              >
+                {cancellingUserId === userToCancel?.id
+                  ? "Cancelling..."
+                  : "Yes, Cancel Subscription"}
               </button>
             </div>
           </div>
