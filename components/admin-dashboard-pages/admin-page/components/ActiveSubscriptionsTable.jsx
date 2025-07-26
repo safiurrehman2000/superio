@@ -9,6 +9,7 @@ import {
   startAfter,
   getDocs,
 } from "firebase/firestore";
+import { successToast, errorToast } from "@/utils/toast";
 import styles from "./admin-tables.module.scss";
 
 const PAGE_SIZE = 10;
@@ -30,7 +31,8 @@ export default function ActiveSubscriptionsTable() {
   const [showChangeModal, setShowChangeModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [availablePlans, setAvailablePlans] = useState([]);
-  const [changeLoading, setChangeLoading] = useState(false);
+  const [changingUserId, setChangingUserId] = useState(null);
+  const [cancellingUserId, setCancellingUserId] = useState(null);
   const debounceRef = useRef();
 
   useEffect(() => {
@@ -79,11 +81,7 @@ export default function ActiveSubscriptionsTable() {
   const fetchActiveUsers = async (direction = "next", startDoc = null) => {
     setLoading(true);
     let q = collection(db, "users");
-    let constraints = [
-      where("stripeSubscriptionId", ">", ""),
-      orderBy("stripeSubscriptionId"),
-      limit(PAGE_SIZE + 1),
-    ];
+    let constraints = [orderBy("email"), limit(PAGE_SIZE + 1)];
     if (startDoc) {
       constraints.push(startAfter(startDoc));
     }
@@ -101,29 +99,36 @@ export default function ActiveSubscriptionsTable() {
         let planName = "-";
         let daysLeft = "-";
         let planId = null;
-        try {
-          const res = await fetch("/api/subscription-status", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ userId: user.id }),
-          });
-          const data = await res.json();
-          if (data.active && data.current_period_end) {
-            planId = data.planName || "-";
-            planName = planMap[planId] || planId || "-";
-            const days = Math.max(
-              0,
-              Math.ceil(
-                (data.current_period_end * 1000 - Date.now()) /
-                  (1000 * 60 * 60 * 24)
-              )
-            );
-            daysLeft = days > 0 ? days : 0;
+        let hasActiveSubscription = false;
+
+        // Check if user has a stripe subscription ID
+        if (user.stripeSubscriptionId) {
+          try {
+            const res = await fetch("/api/subscription-status", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ userId: user.id }),
+            });
+            const data = await res.json();
+            if (data.active && data.current_period_end) {
+              planId = data.planName || "-";
+              planName = planMap[planId] || planId || "-";
+              const days = Math.max(
+                0,
+                Math.ceil(
+                  (data.current_period_end * 1000 - Date.now()) /
+                    (1000 * 60 * 60 * 24)
+                )
+              );
+              daysLeft = days > 0 ? days : 0;
+              hasActiveSubscription = true;
+            }
+          } catch (err) {
+            // ignore
           }
-        } catch (err) {
-          // ignore
         }
-        return { ...user, planName, daysLeft, planId };
+
+        return { ...user, planName, daysLeft, planId, hasActiveSubscription };
       })
     );
     // Filter by plan type
@@ -201,7 +206,7 @@ export default function ActiveSubscriptionsTable() {
   const handleCancelSubscription = async (userId) => {
     if (!confirm("Are you sure you want to cancel this subscription?")) return;
 
-    setChangeLoading(true);
+    setCancellingUserId(userId);
     try {
       const res = await fetch("/api/change-subscription", {
         method: "POST",
@@ -213,23 +218,23 @@ export default function ActiveSubscriptionsTable() {
       });
 
       if (res.ok) {
-        alert("Subscription cancelled successfully");
+        successToast("Subscription cancelled successfully");
         fetchActiveUsers(); // Refresh the list
       } else {
         const error = await res.json();
-        alert(`Error: ${error.message}`);
+        errorToast(error.message || "Failed to cancel subscription");
       }
     } catch (error) {
-      alert("Error cancelling subscription");
+      errorToast("Error cancelling subscription");
     } finally {
-      setChangeLoading(false);
+      setCancellingUserId(null);
     }
   };
 
   const handlePlanChange = async (newPlanId) => {
     if (!selectedUser) return;
 
-    setChangeLoading(true);
+    setChangingUserId(selectedUser.id);
     try {
       const res = await fetch("/api/change-subscription", {
         method: "POST",
@@ -242,23 +247,53 @@ export default function ActiveSubscriptionsTable() {
       });
 
       if (res.ok) {
-        alert("Subscription changed successfully");
+        successToast("Subscription changed successfully");
         setShowChangeModal(false);
         fetchActiveUsers(); // Refresh the list
       } else {
         const error = await res.json();
-        alert(`Error: ${error.message}`);
+        errorToast(error.message || "Failed to change subscription");
       }
     } catch (error) {
-      alert("Error changing subscription");
+      errorToast("Error changing subscription");
     } finally {
-      setChangeLoading(false);
+      setChangingUserId(null);
+    }
+  };
+
+  const handleSetSubscription = async (newPlanId) => {
+    if (!selectedUser) return;
+
+    setChangingUserId(selectedUser.id);
+    try {
+      const res = await fetch("/api/change-subscription", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: selectedUser.id,
+          action: "set",
+          newPlanId,
+        }),
+      });
+
+      if (res.ok) {
+        successToast("Subscription set successfully");
+        setShowChangeModal(false);
+        fetchActiveUsers(); // Refresh the list
+      } else {
+        const error = await res.json();
+        errorToast(error.message || "Failed to set subscription");
+      }
+    } catch (error) {
+      errorToast("Error setting subscription");
+    } finally {
+      setChangingUserId(null);
     }
   };
 
   return (
     <div className={styles["admin-table-container"]}>
-      <h2 className={styles["admin-table-title"]}>Active Subscriptions</h2>
+      <h2 className={styles["admin-table-title"]}>User Subscriptions</h2>
       <div
         style={{ marginBottom: 16, display: "flex", gap: 8, flexWrap: "wrap" }}
       >
@@ -362,30 +397,77 @@ export default function ActiveSubscriptionsTable() {
                     </span>
                   )}
                 </td>
-                <td>{user.planName}</td>
-                <td>{user.daysLeft}</td>
+                <td>
+                  {user.hasActiveSubscription ? (
+                    user.planName
+                  ) : (
+                    <span
+                      className={`${styles.chip} ${styles["chip-no-subscription"]}`}
+                    >
+                      No Subscription
+                    </span>
+                  )}
+                </td>
+                <td>
+                  {user.hasActiveSubscription ? (
+                    user.daysLeft
+                  ) : (
+                    <span style={{ color: "#999" }}>-</span>
+                  )}
+                </td>
                 <td>
                   <div style={{ display: "flex", gap: 8 }}>
-                    <button
-                      onClick={() => handleChangeSubscription(user)}
-                      className={styles["admin-table-btn"]}
-                      style={{ fontSize: "12px", padding: "4px 8px" }}
-                    >
-                      Change
-                    </button>
-                    <button
-                      onClick={() => handleCancelSubscription(user.id)}
-                      className={styles["admin-table-btn"]}
-                      style={{
-                        fontSize: "12px",
-                        padding: "4px 8px",
-                        backgroundColor: "#dc3545",
-                        color: "white",
-                      }}
-                      disabled={changeLoading}
-                    >
-                      Cancel
-                    </button>
+                    {user.hasActiveSubscription ? (
+                      <>
+                        <button
+                          onClick={() => handleChangeSubscription(user)}
+                          className={styles["admin-table-btn"]}
+                          style={{ fontSize: "12px", padding: "4px 8px" }}
+                          disabled={
+                            changingUserId === user.id ||
+                            cancellingUserId === user.id
+                          }
+                        >
+                          {changingUserId === user.id
+                            ? "Changing..."
+                            : "Change"}
+                        </button>
+                        <button
+                          onClick={() => handleCancelSubscription(user.id)}
+                          className={styles["admin-table-btn"]}
+                          style={{
+                            fontSize: "12px",
+                            padding: "4px 8px",
+                            backgroundColor: "#dc3545",
+                            color: "white",
+                          }}
+                          disabled={
+                            changingUserId === user.id ||
+                            cancellingUserId === user.id
+                          }
+                        >
+                          {cancellingUserId === user.id
+                            ? "Cancelling..."
+                            : "Cancel"}
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        onClick={() => handleChangeSubscription(user)}
+                        className={styles["admin-table-btn"]}
+                        style={{
+                          fontSize: "12px",
+                          padding: "4px 8px",
+                          backgroundColor: "#28a745",
+                          color: "white",
+                        }}
+                        disabled={changingUserId === user.id}
+                      >
+                        {changingUserId === user.id
+                          ? "Setting..."
+                          : "Set Subscription"}
+                      </button>
+                    )}
                   </div>
                 </td>
               </tr>
@@ -414,13 +496,25 @@ export default function ActiveSubscriptionsTable() {
       {showChangeModal && selectedUser && (
         <div className={styles["admin-modal-overlay"]}>
           <div className={styles["admin-modal"]}>
-            <h3>Change Subscription for {selectedUser.email}</h3>
-            <p>Current Plan: {selectedUser.planName}</p>
+            <h3>
+              {selectedUser.hasActiveSubscription
+                ? `Change Subscription for ${selectedUser.email}`
+                : `Set Subscription for ${selectedUser.email}`}
+            </h3>
+            <p>
+              {selectedUser.hasActiveSubscription
+                ? `Current Plan: ${selectedUser.planName}`
+                : "No active subscription"}
+            </p>
 
             <div style={{ marginTop: 16 }}>
               <h4>Available Plans:</h4>
               {availablePlans
-                .filter((plan) => plan.name !== selectedUser.planName)
+                .filter((plan) =>
+                  selectedUser.hasActiveSubscription
+                    ? plan.name !== selectedUser.planName
+                    : true
+                )
                 .map((plan) => (
                   <div
                     key={plan.id}
@@ -429,12 +523,37 @@ export default function ActiveSubscriptionsTable() {
                       border: "1px solid #ddd",
                       margin: "8px 0",
                       borderRadius: 4,
-                      cursor: "pointer",
+                      cursor:
+                        changingUserId === selectedUser?.id
+                          ? "not-allowed"
+                          : "pointer",
+                      opacity: changingUserId === selectedUser?.id ? 0.6 : 1,
                     }}
-                    onClick={() => handlePlanChange(plan.priceId)}
+                    onClick={() => {
+                      if (!changingUserId) {
+                        if (selectedUser.hasActiveSubscription) {
+                          handlePlanChange(plan.priceId);
+                        } else {
+                          handleSetSubscription(plan.priceId);
+                        }
+                      }
+                    }}
                   >
                     <strong>{plan.name}</strong>
                     <br />${plan.price}/{plan.interval}
+                    {changingUserId === selectedUser?.id && (
+                      <div
+                        style={{
+                          fontSize: "12px",
+                          color: "#666",
+                          marginTop: "4px",
+                        }}
+                      >
+                        {selectedUser.hasActiveSubscription
+                          ? "Changing subscription..."
+                          : "Setting subscription..."}
+                      </div>
+                    )}
                   </div>
                 ))}
             </div>
@@ -443,7 +562,7 @@ export default function ActiveSubscriptionsTable() {
               <button
                 onClick={() => setShowChangeModal(false)}
                 className={styles["admin-table-btn"]}
-                disabled={changeLoading}
+                disabled={changingUserId === selectedUser?.id}
               >
                 Cancel
               </button>
