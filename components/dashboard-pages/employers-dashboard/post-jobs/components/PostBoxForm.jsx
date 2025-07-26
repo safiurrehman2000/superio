@@ -61,17 +61,12 @@ const PostBoxForm = () => {
         throw new Error("User authentication data is missing.");
       }
 
-      const { success, error: apiError, job } = await useCreateJobPost(payload);
-      if (!success) {
-        throw new Error(apiError || "Failed to create job post.");
-      }
-      if (job) {
-        dispatch(addEmployerJob(job));
-      }
+      localStorage.setItem(
+        `pendingJobPost_${selector.user.uid}`,
+        JSON.stringify(payload)
+      );
 
-      await useUpdateIsFirstTime(selector.user.uid, { hasPostedJob: true });
-
-      push("/employers-dashboard/dashboard");
+      push("/onboard-pricing");
     } catch (err) {
       setError(
         err.message || "An unexpected error occurred. Please try again."

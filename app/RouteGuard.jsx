@@ -143,36 +143,71 @@ const RouteGuard = ({ children }) => {
         // Handle Employer flow
         else if (userData.userType === "Employer") {
           if (userData.isFirstTime) {
-            // Store the last valid onboarding page
-            const validOnboardingPages = [
+            const pendingJob =
+              typeof window !== "undefined"
+                ? localStorage.getItem(`pendingJobPost_${uid}`)
+                : null;
+            // New onboarding flow: first post a job, then go to pricing
+            if (!userData.hasPostedJob) {
+              // Allow access to pricing/payment if job is pending in localStorage
+              const allowedPages = [
+                "/onboard-pricing",
+                "/onboard-order-completed",
+              ];
+              if (pendingJob && allowedPages.includes(pathname)) {
+                // Allow access, do not redirect
+              } else if (
+                pendingJob &&
+                pathname === "/create-profile-employer"
+              ) {
+                // Prevent going back to job form if job is already pending
+                push("/onboard-pricing");
+                setLoading(false);
+                return;
+              } else if (pathname !== "/create-profile-employer") {
+                push("/create-profile-employer");
+                setLoading(false);
+                return;
+              }
+            } else {
+              // After job is posted, go to pricing if not already there
+              const validOnboardingPages = [
+                "/onboard-pricing",
+                "/onboard-order-completed",
+              ];
+              const lastValidPage = validOnboardingPages.find(
+                (page) => pathname === page
+              );
+              if (!lastValidPage) {
+                const lastPage =
+                  localStorage.getItem(`lastOnboardingPage_${uid}`) ||
+                  "/onboard-pricing";
+                push(lastPage);
+                setLoading(false);
+                return;
+              } else {
+                localStorage.setItem(`lastOnboardingPage_${uid}`, pathname);
+              }
+            }
+          } else {
+            // User has completed onboarding (isFirstTime is false)
+            // Redirect them away from onboarding pages to dashboard
+            const onboardingPages = [
+              "/create-profile-employer",
               "/onboard-pricing",
               "/onboard-order-completed",
             ];
-            const lastValidPage = validOnboardingPages.find(
-              (page) => pathname === page
-            );
+            if (onboardingPages.includes(pathname)) {
+              push("/employers-dashboard/dashboard");
+              setLoading(false);
+              return;
+            }
 
-            if (!lastValidPage) {
-              // If current page is not a valid onboarding page, redirect to the last valid page or default to pricing
-              const lastPage =
-                localStorage.getItem(`lastOnboardingPage_${uid}`) ||
-                "/onboard-pricing";
-              push(lastPage);
-            } else {
-              // If current page is valid, store it
-              localStorage.setItem(`lastOnboardingPage_${uid}`, pathname);
-            }
-          } else if (!userData.hasPostedJob) {
-            if (pathname !== "/create-profile-employer") {
-              push("/create-profile-employer");
-            }
-          } else {
-            if (
-              pathname.startsWith("/create-profile") ||
-              pathname === "/create-profile-candidate" ||
-              pathname === "/create-profile-employer"
-            ) {
-              push("/create-profile-employer");
+            // For completed onboarding users, always redirect to dashboard if they try to access create-profile-employer
+            if (pathname === "/create-profile-employer") {
+              push("/employers-dashboard/dashboard");
+              setLoading(false);
+              return;
             }
           }
         }
