@@ -27,6 +27,10 @@ export default function ActiveSubscriptionsTable() {
   const [searchInput, setSearchInput] = useState("");
   const [sortBy, setSortBy] = useState("email");
   const [sortDir, setSortDir] = useState("asc");
+  const [showChangeModal, setShowChangeModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [availablePlans, setAvailablePlans] = useState([]);
+  const [changeLoading, setChangeLoading] = useState(false);
   const debounceRef = useRef();
 
   useEffect(() => {
@@ -52,15 +56,24 @@ export default function ActiveSubscriptionsTable() {
     const snap = await getDocs(packagesQuery);
     const map = {};
     const types = [];
+    const plans = [];
     snap.docs.forEach((doc) => {
       const data = doc.data();
       if (data.stripePriceId && data.packageType) {
         map[data.stripePriceId] = data.packageType;
         if (!types.includes(data.packageType)) types.push(data.packageType);
+        plans.push({
+          id: doc.id,
+          priceId: data.stripePriceId,
+          name: data.packageType,
+          price: data.price,
+          interval: data.interval,
+        });
       }
     });
     setPlanMap(map);
     setPlanTypes(types);
+    setAvailablePlans(plans);
   };
 
   const fetchActiveUsers = async (direction = "next", startDoc = null) => {
@@ -180,6 +193,69 @@ export default function ActiveSubscriptionsTable() {
     );
   };
 
+  const handleChangeSubscription = (user) => {
+    setSelectedUser(user);
+    setShowChangeModal(true);
+  };
+
+  const handleCancelSubscription = async (userId) => {
+    if (!confirm("Are you sure you want to cancel this subscription?")) return;
+
+    setChangeLoading(true);
+    try {
+      const res = await fetch("/api/change-subscription", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId,
+          action: "cancel",
+        }),
+      });
+
+      if (res.ok) {
+        alert("Subscription cancelled successfully");
+        fetchActiveUsers(); // Refresh the list
+      } else {
+        const error = await res.json();
+        alert(`Error: ${error.message}`);
+      }
+    } catch (error) {
+      alert("Error cancelling subscription");
+    } finally {
+      setChangeLoading(false);
+    }
+  };
+
+  const handlePlanChange = async (newPlanId) => {
+    if (!selectedUser) return;
+
+    setChangeLoading(true);
+    try {
+      const res = await fetch("/api/change-subscription", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: selectedUser.id,
+          action: "change",
+          newPlanId,
+        }),
+      });
+
+      if (res.ok) {
+        alert("Subscription changed successfully");
+        setShowChangeModal(false);
+        fetchActiveUsers(); // Refresh the list
+      } else {
+        const error = await res.json();
+        alert(`Error: ${error.message}`);
+      }
+    } catch (error) {
+      alert("Error changing subscription");
+    } finally {
+      setChangeLoading(false);
+    }
+  };
+
   return (
     <div className={styles["admin-table-container"]}>
       <h2 className={styles["admin-table-title"]}>Active Subscriptions</h2>
@@ -244,18 +320,19 @@ export default function ActiveSubscriptionsTable() {
               Days Left{" "}
               {sortBy === "daysLeft" && (sortDir === "asc" ? "▲" : "▼")}
             </th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
           {loading ? (
             <tr>
-              <td colSpan={5} className={styles["admin-table-loading"]}>
+              <td colSpan={6} className={styles["admin-table-loading"]}>
                 Loading...
               </td>
             </tr>
           ) : users.length === 0 ? (
             <tr>
-              <td colSpan={5} className={styles["admin-table-empty"]}>
+              <td colSpan={6} className={styles["admin-table-empty"]}>
                 No active subscriptions found.
               </td>
             </tr>
@@ -287,6 +364,30 @@ export default function ActiveSubscriptionsTable() {
                 </td>
                 <td>{user.planName}</td>
                 <td>{user.daysLeft}</td>
+                <td>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button
+                      onClick={() => handleChangeSubscription(user)}
+                      className={styles["admin-table-btn"]}
+                      style={{ fontSize: "12px", padding: "4px 8px" }}
+                    >
+                      Change
+                    </button>
+                    <button
+                      onClick={() => handleCancelSubscription(user.id)}
+                      className={styles["admin-table-btn"]}
+                      style={{
+                        fontSize: "12px",
+                        padding: "4px 8px",
+                        backgroundColor: "#dc3545",
+                        color: "white",
+                      }}
+                      disabled={changeLoading}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </td>
               </tr>
             ))
           )}
@@ -308,6 +409,48 @@ export default function ActiveSubscriptionsTable() {
           Next
         </button>
       </div>
+
+      {/* Change Subscription Modal */}
+      {showChangeModal && selectedUser && (
+        <div className={styles["admin-modal-overlay"]}>
+          <div className={styles["admin-modal"]}>
+            <h3>Change Subscription for {selectedUser.email}</h3>
+            <p>Current Plan: {selectedUser.planName}</p>
+
+            <div style={{ marginTop: 16 }}>
+              <h4>Available Plans:</h4>
+              {availablePlans
+                .filter((plan) => plan.name !== selectedUser.planName)
+                .map((plan) => (
+                  <div
+                    key={plan.id}
+                    style={{
+                      padding: 12,
+                      border: "1px solid #ddd",
+                      margin: "8px 0",
+                      borderRadius: 4,
+                      cursor: "pointer",
+                    }}
+                    onClick={() => handlePlanChange(plan.priceId)}
+                  >
+                    <strong>{plan.name}</strong>
+                    <br />${plan.price}/{plan.interval}
+                  </div>
+                ))}
+            </div>
+
+            <div style={{ marginTop: 16, display: "flex", gap: 8 }}>
+              <button
+                onClick={() => setShowChangeModal(false)}
+                className={styles["admin-table-btn"]}
+                disabled={changeLoading}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
