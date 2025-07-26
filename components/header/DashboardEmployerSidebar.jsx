@@ -4,14 +4,16 @@ import Link from "next/link";
 
 import { isActiveLink } from "../../utils/linkActiveChecker";
 
+import { useSignOut } from "@/APIs/auth/auth";
+import { reauthenticateUser, useDeleteUserAccount } from "@/APIs/auth/database";
+import { employerMenuData } from "@/utils/constants";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
+import { FormProvider, useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import { menuToggle } from "../../features/toggle/toggleSlice";
-import { usePathname } from "next/navigation";
-import { candidateMenuData, employerMenuData } from "@/utils/constants";
+import CircularLoader from "../circular-loading/CircularLoading";
 import { InputField } from "../inputfield/InputField";
-import { FormProvider, useForm } from "react-hook-form";
-import { useState } from "react";
-import { useSignOut } from "@/APIs/auth/auth";
 
 const DashboardEmployerSidebar = () => {
   const [loading, setLoading] = useState(false);

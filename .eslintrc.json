@@ -15,8 +15,8 @@
     {
       "files": ["**/*.ts", "**/*.tsx"],
       "plugins": [
-        // "@typescript-eslint",
-        // "unused-imports",
+        "@typescript-eslint",
+        "unused-imports",
         "tailwindcss"
         // "simple-import-sort"
       ],
@@ -56,12 +56,16 @@
         // "simple-import-sort/imports": "error", // Import configuration for `eslint-plugin-simple-import-sort`
         // "simple-import-sort/exports": "error", // Export configuration for `eslint-plugin-simple-import-sort`
         "import/order": "off", // Avoid conflict rule between `eslint-plugin-import` and `eslint-plugin-simple-import-sort`
-        // "@typescript-eslint/no-unused-vars": "off",
-        // "unused-imports/no-unused-imports": "error",
+        "@typescript-eslint/no-unused-vars": "off",
+        "unused-imports/no-unused-imports": "error",
         "unused-imports/no-unused-vars": [
           "error",
           { "argsIgnorePattern": "^_" }
-        ]
+        ],
+        "no-undef": "error", // Detect undefined variables
+        "@typescript-eslint/no-undef": "error", // TypeScript version of no-undef
+        "react/jsx-no-undef": "error", // Detect undefined JSX components
+        "import/no-unresolved": "error" // Detect unresolved imports
       }
     },
 
