@@ -155,3 +155,44 @@
 .chip-rejected {
   background: #ef4444;
 }
+
+.admin-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.admin-modal {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.admin-modal h3 {
+  margin: 0 0 16px 0;
+  color: #222;
+  font-size: 1.25rem;
+}
+
+.admin-modal h4 {
+  margin: 0 0 12px 0;
+  color: #444;
+  font-size: 1.1rem;
+}
+
+.admin-modal p {
+  margin: 0 0 16px 0;
+  color: #666;
+}
