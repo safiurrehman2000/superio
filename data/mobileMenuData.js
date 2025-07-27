@@ -49,10 +49,18 @@ module.exports = [
       {
         name: "Login",
         routePath: "/login",
+        showWhenLoggedOut: true,
       },
       {
         name: "Register",
         routePath: "/register",
+        showWhenLoggedOut: true,
+      },
+      {
+        name: "Logout",
+        routePath: "/login",
+        showWhenLoggedIn: true,
+        isAction: true,
       },
     ],
   },

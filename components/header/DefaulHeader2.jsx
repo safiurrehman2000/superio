@@ -1,16 +1,56 @@
 "use client";
 
 import { useSignOut } from "@/APIs/auth/auth";
-import { adminMenuData, candidateMenuData, employerMenuData, LOGO } from "@/utils/constants";
+import {
+  adminMenuData,
+  candidateMenuData,
+  employerMenuData,
+  LOGO,
+} from "@/utils/constants";
 import { isActiveLink } from "@/utils/linkActiveChecker";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSelector } from "react-redux";
+import { useState } from "react";
+import { FormProvider, useForm } from "react-hook-form";
+import { reauthenticateUser, useDeleteUserAccount } from "@/APIs/auth/database";
+import { errorToast } from "@/utils/toast";
+import CircularLoader from "../circular-loading/CircularLoading";
+import { InputField } from "../inputfield/InputField";
 import HeaderNavContent from "./HeaderNavContent";
 
 const DefaulHeader2 = () => {
   const selector = useSelector((store) => store.user);
+  const [loading, setLoading] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+
+  const methods = useForm({
+    mode: "onChange",
+    defaultValues: {
+      password: "",
+    },
+  });
+  const { handleSubmit } = methods;
+
+  const onSubmit = async (data) => {
+    if (!selector.user) {
+      errorToast("Please login to delete your account");
+      return;
+    }
+    try {
+      const { success } = await reauthenticateUser(
+        selector.user?.email,
+        data?.password,
+        setLoading
+      );
+      if (success) {
+        await useDeleteUserAccount(selector.user?.uid);
+      }
+    } catch (err) {
+      console.error("Account deletion process failed:", err);
+    }
+  };
 
   const logoSrc = selector.user?.logo
     ? selector.user.logo.startsWith("data:image")
@@ -115,6 +155,16 @@ const DefaulHeader2 = () => {
                       >
                         <i className={`la ${item.icon}`}></i> {item.name}
                       </Link>
+                    ) : item.name === "Delete Profile" ? (
+                      <Link
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setShowModal(true);
+                        }}
+                        href={item.routePath}
+                      >
+                        <i className={`la ${item.icon}`}></i> {item.name}
+                      </Link>
                     ) : (
                       <Link href={item.routePath}>
                         <i className={`la ${item.icon}`}></i> {item.name}
@@ -143,6 +193,16 @@ const DefaulHeader2 = () => {
                       >
                         <i className={`la ${item.icon}`}></i> {item.name}
                       </Link>
+                    ) : item.name === "Delete Profile" ? (
+                      <Link
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setShowModal(true);
+                        }}
+                        href={item.routePath}
+                      >
+                        <i className={`la ${item.icon}`}></i> {item.name}
+                      </Link>
                     ) : (
                       <Link href={item.routePath}>
                         <i className={`la ${item.icon}`}></i> {item.name}
@@ -153,38 +213,119 @@ const DefaulHeader2 = () => {
               </ul>
             ) : (
               <ul className="dropdown-menu">
-                {
-                  adminMenuData?.map((item) =>
-                    <li
-                      className={`${
-                        isActiveLink(item.routePath, usePathname())
-                          ? "active"
-                          : ""
-                      } mb-1`}
-                      key={item.id}
-                    >
-                      {item.name === "Logout" ? (
-                        <Link
-                          onClick={() => {
-                            const { success } = useSignOut();
-                          }}
-                          href={item.routePath}
-                        >
-                          <i className={`la ${item.icon}`}></i> {item.name}
-                        </Link>
-                      ) : (
-                        <Link href={item.routePath}>
-                          <i className={`la ${item.icon}`}></i> {item.name}
-                        </Link>
-                      )}
-                    </li>
-                  )
-                }
+                {adminMenuData?.map((item) => (
+                  <li
+                    className={`${
+                      isActiveLink(item.routePath, usePathname())
+                        ? "active"
+                        : ""
+                    } mb-1`}
+                    key={item.id}
+                  >
+                    {item.name === "Logout" ? (
+                      <Link
+                        onClick={() => {
+                          const { success } = useSignOut();
+                        }}
+                        href={item.routePath}
+                      >
+                        <i className={`la ${item.icon}`}></i> {item.name}
+                      </Link>
+                    ) : item.name === "Delete Profile" ? (
+                      <Link
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setShowModal(true);
+                        }}
+                        href={item.routePath}
+                      >
+                        <i className={`la ${item.icon}`}></i> {item.name}
+                      </Link>
+                    ) : (
+                      <Link href={item.routePath}>
+                        <i className={`la ${item.icon}`}></i> {item.name}
+                      </Link>
+                    )}
+                  </li>
+                ))}
               </ul>
             )}
           </div>
         )}
       </div>
+
+      {/* Delete Account Modal */}
+      <div
+        className={`modal fade ${showModal ? "show d-block" : ""}`}
+        id="deleteProfileModal"
+        tabIndex="-1"
+        aria-labelledby="deleteProfileModalLabel"
+        aria-hidden={!showModal}
+      >
+        <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title" id="deleteProfileModalLabel">
+                Confirm Account Deletion
+              </h5>
+              <button
+                type="button"
+                className="btn-close"
+                onClick={() => setShowModal(false)}
+                aria-label="Close"
+              ></button>
+            </div>
+            <div className="modal-body">
+              Are you sure you want to delete your account? This action cannot
+              be undone.
+            </div>
+            <FormProvider {...methods}>
+              <form className="p-3" onSubmit={handleSubmit(onSubmit)}>
+                <InputField
+                  name="password"
+                  fieldType="Password"
+                  label="Enter your password to confirm"
+                  required
+                  placeholder={"Enter your password"}
+                />
+                <div className="modal-footer">
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => setShowModal(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className={`btn ${
+                      loading ? "btn-style-three" : "btn btn-danger"
+                    } `}
+                    style={{ padding: "6px 12px" }}
+                  >
+                    {loading ? (
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "10px",
+                        }}
+                      >
+                        {" "}
+                        <CircularLoader />{" "}
+                        <p style={{ margin: 0, padding: 0 }}> Deleting.... </p>
+                      </div>
+                    ) : (
+                      "Delete Account"
+                    )}
+                  </button>
+                </div>
+              </form>
+            </FormProvider>
+          </div>
+        </div>
+      </div>
+      {showModal && <div className="modal-backdrop show fade"></div>}
     </header>
   );
 };
