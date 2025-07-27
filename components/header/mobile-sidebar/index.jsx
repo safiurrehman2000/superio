@@ -7,6 +7,7 @@ import { reauthenticateUser, useDeleteUserAccount } from "@/APIs/auth/database";
 import { errorToast } from "@/utils/toast";
 import CircularLoader from "../../circular-loading/CircularLoading";
 import { InputField } from "../../inputfield/InputField";
+import { useSignOut } from "@/APIs/auth/auth";
 
 import mobileMenuData from "../../../data/mobileMenuData";
 import SidebarFooter from "./SidebarFooter";
@@ -51,35 +52,54 @@ const Index = () => {
     }
   };
 
-  // Filter menu items based on user type
-  const filteredMenuData = mobileMenuData.filter((item) => {
-    // If user is not logged in, show all sections except dashboard sections
-    if (!user) {
-      return (
-        item.label !== "Employer Dashboard" &&
-        item.label !== "Candidate Dashboard"
-      );
-    }
+  // Filter menu items based on user type and authentication status
+  const filteredMenuData = mobileMenuData
+    .map((item) => {
+      // For Account section, filter items based on authentication status
+      if (item.label === "Account") {
+        return {
+          ...item,
+          items: item.items.filter((menuItem) => {
+            if (user) {
+              // User is logged in - show items with showWhenLoggedIn flag
+              return menuItem.showWhenLoggedIn;
+            } else {
+              // User is not logged in - show items with showWhenLoggedOut flag
+              return menuItem.showWhenLoggedOut;
+            }
+          }),
+        };
+      }
 
-    // If user is logged in as candidate, hide employer dashboard
-    if (userType === "Candidate") {
-      return item.label !== "Employer Dashboard";
-    }
+      // For other sections, apply the existing filtering logic
+      if (!user) {
+        return item.label !== "Employer Dashboard" &&
+          item.label !== "Candidate Dashboard"
+          ? item
+          : null;
+      }
 
-    // If user is logged in as employer, hide candidate dashboard
-    if (userType === "Employer") {
-      return item.label !== "Candidate Dashboard";
-    }
+      if (userType === "Candidate") {
+        return item.label !== "Employer Dashboard" ? item : null;
+      }
 
-    // Default case: show all sections
-    return true;
-  });
+      if (userType === "Employer") {
+        return item.label !== "Candidate Dashboard" ? item : null;
+      }
+
+      return item;
+    })
+    .filter(Boolean); // Remove null items
 
   const handleMenuItemClick = (menuItem, event) => {
     if (menuItem.isAction && menuItem.routePath === "delete-account") {
       event?.preventDefault();
       event?.stopPropagation();
       setShowModal(true);
+    } else if (menuItem.isAction && menuItem.name === "Logout") {
+      event?.preventDefault();
+      event?.stopPropagation();
+      useSignOut();
     } else {
       router.push(menuItem.routePath);
     }
