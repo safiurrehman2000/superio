@@ -1,41 +1,35 @@
-import Link from "next/link";
 import blogContent from "../../data/blogs";
-import Image from "next/image";
 
 const Blog7 = () => {
   return (
     <>
       {blogContent.slice(0, 6).map((item) => (
-        <div className="news-block-two" key={item.id}>
-          <div className="inner-box">
-            <div className="image-box">
-              <figure className="image">
-                <Image
-                  width={371}
-                  height={258}
-                  src={item.img}
-                  alt="blog post"
-                />
-              </figure>
-            </div>
-            {/* End image-box */}
-
-            <div className="content-box">
-              <ul className="post-meta">
-                <li>
-                  <a href="#">August 31, 2021</a>
-                </li>
-                <li>
-                  <a href="#">12 Comment</a>
-                </li>
-              </ul>
-              <h3>
-                <Link href={`/blog-details/${item.id}`}>{item.title}</Link>
-              </h3>
-              <p className="text">{item.blogText}</p>
-              <Link href={`/blog-details/${item.id}`} className="read-more">
-                Read More <i className="fa fa-angle-right"></i>
-              </Link>
+        <div className="col-lg-4 col-md-6 col-sm-12 news-block" key={item.id}>
+          <div className="news-block-one wow fadeInUp" data-wow-delay="300ms">
+            <div className="inner-box">
+              <div className="image-box">
+                <figure className="image">
+                  <a href={`/blog-details/${item.id}`}>
+                    <img src={item.img} alt="" />
+                  </a>
+                </figure>
+                <div className="date">{item.date}</div>
+              </div>
+              <div className="lower-content">
+                <div className="category">{item.category}</div>
+                <h4>
+                  <a href={`/blog-details/${item.id}`}>{item.title}</a>
+                </h4>
+                <div className="text">{item.text}</div>
+                <div className="author-info">
+                  <div className="author-thumb">
+                    <img src={item.authorImg} alt="" />
+                  </div>
+                  <div className="author-name">
+                    <a href="#">{item.author}</a>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
