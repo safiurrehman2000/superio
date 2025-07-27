@@ -1,9 +1,19 @@
 const PrivateMessageBox = () => {
   return (
-    <form className="default-form ">
-      <div className="row">
+    <form>
+      <div className="row clearfix">
         <div className="col-lg-12 col-md-12 col-sm-12 form-group">
           <input type="text" name="username" placeholder="Your Name" required />
+        </div>
+        {/* End .col */}
+
+        <div className="col-lg-12 col-md-12 col-sm-12 form-group">
+          <input
+            type="email"
+            name="email"
+            placeholder="Email Address"
+            required
+          />
         </div>
         {/* End .col */}
 
@@ -12,14 +22,13 @@ const PrivateMessageBox = () => {
             className="darma"
             name="message"
             placeholder="Message"
-            required
           ></textarea>
         </div>
         {/* End .col */}
 
         <div className="col-lg-12 col-md-12 col-sm-12 form-group">
           <button
-            className="theme-btn btn-style-one w-100"
+            className="theme-btn btn-style-one"
             type="submit"
             name="submit-form"
           >
@@ -32,4 +41,4 @@ const PrivateMessageBox = () => {
   );
 };
 
-export default PrivateMessageBox;
+export default PrivateMessageBox; 
