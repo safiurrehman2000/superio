@@ -254,41 +254,6 @@ const PackageDataTable = () => {
         </div>
       )}
 
-      {hasArchivedJobs && currentPlanName === "None" && (
-        <div
-          style={{
-            width: "100%",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            marginBottom: 24,
-          }}
-        >
-          <div
-            style={{
-              background: "red",
-              color: "#fff",
-              padding: "20px 32px",
-              borderRadius: 14,
-              fontWeight: 600,
-              fontSize: "1.1rem",
-              boxShadow: "0 4px 16px rgba(211,47,47,0.08)",
-              display: "flex",
-              alignItems: "center",
-              gap: 16,
-              minWidth: 420,
-              justifyContent: "center",
-            }}
-          >
-            <span style={{ fontSize: 28, marginRight: 8, lineHeight: 1 }}>
-              ⚠️
-            </span>
-            <span>
-              Please buy a subscription to show your jobs off to people.
-            </span>
-          </div>
-        </div>
-      )}
       <div
         style={{
           marginBottom: "24px",

@@ -1,4 +1,5 @@
 import newJobsSlice from "@/features/job/newJobSlice";
+import subscriptionBannerSlice from "@/features/subscription/subscriptionBannerSlice";
 import userReducer from "@/slices/userSlice";
 import { configureStore } from "@reduxjs/toolkit";
 import candidateSlice from "../features/candidate/candidateSlice";
@@ -20,6 +21,7 @@ export const store = configureStore({
     shop: shopSlice,
     user: userReducer,
     newJob: newJobsSlice,
+    subscriptionBanner: subscriptionBannerSlice,
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(),
 });
