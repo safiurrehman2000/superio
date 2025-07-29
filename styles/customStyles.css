@@ -80,3 +80,16 @@ Deep Blue – #0074E1 */
   font-size: 16px;
   margin: 0;
 }
+
+/* Subscription Banner Styles */
+.subscription-banner-visible .main-header {
+  top: 80px !important;
+}
+
+.subscription-banner-visible .dashboard {
+  padding-top: 80px;
+}
+
+.subscription-banner-visible .page-wrapper {
+  padding-top: 80px;
+}

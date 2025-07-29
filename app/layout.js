@@ -6,6 +6,7 @@ import { Suspense, useEffect } from "react";
 import { Toaster } from "react-hot-toast";
 import { Provider } from "react-redux";
 import ScrollToTop from "../components/common/ScrollTop";
+import SubscriptionBanner from "@/components/common/SubscriptionBanner";
 import { store } from "../store/store";
 import "../styles/index.scss";
 
@@ -48,6 +49,7 @@ export default function RootLayout({ children }) {
         <Provider store={store}>
           <Suspense fallback={<Loading />}>
             <RouteGuard>
+              <SubscriptionBanner />
               <div className="page-wrapper">
                 {children}
                 {/* <!-- Scroll To Top --> */}
