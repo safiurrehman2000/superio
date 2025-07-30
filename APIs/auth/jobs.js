@@ -412,6 +412,67 @@ export const useFetchEmployerJobs = async (employerId) => {
   }
 };
 
+export const useFetchEmployerJobsPaginated = async (
+  employerId,
+  page = 1,
+  limit = 10,
+  filterMonths = 6
+) => {
+  try {
+    // Validate employerId before making the query
+    if (!employerId) {
+      console.warn(
+        "useFetchEmployerJobsPaginated: employerId is undefined or null"
+      );
+      return { jobs: [], totalJobs: 0, totalPages: 0 };
+    }
+
+    const jobsRef = collection(db, "jobs");
+
+    // Create base query for employer's jobs
+    let q = query(
+      jobsRef,
+      where("employerId", "==", employerId),
+      orderBy("createdAt", "desc")
+    );
+
+    const querySnapshot = await getDocs(q);
+
+    // Filter jobs by date range on client side
+    const now = new Date();
+    const monthsAgo = new Date(
+      now.getFullYear(),
+      now.getMonth() - filterMonths,
+      now.getDate()
+    );
+
+    const filteredJobs = querySnapshot.docs
+      .map((doc) => ({ id: doc.id, ...doc.data() }))
+      .filter((job) => {
+        if (!job.createdAt) return false;
+        const jobDate = new Date(job.createdAt);
+        return jobDate >= monthsAgo;
+      });
+
+    // Calculate pagination
+    const totalJobs = filteredJobs.length;
+    const totalPages = Math.ceil(totalJobs / limit);
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    const paginatedJobs = filteredJobs.slice(startIndex, endIndex);
+
+    return {
+      jobs: paginatedJobs,
+      totalJobs,
+      totalPages,
+      currentPage: page,
+    };
+  } catch (error) {
+    console.error("Error fetching paginated employer jobs:", error);
+    throw error;
+  }
+};
+
 export const useFetchApplications = (employerId, selectedJobId, refreshKey) => {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);

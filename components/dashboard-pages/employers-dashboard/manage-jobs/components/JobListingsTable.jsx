@@ -1,5 +1,5 @@
 "use client";
-import { useFetchEmployerJobs, deleteJob } from "@/APIs/auth/jobs";
+import { useFetchEmployerJobsPaginated, deleteJob } from "@/APIs/auth/jobs";
 import { formatString } from "@/utils/constants";
 import { errorToast, successToast } from "@/utils/toast";
 import Image from "next/image";
@@ -21,28 +21,13 @@ const JobListingsTable = () => {
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const jobsPerPage = 10;
+  const jobsPerPage = 2;
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalJobs, setTotalJobs] = useState(0);
+
   // Filter state
   const [selectedFilter, setSelectedFilter] = useState("6"); // default to 6 months
 
-  // Filter jobs by selected months
-  const now = new Date();
-  const months = parseInt(selectedFilter, 10);
-  const filteredJobs = jobs.filter((job) => {
-    if (!job.createdAt) return false;
-    const jobDate = new Date(job.createdAt);
-    const monthsAgo = new Date(
-      now.getFullYear(),
-      now.getMonth() - months,
-      now.getDate()
-    );
-    return jobDate >= monthsAgo;
-  });
-
-  const indexOfLastJob = currentPage * jobsPerPage;
-  const indexOfFirstJob = indexOfLastJob - jobsPerPage;
-  const paginatedJobs = filteredJobs.slice(indexOfFirstJob, indexOfLastJob);
-  const totalPages = Math.ceil(filteredJobs.length / jobsPerPage);
   const handlePageChange = (page) => {
     setCurrentPage(page);
   };
@@ -51,8 +36,16 @@ const JobListingsTable = () => {
     const fetchJobs = async () => {
       try {
         setLoading(true);
-        const fetchedJobs = await useFetchEmployerJobs(selector.user?.uid);
-        setJobs(fetchedJobs || []);
+        const months = parseInt(selectedFilter, 10);
+        const result = await useFetchEmployerJobsPaginated(
+          selector.user?.uid,
+          currentPage,
+          jobsPerPage,
+          months
+        );
+        setJobs(result.jobs || []);
+        setTotalPages(result.totalPages);
+        setTotalJobs(result.totalJobs);
       } catch (error) {
         console.error("Error fetching jobs:", error);
         errorToast("Failed to fetch job listings");
@@ -64,7 +57,7 @@ const JobListingsTable = () => {
     if (selector.user?.uid) {
       fetchJobs();
     }
-  }, [selector.user?.uid]);
+  }, [selector.user?.uid, currentPage, selectedFilter]);
 
   const handleDeleteClick = (job) => {
     // Check if user is an employer
@@ -166,7 +159,7 @@ const JobListingsTable = () => {
                     </td>
                   </tr>
                 ) : (
-                  paginatedJobs?.map((item, index) => {
+                  jobs?.map((item, index) => {
                     const logoSrc = item?.logo
                       ? item.logo.startsWith("data:image")
                         ? item.logo
@@ -306,38 +299,153 @@ const JobListingsTable = () => {
       />
 
       {/* Pagination Controls */}
-      {filteredJobs.length > jobsPerPage && (
+      {totalJobs > jobsPerPage && (
         <div
           className="pagination-controls"
-          style={{ marginTop: 20, textAlign: "center" }}
+          style={{
+            marginTop: 30,
+            padding: "20px 0",
+            borderTop: "1px solid #e5e7eb",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: "15px",
+          }}
         >
-          <button
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-            style={{ marginRight: 8 }}
+          {/* Results Info */}
+          <div
+            style={{
+              color: "#6b7280",
+              fontSize: "14px",
+              fontWeight: "500",
+              marginBottom: "5px",
+            }}
           >
-            Previous
-          </button>
-          {Array.from({ length: totalPages }, (_, i) => (
+            Showing{" "}
+            <span style={{ color: "#374151", fontWeight: "600" }}>
+              {(currentPage - 1) * jobsPerPage + 1}
+            </span>{" "}
+            to{" "}
+            <span style={{ color: "#374151", fontWeight: "600" }}>
+              {Math.min(currentPage * jobsPerPage, totalJobs)}
+            </span>{" "}
+            of{" "}
+            <span style={{ color: "#374151", fontWeight: "600" }}>
+              {totalJobs}
+            </span>{" "}
+            jobs
+          </div>
+
+          {/* Pagination Buttons */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+            }}
+          >
+            {/* Previous Button */}
             <button
-              key={i + 1}
-              onClick={() => handlePageChange(i + 1)}
-              disabled={currentPage === i + 1}
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
               style={{
-                fontWeight: currentPage === i + 1 ? "bold" : "normal",
-                marginRight: 4,
+                padding: "8px 16px",
+                border: "1px solid #d1d5db",
+                backgroundColor: currentPage === 1 ? "#f3f4f6" : "#ffffff",
+                color: currentPage === 1 ? "#9ca3af" : "#374151",
+                borderRadius: "6px",
+                fontSize: "14px",
+                fontWeight: "500",
+                cursor: currentPage === 1 ? "not-allowed" : "pointer",
+                transition: "all 0.2s ease",
+                minWidth: "80px",
+              }}
+              onMouseEnter={(e) => {
+                if (currentPage !== 1) {
+                  e.target.style.backgroundColor = "#f9fafb";
+                  e.target.style.borderColor = "#9ca3af";
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (currentPage !== 1) {
+                  e.target.style.backgroundColor = "#ffffff";
+                  e.target.style.borderColor = "#d1d5db";
+                }
               }}
             >
-              {i + 1}
+              Previous
             </button>
-          ))}
-          <button
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            style={{ marginLeft: 8 }}
-          >
-            Next
-          </button>
+
+            {/* Page Numbers */}
+            <div style={{ display: "flex", gap: "4px" }}>
+              {Array.from({ length: totalPages }, (_, i) => (
+                <button
+                  key={i + 1}
+                  onClick={() => handlePageChange(i + 1)}
+                  style={{
+                    padding: "8px 12px",
+                    border: "1px solid #d1d5db",
+                    backgroundColor:
+                      currentPage === i + 1 ? "#0074E1" : "#ffffff",
+                    color: currentPage === i + 1 ? "#ffffff" : "#374151",
+                    borderRadius: "6px",
+                    fontSize: "14px",
+                    fontWeight: currentPage === i + 1 ? "600" : "500",
+                    cursor: "pointer",
+                    transition: "all 0.2s ease",
+                    minWidth: "36px",
+                  }}
+                  onMouseEnter={(e) => {
+                    if (currentPage !== i + 1) {
+                      e.target.style.backgroundColor = "#f9fafb";
+                      e.target.style.borderColor = "#9ca3af";
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (currentPage !== i + 1) {
+                      e.target.style.backgroundColor = "#ffffff";
+                      e.target.style.borderColor = "#d1d5db";
+                    }
+                  }}
+                >
+                  {i + 1}
+                </button>
+              ))}
+            </div>
+
+            {/* Next Button */}
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              style={{
+                padding: "8px 16px",
+                border: "1px solid #d1d5db",
+                backgroundColor:
+                  currentPage === totalPages ? "#f3f4f6" : "#ffffff",
+                color: currentPage === totalPages ? "#9ca3af" : "#374151",
+                borderRadius: "6px",
+                fontSize: "14px",
+                fontWeight: "500",
+                cursor: currentPage === totalPages ? "not-allowed" : "pointer",
+                transition: "all 0.2s ease",
+                minWidth: "80px",
+              }}
+              onMouseEnter={(e) => {
+                if (currentPage !== totalPages) {
+                  e.target.style.backgroundColor = "#f9fafb";
+                  e.target.style.borderColor = "#9ca3af";
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (currentPage !== totalPages) {
+                  e.target.style.backgroundColor = "#ffffff";
+                  e.target.style.borderColor = "#d1d5db";
+                }
+              }}
+            >
+              Next
+            </button>
+          </div>
         </div>
       )}
     </>
