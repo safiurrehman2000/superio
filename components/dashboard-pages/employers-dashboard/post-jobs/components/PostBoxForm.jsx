@@ -9,8 +9,9 @@ import { SelectField } from "@/components/selectfield/SelectField";
 import { TextAreaField } from "@/components/textarea/TextArea";
 import { addEmployerJob } from "@/slices/userSlice";
 import { JOB_TYPE_OPTIONS, SECTORS, STATES } from "@/utils/constants";
+import { checkSubscriptionStatus } from "@/utils/subscription";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import React, { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -18,6 +19,7 @@ const PostBoxForm = () => {
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [subscriptionStatus, setSubscriptionStatus] = useState(null);
   const selector = useSelector((store) => store.user);
   const { push } = useRouter();
 
@@ -39,12 +41,32 @@ const PostBoxForm = () => {
     setError: setFormError,
   } = methods;
 
+  // Check subscription status on component mount
+  React.useEffect(() => {
+    const checkStatus = async () => {
+      if (selector?.user?.uid) {
+        const status = await checkSubscriptionStatus(selector.user.uid);
+        setSubscriptionStatus(status);
+      }
+    };
+    checkStatus();
+  }, [selector?.user?.uid]);
+
   const onSubmit = async (data) => {
     if (loading) return;
     setLoading(true);
     setError(null);
 
     try {
+      if (!selector?.user?.uid) {
+        throw new Error("User authentication data is missing.");
+      }
+
+      // Check subscription status
+      const subscriptionStatus = await checkSubscriptionStatus(
+        selector.user.uid
+      );
+
       const payload = {
         title: data.name,
         description: data.description,
@@ -52,16 +74,12 @@ const PostBoxForm = () => {
         location: data.state,
         jobType: data["job-type"],
         tags: data.tags.map((tag) => tag.value),
-        status: "active",
+        status: subscriptionStatus.active ? "active" : "archived",
         employerId: selector?.user?.uid,
         isOpen: false,
         createdAt: Date.now(),
         viewCount: 0,
       };
-
-      if (!selector?.user?.uid) {
-        throw new Error("User authentication data is missing.");
-      }
 
       const { success, error: apiError, job } = await useCreateJobPost(payload);
       if (!success) {
@@ -155,6 +173,52 @@ const PostBoxForm = () => {
             />
           </div>
 
+          {/* Display subscription status info */}
+          {subscriptionStatus && (
+            <div className="form-group col-12">
+              <div
+                className={`alert ${
+                  subscriptionStatus.active ? "alert-success" : "alert-warning"
+                }`}
+                style={{
+                  padding: "12px 16px",
+                  borderRadius: "8px",
+                  marginBottom: "20px",
+                  border: "1px solid",
+                  borderColor: subscriptionStatus.active
+                    ? "#d4edda"
+                    : "#fff3cd",
+                  backgroundColor: subscriptionStatus.active
+                    ? "#d1ecf1"
+                    : "#fff3cd",
+                  color: subscriptionStatus.active ? "#0c5460" : "#856404",
+                }}
+              >
+                <strong>
+                  {subscriptionStatus.active
+                    ? "✅ Active Subscription"
+                    : "⚠️ No Active Subscription"}
+                </strong>
+                <br />
+                {subscriptionStatus.active
+                  ? "Your job will be posted as ACTIVE and visible to candidates."
+                  : "Your job will be posted as ARCHIVED and will not be visible to candidates until you have an active subscription. "}
+                {!subscriptionStatus.active && (
+                  <a
+                    href="/employers-dashboard/packages"
+                    style={{
+                      color: "#856404",
+                      textDecoration: "underline",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    Subscribe to a plan to activate your jobs.
+                  </a>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Display error message if exists */}
           {error && (
             <div className="form-group col-12" style={{ color: "red" }}>
@@ -176,8 +240,10 @@ const PostBoxForm = () => {
                   <CircularLoader />
                   <p style={{ margin: 0 }}>Creating Job Post...</p>
                 </div>
+              ) : subscriptionStatus?.active ? (
+                "Post Job (Active)"
               ) : (
-                "Post Job"
+                "Post Job (Archived)"
               )}
             </button>
           </div>
