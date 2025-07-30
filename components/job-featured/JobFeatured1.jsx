@@ -7,10 +7,14 @@ import Slider from "react-slick";
 import { useState } from "react";
 import "slick-carousel/slick/slick.css"; // Ensure slick CSS is imported
 import "slick-carousel/slick/slick-theme.css"; // Ensure slick theme CSS is imported
-import { useGetJobListing } from "@/APIs/auth/jobs";
+import { useGetJobListingPaginated } from "@/APIs/auth/jobs";
 
 const JobFeatured1 = () => {
-  const jobFeatured = useGetJobListing();
+  const { data: jobFeatured, loading } = useGetJobListingPaginated({
+    page: 1,
+    limit: 6,
+    status: "active",
+  });
   const [bookmarkedJobs, setBookmarkedJobs] = useState({});
 
   const toggleBookmark = (jobId) => {
@@ -31,6 +35,10 @@ const JobFeatured1 = () => {
   };
 
   const jobsArray = Array.isArray(jobFeatured) ? jobFeatured : [];
+
+  if (loading) {
+    return <div>Loading featured jobs...</div>;
+  }
 
   return (
     <div
@@ -56,7 +64,7 @@ const JobFeatured1 = () => {
       `}</style>
 
       <Slider {...settings}>
-        {jobsArray?.slice(0, 6).map((item) => (
+        {jobsArray?.map((item) => (
           <div className="job-block" key={item.id}>
             <div className="inner-box">
               <div className="content">
@@ -82,17 +90,26 @@ const JobFeatured1 = () => {
                   </li>
                   <li>
                     <span className="icon flaticon-clock-3"></span>
-                    {item.time}
+                    {new Date(item.createdAt).toLocaleDateString()}
                   </li>
                   <li>
                     <span className="icon flaticon-money"></span>
-                    {item.salary}
+                    {item.salary || "Not specified"}
                   </li>
                 </ul>
                 <ul className="job-other-info">
-                  {item.jobType.map((val, i) => (
-                    <li key={i} className={`${val.styleClass}`}>
-                      {val.type}
+                  {item.tags?.map((val, i) => (
+                    <li
+                      key={i}
+                      className={`${
+                        i % 3 === 0
+                          ? "time"
+                          : i % 3 === 1
+                          ? "privacy"
+                          : "required"
+                      }`}
+                    >
+                      {val}
                     </li>
                   ))}
                 </ul>

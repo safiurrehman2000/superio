@@ -30,6 +30,7 @@ const PostBoxForm = () => {
       "job-type": "",
       state: "",
       tags: [],
+      status: "active",
     },
   });
   const {
@@ -51,6 +52,7 @@ const PostBoxForm = () => {
         location: data.state,
         jobType: data["job-type"],
         tags: data.tags.map((tag) => tag.value),
+        status: "active",
         employerId: selector?.user?.uid,
         isOpen: false,
         createdAt: Date.now(),

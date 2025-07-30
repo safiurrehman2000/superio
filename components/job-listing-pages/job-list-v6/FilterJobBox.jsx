@@ -2,7 +2,7 @@
 
 import {
   createJobAlert,
-  useGetJobListing,
+  useGetJobListingPaginated,
   useSaveJob,
   useUnsaveJob,
 } from "@/APIs/auth/jobs";
@@ -12,6 +12,8 @@ import {
   setJobs,
   setPagination,
   setSortOrder,
+  setCurrentPage,
+  setItemsPerPage,
 } from "@/features/job/newJobSlice";
 import { addSavedJob, removeSavedJob } from "@/slices/userSlice";
 import { formatString } from "@/utils/constants";
@@ -27,14 +29,13 @@ import "./jobList.css";
 import JobListSkeleton from "./JobListSkeleton";
 
 const FilterJobBox = () => {
-  const { data: jobs, loading, error } = useGetJobListing();
   const selector = useSelector((store) => store.user);
   const [showModal, setShowModal] = useState(false);
 
-  const handleOpenModal = () => setShowModal(true);
   const handleCloseModal = () => setShowModal(false);
   const dispatch = useDispatch();
   const [bookmarkLoading, setBookmarkLoading] = useState(null);
+
   const {
     filteredJobs,
     jobs: allJobs,
@@ -45,35 +46,36 @@ const FilterJobBox = () => {
     selectedDatePosted,
     sortOrder,
     pagination,
+    paginationParams,
   } = useSelector((state) => state.newJob);
 
-  const getPaginatedJobs = () => {
-    if (pagination.itemsPerPage === Infinity || pagination.itemsPerPage === 0) {
-      return filteredJobs || [];
-    }
-    const startIndex = (pagination.currentPage - 1) * pagination.itemsPerPage;
-    const endIndex = startIndex + pagination.itemsPerPage;
-    return filteredJobs?.slice(startIndex, endIndex) || [];
-  };
-  const paginatedJobs = getPaginatedJobs();
-  const handlePageChange = (page) => {
-    dispatch(setPagination({ currentPage: page }));
-  };
-  useEffect(() => {
-    dispatch(
-      setPagination({
-        totalItems: filteredJobs?.length || 0,
-        currentPage: 1,
-      })
-    );
-  }, [filteredJobs, dispatch]);
+  // Use the new paginated hook with Redux state
+  const {
+    data: jobs,
+    loading,
+    error,
+    totalItems,
+    totalPages,
+    currentPage: serverCurrentPage,
+  } = useGetJobListingPaginated(paginationParams);
+
+  // Update Redux state when server data changes
   useEffect(() => {
     if (jobs) {
-      // Filter out archived jobs
-      const activeJobs = jobs.filter((job) => job.status !== "archived");
-      dispatch(setJobs(activeJobs));
+      dispatch(setJobs(jobs));
+      dispatch(
+        setPagination({
+          totalItems,
+          totalPages,
+          currentPage: serverCurrentPage,
+        })
+      );
     }
-  }, [jobs, dispatch]);
+  }, [jobs, totalItems, totalPages, serverCurrentPage, dispatch]);
+
+  const handlePageChange = (page) => {
+    dispatch(setCurrentPage(page));
+  };
 
   const handleBookmark = async (jobId) => {
     try {
@@ -132,10 +134,10 @@ const FilterJobBox = () => {
     selectedDatePosted ||
     sortOrder ||
     (filteredJobs && allJobs && filteredJobs.length !== allJobs.length) ||
-    (pagination.itemsPerPage !== 20 && pagination.itemsPerPage !== Infinity);
+    pagination.itemsPerPage !== 20;
 
   // Render job cards
-  const content = paginatedJobs?.map((item, index) => {
+  const content = filteredJobs?.map((item, index) => {
     const logoSrc = item?.logo
       ? item.logo.startsWith("data:image")
         ? item.logo
@@ -246,9 +248,6 @@ const FilterJobBox = () => {
     );
   });
 
-  const totalPages = Math.ceil(
-    (filteredJobs?.length || 0) / (pagination.itemsPerPage || 1)
-  );
   // Sort handler
   const sortHandler = (e) => {
     const value = e.target.value;
@@ -257,33 +256,18 @@ const FilterJobBox = () => {
 
   const clearAll = () => {
     dispatch(clearAllFilters());
-    dispatch(
-      setPagination({
-        currentPage: 1,
-        itemsPerPage: 20,
-        totalItems: filteredJobs?.length || 0,
-      })
-    );
     dispatch(setSortOrder("")); // Reset sorting
   };
 
   // Per page handler
   const perPageHandler = (e) => {
     const value = e.target.value;
-    const itemsPerPage = value === "0" ? Infinity : parseInt(value);
-    dispatch(
-      setPagination({
-        itemsPerPage,
-        currentPage: 1,
-        totalItems: filteredJobs?.length || 0,
-      })
-    );
+    const itemsPerPage = parseInt(value);
+    dispatch(setItemsPerPage(itemsPerPage));
   };
 
   const getSelectValue = () => {
-    return pagination.itemsPerPage === Infinity
-      ? "0"
-      : pagination.itemsPerPage.toString();
+    return pagination.itemsPerPage.toString();
   };
 
   if (loading) {
@@ -300,16 +284,11 @@ const FilterJobBox = () => {
         <div className="showing-result">
           <div className="text">
             Showing <strong>{content?.length || 0}</strong> of{" "}
-            <strong>{filteredJobs?.length || 0}</strong> jobs
+            <strong>{totalItems || 0}</strong> jobs
           </div>
         </div>
 
         <div className="sort-by">
-          {/* {selector?.userType === "Candidate" && (
-            <button className="btn btn-danger" onClick={handleOpenModal}>
-              Create Job Alerts
-            </button>
-          )} */}
           {hasActiveFilters && (
             <button
               onClick={clearAll}
@@ -327,7 +306,7 @@ const FilterJobBox = () => {
           >
             <option value="">Sort by (default)</option>
             <option value="asc">Oldest</option>
-            <option value="desc">Newest</option> {/* Fixed "des" to "desc" */}
+            <option value="desc">Newest</option>
           </select>
 
           <select
@@ -335,10 +314,11 @@ const FilterJobBox = () => {
             className="chosen-single form-select ms-3"
             value={getSelectValue()}
           >
-            <option value="0">All</option>
             <option value="2">2 per page</option>
             <option value="3">3 per page</option>
             <option value="4">4 per page</option>
+            <option value="10">10 per page</option>
+            <option value="20">20 per page</option>
           </select>
         </div>
       </div>
