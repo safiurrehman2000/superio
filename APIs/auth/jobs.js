@@ -16,6 +16,8 @@ import {
   updateDoc,
   where,
   writeBatch,
+  orderBy,
+  limit,
 } from "firebase/firestore";
 import { useEffect, useState, useRef } from "react";
 
@@ -712,5 +714,166 @@ export const fetchJobViews = async (selectedJob) => {
   return {
     labels: sortedMonths,
     viewCounts: sortedMonths.map((m) => monthMap[m]),
+  };
+};
+
+export const useGetJobListingPaginated = (params = {}) => {
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [totalItems, setTotalItems] = useState(0);
+
+  const {
+    page = 1,
+    limit: itemsPerPage = 20,
+    search = "",
+    location = "",
+    category = "",
+    jobType = "",
+    datePosted = "",
+    sortOrder = "",
+    status = "active",
+  } = params;
+
+  useEffect(() => {
+    const fetchJobs = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Build query constraints
+        let constraints = [];
+
+        // Filter by status (exclude archived jobs)
+        if (status) {
+          constraints.push(where("status", "!=", "archived"));
+        }
+
+        // Apply sorting
+        if (sortOrder === "asc") {
+          constraints.push(orderBy("createdAt", "asc"));
+        } else if (sortOrder === "desc") {
+          constraints.push(orderBy("createdAt", "desc"));
+        } else {
+          // Default sorting by creation date (newest first)
+          constraints.push(orderBy("createdAt", "desc"));
+        }
+
+        // Apply pagination
+        const offset = (page - 1) * itemsPerPage;
+        // Get all documents up to offset + itemsPerPage (Firestore limitation)
+        constraints.push(limit(offset + itemsPerPage));
+
+        // Create the query
+        const jobsRef = collection(db, "jobs");
+        const jobsQuery = query(jobsRef, ...constraints);
+        const jobsSnap = await getDocs(jobsQuery);
+
+        let jobs = jobsSnap.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        // Apply offset in memory (Firestore limitation)
+        if (offset > 0) {
+          jobs = jobs.slice(offset);
+        }
+
+        // Apply client-side filters
+        if (search) {
+          jobs = jobs.filter(
+            (job) =>
+              job.title?.toLowerCase().includes(search.toLowerCase()) ||
+              job.description?.toLowerCase().includes(search.toLowerCase()) ||
+              job.companyName?.toLowerCase().includes(search.toLowerCase())
+          );
+        }
+
+        if (location) {
+          jobs = jobs.filter((job) =>
+            job.location?.toLowerCase().includes(location.toLowerCase())
+          );
+        }
+
+        if (category) {
+          jobs = jobs.filter((job) => job.category === category);
+        }
+
+        if (jobType) {
+          jobs = jobs.filter((job) => job.jobType === jobType);
+        }
+
+        if (datePosted) {
+          const now = new Date();
+          let filterDate;
+
+          switch (datePosted) {
+            case "today":
+              filterDate = new Date(
+                now.getFullYear(),
+                now.getMonth(),
+                now.getDate()
+              );
+              break;
+            case "week":
+              filterDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+              break;
+            case "month":
+              filterDate = new Date(
+                now.getFullYear(),
+                now.getMonth() - 1,
+                now.getDate()
+              );
+              break;
+            default:
+              filterDate = null;
+          }
+
+          if (filterDate) {
+            jobs = jobs.filter((job) => {
+              const jobDate = new Date(job.createdAt);
+              return jobDate >= filterDate;
+            });
+          }
+        }
+
+        // Get total count for pagination
+        const totalQuery = query(
+          collection(db, "jobs"),
+          where("status", "!=", "archived")
+        );
+        const totalSnap = await getDocs(totalQuery);
+        const totalCount = totalSnap.docs.length;
+
+        setData(jobs);
+        setTotalItems(totalCount);
+      } catch (err) {
+        setError(err);
+        console.error("Error fetching jobs:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchJobs();
+  }, [
+    page,
+    itemsPerPage,
+    search,
+    location,
+    category,
+    jobType,
+    datePosted,
+    sortOrder,
+    status,
+  ]);
+
+  return {
+    data,
+    loading,
+    error,
+    totalItems,
+    totalPages: Math.ceil(totalItems / itemsPerPage),
+    currentPage: page,
   };
 };
