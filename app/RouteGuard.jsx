@@ -56,7 +56,9 @@ const RouteGuard = ({ children }) => {
               uid,
               email,
               userType: userData.userType || "Candidate",
-              createdAt: userData.createdAt || null,
+              createdAt: userData.createdAt
+                ? userData.createdAt.toDate().toISOString()
+                : null,
               isFirstTime: userData.isFirstTime ?? false,
               name: userData.name || "",
               title: userData.title || "",
@@ -84,7 +86,9 @@ const RouteGuard = ({ children }) => {
               uid,
               email,
               userType: userData?.userType || "Employer",
-              createdAt: userData?.createdAt || null,
+              createdAt: userData?.createdAt
+                ? userData.createdAt.toDate().toISOString()
+                : null,
               isFirstTime: userData?.isFirstTime ?? false,
               hasPostedJob: userData?.hasPostedJob ?? false,
               logo: userData?.logo || null,
@@ -114,7 +118,9 @@ const RouteGuard = ({ children }) => {
               uid,
               email,
               userType: "Admin",
-              createdAt: userData.createdAt || null,
+              createdAt: userData.createdAt
+                ? userData.createdAt.toDate().toISOString()
+                : null,
             })
           );
         }
