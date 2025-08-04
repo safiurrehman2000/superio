@@ -23,6 +23,33 @@ import { useEffect, useState, useRef } from "react";
 
 export const useCreateJobPost = async (payload) => {
   try {
+    // Validate subscription and job posting limits before creating job
+    const validationResponse = await fetch("/api/validate-job-posting", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        userId: payload.employerId,
+        jobData: payload,
+      }),
+    });
+
+    if (!validationResponse.ok) {
+      const errorData = await validationResponse.json();
+      throw new Error(
+        errorData.error || "Failed to validate job posting permission"
+      );
+    }
+
+    const validationResult = await validationResponse.json();
+
+    if (!validationResult.canPost) {
+      throw new Error(
+        validationResult.message || "Cannot post job due to subscription limits"
+      );
+    }
+
     const docRef = await addDoc(collection(db, "jobs"), payload);
     const jobData = {
       id: docRef.id,
@@ -31,7 +58,7 @@ export const useCreateJobPost = async (payload) => {
     successToast("Job Created Successfully");
     return { success: true, job: jobData };
   } catch (error) {
-    errorToast("Couldn't create job post");
+    errorToast(error.message || "Couldn't create job post");
     return { success: false, error: error.message };
   }
 };

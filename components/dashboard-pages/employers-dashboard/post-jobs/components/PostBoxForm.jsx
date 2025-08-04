@@ -9,7 +9,11 @@ import { SelectField } from "@/components/selectfield/SelectField";
 import { TextAreaField } from "@/components/textarea/TextArea";
 import { addEmployerJob } from "@/slices/userSlice";
 import { JOB_TYPE_OPTIONS, SECTORS, STATES } from "@/utils/constants";
-import { checkSubscriptionStatus } from "@/utils/subscription";
+import {
+  checkSubscriptionStatus,
+  validateJobPostingPermission,
+  refreshSubscriptionStatus,
+} from "@/utils/subscription";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
@@ -20,6 +24,8 @@ const PostBoxForm = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [subscriptionStatus, setSubscriptionStatus] = useState(null);
+  const [jobPostingPermission, setJobPostingPermission] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
   const selector = useSelector((store) => store.user);
   const { push } = useRouter();
 
@@ -41,12 +47,18 @@ const PostBoxForm = () => {
     setError: setFormError,
   } = methods;
 
-  // Check subscription status on component mount
+  // Check subscription status and job posting permission on component mount
   React.useEffect(() => {
     const checkStatus = async () => {
       if (selector?.user?.uid) {
         const status = await checkSubscriptionStatus(selector.user.uid);
         setSubscriptionStatus(status);
+
+        // Check job posting permission
+        const permission = await validateJobPostingPermission(
+          selector.user.uid
+        );
+        setJobPostingPermission(permission);
       }
     };
     checkStatus();
@@ -62,10 +74,12 @@ const PostBoxForm = () => {
         throw new Error("User authentication data is missing.");
       }
 
-      // Check subscription status
-      const subscriptionStatus = await checkSubscriptionStatus(
-        selector.user.uid
-      );
+      // Validate job posting permission before proceeding
+      const permission = await validateJobPostingPermission(selector.user.uid);
+
+      if (!permission.canPost) {
+        throw new Error(permission.message);
+      }
 
       const payload = {
         title: data.name,
@@ -74,7 +88,7 @@ const PostBoxForm = () => {
         location: data.state,
         jobType: data["job-type"],
         tags: data.tags.map((tag) => tag.value),
-        status: subscriptionStatus.active ? "active" : "archived",
+        status: "active", // Always post as active if permission is granted
         employerId: selector?.user?.uid,
         isOpen: false,
         createdAt: Date.now(),
@@ -101,6 +115,35 @@ const PostBoxForm = () => {
     }
   };
 
+  // Determine if form should be disabled
+  const isFormDisabled = !jobPostingPermission?.canPost || loading;
+
+  // Function to refresh subscription status
+  const handleRefreshSubscription = async () => {
+    if (refreshing || !selector?.user?.uid) return;
+
+    setRefreshing(true);
+    try {
+      const result = await refreshSubscriptionStatus(selector.user.uid);
+      if (result.success) {
+        // Re-check subscription status after refresh
+        const status = await checkSubscriptionStatus(selector.user.uid);
+        setSubscriptionStatus(status);
+
+        const permission = await validateJobPostingPermission(
+          selector.user.uid
+        );
+        setJobPostingPermission(permission);
+      } else {
+        setError("Failed to refresh subscription status");
+      }
+    } catch (error) {
+      setError("Error refreshing subscription status");
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   return (
     <FormProvider {...methods}>
       <form
@@ -120,6 +163,7 @@ const PostBoxForm = () => {
               placeholder="Title"
               required
               label="Job Title"
+              disabled={isFormDisabled}
             />
           </div>
 
@@ -130,6 +174,7 @@ const PostBoxForm = () => {
               name="description"
               placeholder="Describe what type of job it is"
               required
+              disabled={isFormDisabled}
             />
           </div>
 
@@ -140,6 +185,7 @@ const PostBoxForm = () => {
               name="email"
               placeholder="candidate@gmail.com"
               required
+              disabled={isFormDisabled}
             />
           </div>
 
@@ -150,6 +196,7 @@ const PostBoxForm = () => {
               options={JOB_TYPE_OPTIONS}
               placeholder="Select a Job Type"
               required
+              disabled={isFormDisabled}
             />
           </div>
 
@@ -161,6 +208,7 @@ const PostBoxForm = () => {
               options={STATES}
               placeholder="Select a state"
               required
+              disabled={isFormDisabled}
             />
           </div>
           <div className="form-group col-lg-6 col-md-12">
@@ -170,50 +218,81 @@ const PostBoxForm = () => {
               name="tags"
               options={SECTORS}
               required
+              disabled={isFormDisabled}
             />
           </div>
 
-          {/* Display subscription status info */}
-          {subscriptionStatus && (
+          {/* Display subscription and job posting status */}
+          {jobPostingPermission && (
             <div className="form-group col-12">
               <div
                 className={`alert ${
-                  subscriptionStatus.active ? "alert-success" : "alert-warning"
+                  jobPostingPermission.canPost
+                    ? "alert-success"
+                    : "alert-warning"
                 }`}
                 style={{
                   padding: "12px 16px",
                   borderRadius: "8px",
                   marginBottom: "20px",
                   border: "1px solid",
-                  borderColor: subscriptionStatus.active
+                  borderColor: jobPostingPermission.canPost
                     ? "#d4edda"
                     : "#fff3cd",
-                  backgroundColor: subscriptionStatus.active
+                  backgroundColor: jobPostingPermission.canPost
                     ? "#d1ecf1"
                     : "#fff3cd",
-                  color: subscriptionStatus.active ? "#0c5460" : "#856404",
+                  color: jobPostingPermission.canPost ? "#0c5460" : "#856404",
                 }}
               >
                 <strong>
-                  {subscriptionStatus.active
-                    ? "✅ Active Subscription"
-                    : "⚠️ No Active Subscription"}
+                  {jobPostingPermission.canPost
+                    ? "✅ Can Post Job"
+                    : "⚠️ Cannot Post Job"}
                 </strong>
                 <br />
-                {subscriptionStatus.active
-                  ? "Your job will be posted as ACTIVE and visible to candidates."
-                  : "Your job will be posted as ARCHIVED and will not be visible to candidates until you have an active subscription. "}
-                {!subscriptionStatus.active && (
-                  <a
-                    href="/employers-dashboard/packages"
-                    style={{
-                      color: "#856404",
-                      textDecoration: "underline",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    Subscribe to a plan to activate your jobs.
-                  </a>
+                {jobPostingPermission.message}
+                {jobPostingPermission.subscriptionData && (
+                  <div style={{ marginTop: "8px", fontSize: "14px" }}>
+                    <strong>Subscription Details:</strong>
+                    <br />• Job Limit:{" "}
+                    {jobPostingPermission.subscriptionData.jobLimit || 0}
+                    <br />• Jobs Posted:{" "}
+                    {jobPostingPermission.subscriptionData.jobsPosted || 0}
+                    <br />• Remaining Jobs:{" "}
+                    {jobPostingPermission.subscriptionData.remainingJobs || 0}
+                  </div>
+                )}
+                {!jobPostingPermission.canPost && (
+                  <div style={{ marginTop: "8px" }}>
+                    <a
+                      href="/employers-dashboard/packages"
+                      style={{
+                        color: "#856404",
+                        textDecoration: "underline",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      View subscription plans
+                    </a>
+                    <button
+                      onClick={handleRefreshSubscription}
+                      disabled={refreshing}
+                      style={{
+                        marginLeft: "10px",
+                        padding: "4px 8px",
+                        fontSize: "12px",
+                        backgroundColor: "#007bff",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "4px",
+                        cursor: refreshing ? "not-allowed" : "pointer",
+                        opacity: refreshing ? 0.6 : 1,
+                      }}
+                    >
+                      {refreshing ? "Refreshing..." : "Refresh Status"}
+                    </button>
+                  </div>
                 )}
               </div>
             </div>
@@ -232,6 +311,11 @@ const PostBoxForm = () => {
               className={`theme-btn ${
                 loading ? "btn-style-three" : "btn-style-one"
               }`}
+              disabled={isFormDisabled}
+              style={{
+                opacity: isFormDisabled ? 0.6 : 1,
+                cursor: isFormDisabled ? "not-allowed" : "pointer",
+              }}
             >
               {loading ? (
                 <div
@@ -240,10 +324,10 @@ const PostBoxForm = () => {
                   <CircularLoader />
                   <p style={{ margin: 0 }}>Creating Job Post...</p>
                 </div>
-              ) : subscriptionStatus?.active ? (
-                "Post Job (Active)"
+              ) : jobPostingPermission?.canPost ? (
+                "Post Job"
               ) : (
-                "Post Job (Archived)"
+                "Cannot Post Job"
               )}
             </button>
           </div>
