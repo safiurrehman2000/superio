@@ -4,6 +4,8 @@ export const pricingPackages = [
     packageType: "Basic",
     price: "Free",
     tag: "",
+    jobPosts: 30,
+    stripePriceId: null, // Will be set when Stripe products are created
     features: [
       "30 job posting",
       "3 featured job",
@@ -18,6 +20,8 @@ export const pricingPackages = [
     packageType: "Standard",
     price: "499",
     tag: "tagged",
+    jobPosts: 40,
+    stripePriceId: null, // Will be set when Stripe products are created
     features: [
       "40 job posting",
       "5 featured job",
@@ -32,6 +36,8 @@ export const pricingPackages = [
     packageType: "Extended",
     price: "799",
     tag: "",
+    jobPosts: 50,
+    stripePriceId: null, // Will be set when Stripe products are created
     features: [
       "50 job posting",
       "10 featured job",

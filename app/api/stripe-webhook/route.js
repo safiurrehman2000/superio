@@ -116,7 +116,20 @@ export async function POST(request) {
             ? null
             : planId,
           subscriptionUpdatedAt: new Date(),
+          // If this is a new plan (different from current), reset the start date
+          ...(planId &&
+            planId !== userData.planId && {
+              subscriptionStartDate: new Date(),
+            }),
         });
+      console.log(
+        "Updated subscription for user",
+        userId,
+        "status:",
+        status,
+        "planId:",
+        planId
+      );
       // Archive all jobs if subscription is canceled or incomplete_expired
       if (["canceled", "incomplete_expired"].includes(status)) {
         const jobsQuery = await adminDb
@@ -246,12 +259,23 @@ export async function POST(request) {
           planId = pkgQuery.docs[0].data().id;
         }
       }
+
+      // Update user with subscription details
       await adminDb.collection("users").doc(userId).update({
         stripeSubscriptionId: subscriptionId,
-        isFirstTime: false, // Mark onboarding as complete after subscription
+        subscriptionStatus: status,
         planId: planId, // Set planId to the local package id
+        subscriptionUpdatedAt: new Date(), // This resets the job count
+        subscriptionStartDate: new Date(), // Track when this subscription started
+        isFirstTime: false, // Mark onboarding as complete after subscription
       });
-      console.log("stripeSubscriptionId set for user", userId, subscriptionId);
+      console.log(
+        "stripeSubscriptionId and planId set for user",
+        userId,
+        subscriptionId,
+        planId
+      );
+
       // If this subscription has a trial, mark the user as having used their trial
       if (trialEnd) {
         await adminDb.collection("users").doc(userId).update({
@@ -259,6 +283,7 @@ export async function POST(request) {
         });
         console.log("hasUsedTrial set to true for user", userId);
       }
+
       // Reactivate archived jobs on new subscription
       if (!["canceled", "incomplete_expired"].includes(status)) {
         const jobsQuery = await adminDb
