@@ -21,7 +21,7 @@ const JobListingsTable = () => {
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const jobsPerPage = 2;
+  const jobsPerPage = 5;
   const [totalPages, setTotalPages] = useState(0);
   const [totalJobs, setTotalJobs] = useState(0);
 

@@ -1,24 +1,36 @@
-import { useApplyForJob } from "@/APIs/auth/jobs";
-import { useDeleteResume, useUploadResume } from "@/APIs/auth/resume";
+"use client";
+import { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useParams } from "next/navigation";
+import { useApplyForJob, checkIfJobApplied } from "@/APIs/auth/jobs";
+import { useUploadResume, useDeleteResume } from "@/APIs/auth/resume";
+import { addResume } from "@/slices/userSlice";
+import { errorToast, successToast } from "@/utils/toast";
+import { checkFileSize, checkFileTypes } from "@/utils/constants";
 import CircularLoader from "@/components/circular-loading/CircularLoading";
 import "@/styles/customStyles.css";
-import { checkFileSize, checkFileTypes } from "@/utils/resumeHelperFunctions";
-import { errorToast } from "@/utils/toast";
-import { useParams } from "next/navigation";
-import { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
 
 const ApplyJobModalContent = ({ onApplicationSuccess }) => {
   const [selected, setSelected] = useState(null);
-  const [showError, setShowError] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showError, setShowError] = useState(false);
   const [message, setMessage] = useState("");
+  const [hasApplied, setHasApplied] = useState(false);
   const dispatch = useDispatch();
   const selector = useSelector((store) => store.user);
   const { id: jobId } = useParams();
-  const [hasApplied, setHasApplied] = useState(
-    selector.appliedJobs.some((job) => job.id === jobId)
-  );
+
+  // Check if job is applied on component mount
+  useEffect(() => {
+    const checkAppliedStatus = async () => {
+      if (selector?.user?.uid && jobId) {
+        const isApplied = await checkIfJobApplied(selector.user.uid, jobId);
+        setHasApplied(isApplied);
+      }
+    };
+
+    checkAppliedStatus();
+  }, [selector?.user?.uid, jobId]);
 
   const handleSubmit = async (e) => {
     if (selector.userType === "Employer") {
@@ -52,7 +64,6 @@ const ApplyJobModalContent = ({ onApplicationSuccess }) => {
         selectedResume,
         jobId,
         message,
-        selector.appliedJobs,
         dispatch
       );
 

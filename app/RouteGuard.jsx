@@ -1,10 +1,9 @@
 "use client";
-import { useGetAppliedJobs, useGetSavedJobs } from "@/APIs/auth/jobs";
+import { useGetSavedJobs } from "@/APIs/auth/jobs";
 import { useGetUploadedResumes } from "@/APIs/auth/resume";
 import {
   addJobId,
   addUser,
-  clearAppliedJobs,
   clearResumes,
   removeUser,
   setSavedJobs,
@@ -48,7 +47,6 @@ const RouteGuard = ({ children }) => {
             setLoading(false);
             return;
           }
-          useGetAppliedJobs(user.uid, dispatch);
           const savedJobs = await useGetSavedJobs(user.uid);
           dispatch(setSavedJobs(savedJobs));
           dispatch(
