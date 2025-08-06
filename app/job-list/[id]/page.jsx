@@ -1,11 +1,11 @@
 "use client";
 import {
+  checkIfJobApplied,
+  checkIfJobSaved,
   useGetJobById,
   useJobViewIncrement,
   useSaveJob,
   useUnsaveJob,
-  checkIfJobApplied,
-  checkIfJobSaved,
 } from "@/APIs/auth/jobs";
 import CircularLoader from "@/components/circular-loading/CircularLoading";
 import LoginPopup from "@/components/common/form/login/LoginPopup";
@@ -15,16 +15,14 @@ import MobileMenu from "@/components/header/MobileMenu";
 import ApplyJobModalContent from "@/components/job-single-pages/shared-components/ApplyJobModalContent";
 import CompnayInfo from "@/components/job-single-pages/shared-components/CompanyInfo";
 import JobDetailsDescriptions from "@/components/job-single-pages/shared-components/JobDetailsDescriptions";
-import SocialTwo from "@/components/job-single-pages/social/SocialTwo";
-import Loading from "@/components/loading/Loading";
 import JobSingleSkeleton from "@/components/job-single-pages/shared-components/JobSingleSkeleton";
-import { addSavedJob, removeSavedJob } from "@/slices/userSlice";
+import SocialTwo from "@/components/job-single-pages/social/SocialTwo";
 import { formatString } from "@/utils/constants";
 import { errorToast } from "@/utils/toast";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { TbBookmark, TbBookmarkFilled } from "react-icons/tb";
 import { useDispatch, useSelector } from "react-redux";
 

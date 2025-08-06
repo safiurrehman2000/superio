@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  checkIfJobSaved,
   createJobAlert,
   useGetJobListingPaginated,
   useSaveJob,
@@ -9,13 +10,12 @@ import {
 import CircularLoader from "@/components/circular-loading/CircularLoading";
 import {
   clearAllFilters,
+  setCurrentPage,
+  setItemsPerPage,
   setJobs,
   setPagination,
   setSortOrder,
-  setCurrentPage,
-  setItemsPerPage,
 } from "@/features/job/newJobSlice";
-import { addSavedJob, removeSavedJob } from "@/slices/userSlice";
 import { formatString } from "@/utils/constants";
 import { errorToast, successToast } from "@/utils/toast";
 import Image from "next/image";
@@ -35,6 +35,7 @@ const FilterJobBox = () => {
   const handleCloseModal = () => setShowModal(false);
   const dispatch = useDispatch();
   const [bookmarkLoading, setBookmarkLoading] = useState(null);
+  const [savedJobIds, setSavedJobIds] = useState(new Set());
 
   const {
     filteredJobs,
@@ -70,8 +71,30 @@ const FilterJobBox = () => {
           currentPage: serverCurrentPage,
         })
       );
+
+      // Check saved status for all jobs on current page
+      if (selector?.user?.uid) {
+        const checkSavedStatus = async () => {
+          const savedIds = new Set();
+          for (const job of jobs) {
+            const isSaved = await checkIfJobSaved(selector.user.uid, job.id);
+            if (isSaved) {
+              savedIds.add(job.id);
+            }
+          }
+          setSavedJobIds(savedIds);
+        };
+        checkSavedStatus();
+      }
     }
-  }, [jobs, totalItems, totalPages, serverCurrentPage, dispatch]);
+  }, [
+    jobs,
+    totalItems,
+    totalPages,
+    serverCurrentPage,
+    dispatch,
+    selector?.user?.uid,
+  ]);
 
   const handlePageChange = (page) => {
     dispatch(setCurrentPage(page));
@@ -90,18 +113,22 @@ const FilterJobBox = () => {
         return;
       }
 
-      const isAlreadySaved = selector.savedJobs?.some(
-        (job) => job.jobId === jobId
-      );
+      const isAlreadySaved = await checkIfJobSaved(selector.user.uid, jobId);
 
       if (isAlreadySaved) {
         await useUnsaveJob(selector.user.uid, jobId);
-        dispatch(removeSavedJob(jobId));
+        setSavedJobIds((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(jobId);
+          return newSet;
+        });
       } else {
-        const savedJob = await useSaveJob(selector.user.uid, jobId);
-        if (savedJob) {
-          dispatch(addSavedJob(savedJob));
-        }
+        await useSaveJob(selector.user.uid, jobId);
+        setSavedJobIds((prev) => {
+          const newSet = new Set(prev);
+          newSet.add(jobId);
+          return newSet;
+        });
       }
     } catch (error) {
       console.error("Error handling bookmark:", error);
@@ -236,7 +263,7 @@ const FilterJobBox = () => {
             >
               {bookmarkLoading === item.id ? (
                 <CircularLoader strokeColor="#000000" />
-              ) : selector.savedJobs.some((job) => job.jobId === item.id) ? (
+              ) : savedJobIds.has(item.id) ? (
                 <TbBookmarkFilled color="#FA5508" />
               ) : (
                 <TbBookmark />
