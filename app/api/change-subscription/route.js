@@ -5,7 +5,7 @@ import { adminDb } from "@/utils/firebase-admin";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export async function POST(request) {
-  const { userId, action, newPlanId } = await request.json();
+  const { userId, action, newPlanId, cancel } = await request.json();
 
   // Fetch user to get current subscriptionId
   const userDoc = await adminDb.collection("users").doc(userId).get();
@@ -16,7 +16,8 @@ export async function POST(request) {
   const { stripeSubscriptionId, stripeCustomerId } = userData;
 
   try {
-    if (action === "cancel") {
+    // Handle both action: "cancel" and cancel: true formats
+    if (action === "cancel" || cancel === true) {
       if (!stripeSubscriptionId) {
         return NextResponse.json(
           { error: "No active subscription to cancel" },
@@ -86,7 +87,12 @@ export async function POST(request) {
 
       return NextResponse.json({ success: true });
     } else {
-      return NextResponse.json({ error: "Invalid action" }, { status: 400 });
+      return NextResponse.json(
+        {
+          error: "Invalid action. Supported actions are: cancel, change, set",
+        },
+        { status: 400 }
+      );
     }
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
