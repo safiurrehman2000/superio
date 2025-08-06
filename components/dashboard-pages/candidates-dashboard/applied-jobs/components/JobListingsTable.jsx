@@ -3,40 +3,76 @@ import Link from "next/link.js";
 import Image from "next/image.js";
 import { useSelector } from "react-redux";
 import { formatString } from "@/utils/constants";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useGetAppliedJobsPaginated } from "@/APIs/auth/jobs";
 
 const JobListingsTable = () => {
   const selector = useSelector((store) => store.user);
-  const jobs = selector?.appliedJobs;
+  const candidateId = selector?.user?.uid;
 
   // Add filter state
-  const [selectedFilter, setSelectedFilter] = useState("1"); // default to 1 month
+  const [selectedFilter, setSelectedFilter] = useState(1); // default to 1 month
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const jobsPerPage = 10;
 
-  // Filter jobs by selected months
-  const now = new Date();
-  const months = parseInt(selectedFilter, 10);
-  const filteredJobs = jobs.filter((job) => {
-    if (!job.createdAt) return false;
-    const jobDate = new Date(job.createdAt);
-    const monthsAgo = new Date(
-      now.getFullYear(),
-      now.getMonth() - months,
-      now.getDate()
-    );
-    return jobDate >= monthsAgo;
-  });
+  // State for paginated data
+  const [jobs, setJobs] = useState([]);
+  const [totalJobs, setTotalJobs] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [loading, setLoading] = useState(true);
 
-  const indexOfLastJob = currentPage * jobsPerPage;
-  const indexOfFirstJob = indexOfLastJob - jobsPerPage;
-  const paginatedJobs = filteredJobs.slice(indexOfFirstJob, indexOfLastJob);
-  const totalPages = Math.ceil(filteredJobs.length / jobsPerPage);
+  // Fetch paginated jobs
+  const fetchPaginatedJobs = async () => {
+    if (!candidateId) return;
+
+    setLoading(true);
+    try {
+      const result = await useGetAppliedJobsPaginated(
+        candidateId,
+        currentPage,
+        jobsPerPage,
+        selectedFilter
+      );
+
+      setJobs(result.jobs);
+      setTotalJobs(result.totalJobs);
+      setTotalPages(result.totalPages);
+    } catch (error) {
+      console.error("Error fetching paginated jobs:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch jobs when page, filter, or candidateId changes
+  useEffect(() => {
+    fetchPaginatedJobs();
+  }, [currentPage, selectedFilter, candidateId]);
+
   const handlePageChange = (page) => {
     setCurrentPage(page);
   };
+
+  const handleFilterChange = (e) => {
+    const newFilter = parseInt(e.target.value, 10);
+    setSelectedFilter(newFilter);
+    setCurrentPage(1); // Reset to first page on filter change
+  };
+
+  if (loading) {
+    return (
+      <div className="tabs-box">
+        <div className="widget-title">
+          <h4>My Applied Jobs</h4>
+        </div>
+        <div className="widget-content">
+          <p>Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="tabs-box">
@@ -48,16 +84,13 @@ const JobListingsTable = () => {
           <select
             className="chosen-single form-select"
             value={selectedFilter}
-            onChange={(e) => {
-              setSelectedFilter(e.target.value);
-              setCurrentPage(1); // Reset to first page on filter change
-            }}
+            onChange={handleFilterChange}
           >
-            <option value="1">Last 1 Month</option>
-            <option value="3">Last 3 Months</option>
-            <option value="6">Last 6 Months</option>
-            <option value="9">Last 9 Months</option>
-            <option value="12">Last 12 Months</option>
+            <option value={1}>Last 1 Month</option>
+            <option value={3}>Last 3 Months</option>
+            <option value={6}>Last 6 Months</option>
+            <option value={9}>Last 9 Months</option>
+            <option value={12}>Last 12 Months</option>
           </select>
         </div>
       </div>
@@ -78,7 +111,7 @@ const JobListingsTable = () => {
               </thead>
 
               <tbody>
-                {paginatedJobs?.map((item) => {
+                {jobs?.map((item) => {
                   const logoSrc = item?.logo
                     ? item.logo.startsWith("data:image")
                       ? item.logo // Already a Data URL
@@ -124,7 +157,7 @@ const JobListingsTable = () => {
                           </div>
                         </div>
                       </td>
-                      <td>{new Date(item?.createdAt)?.toLocaleDateString()}</td>
+                      <td>{new Date(item?.appliedAt)?.toLocaleDateString()}</td>
                       <td className="status">
                         {item?.status || (
                           <p style={{ color: "black", margin: 0 }}>NA</p>
@@ -155,7 +188,7 @@ const JobListingsTable = () => {
         </div>
       </div>
       {/* End table widget content */}
-      {filteredJobs.length > jobsPerPage && (
+      {totalPages > 1 && (
         <div
           className="pagination-controls"
           style={{ marginTop: 20, textAlign: "center" }}
@@ -163,7 +196,31 @@ const JobListingsTable = () => {
           <button
             onClick={() => handlePageChange(currentPage - 1)}
             disabled={currentPage === 1}
-            style={{ marginRight: 8 }}
+            style={{
+              padding: "8px 16px",
+              border: "1px solid #d1d5db",
+              backgroundColor: currentPage === 1 ? "#f3f4f6" : "#ffffff",
+              color: currentPage === 1 ? "#9ca3af" : "#374151",
+              borderRadius: "6px",
+              fontSize: "14px",
+              fontWeight: "500",
+              cursor: currentPage === 1 ? "not-allowed" : "pointer",
+              transition: "all 0.2s ease",
+              minWidth: "80px",
+              marginRight: "8px",
+            }}
+            onMouseEnter={(e) => {
+              if (currentPage !== 1) {
+                e.target.style.backgroundColor = "#f9fafb";
+                e.target.style.borderColor = "#9ca3af";
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (currentPage !== 1) {
+                e.target.style.backgroundColor = "#ffffff";
+                e.target.style.borderColor = "#d1d5db";
+              }
+            }}
           >
             Previous
           </button>
@@ -173,8 +230,29 @@ const JobListingsTable = () => {
               onClick={() => handlePageChange(i + 1)}
               disabled={currentPage === i + 1}
               style={{
-                fontWeight: currentPage === i + 1 ? "bold" : "normal",
-                marginRight: 4,
+                padding: "8px 12px",
+                border: "1px solid #d1d5db",
+                backgroundColor: currentPage === i + 1 ? "#007bff" : "#ffffff",
+                color: currentPage === i + 1 ? "#ffffff" : "#374151",
+                borderRadius: "6px",
+                fontSize: "14px",
+                fontWeight: currentPage === i + 1 ? "600" : "500",
+                cursor: "pointer",
+                transition: "all 0.2s ease",
+                minWidth: "40px",
+                marginRight: "4px",
+              }}
+              onMouseEnter={(e) => {
+                if (currentPage !== i + 1) {
+                  e.target.style.backgroundColor = "#f9fafb";
+                  e.target.style.borderColor = "#9ca3af";
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (currentPage !== i + 1) {
+                  e.target.style.backgroundColor = "#ffffff";
+                  e.target.style.borderColor = "#d1d5db";
+                }
               }}
             >
               {i + 1}
@@ -183,7 +261,32 @@ const JobListingsTable = () => {
           <button
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
-            style={{ marginLeft: 8 }}
+            style={{
+              padding: "8px 16px",
+              border: "1px solid #d1d5db",
+              backgroundColor:
+                currentPage === totalPages ? "#f3f4f6" : "#ffffff",
+              color: currentPage === totalPages ? "#9ca3af" : "#374151",
+              borderRadius: "6px",
+              fontSize: "14px",
+              fontWeight: "500",
+              cursor: currentPage === totalPages ? "not-allowed" : "pointer",
+              transition: "all 0.2s ease",
+              minWidth: "80px",
+              marginLeft: "8px",
+            }}
+            onMouseEnter={(e) => {
+              if (currentPage !== totalPages) {
+                e.target.style.backgroundColor = "#f9fafb";
+                e.target.style.borderColor = "#9ca3af";
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (currentPage !== totalPages) {
+                e.target.style.backgroundColor = "#ffffff";
+                e.target.style.borderColor = "#d1d5db";
+              }
+            }}
           >
             Next
           </button>

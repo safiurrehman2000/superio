@@ -1,5 +1,5 @@
 "use client";
-import { addAppliedJob, setAppliedJobs } from "@/slices/userSlice";
+import { setAppliedJobs } from "@/slices/userSlice";
 import { db } from "@/utils/firebase";
 import { errorToast, successToast } from "@/utils/toast";
 import {
@@ -140,13 +140,16 @@ export const useApplyForJob = async (
   selectedResume,
   jobId,
   message,
-  appliedJobs,
   dispatch
 ) => {
   try {
     if (!candidateId) throw new Error("You must be logged in to apply.");
 
-    await isAlreadyApplied(candidateId, jobId, appliedJobs);
+    // Check if already applied using the new function
+    const isApplied = await checkIfJobApplied(candidateId, jobId);
+    if (isApplied) {
+      throw new Error("You have already applied to this job.");
+    }
 
     await addDoc(collection(db, "applications"), {
       candidateId,
@@ -157,39 +160,11 @@ export const useApplyForJob = async (
       status: "Active",
     });
 
-    dispatch(addAppliedJob(jobId));
-
     successToast("Application submitted successfully!");
     return { success: true };
   } catch (err) {
     errorToast(err.message);
     return { success: false };
-  }
-};
-
-export const isAlreadyApplied = async (candidateId, jobId, appliedJobs) => {
-  // Validate required parameters
-  if (!candidateId) {
-    throw new Error("Candidate ID is required");
-  }
-
-  if (!jobId) {
-    throw new Error("Job ID is required");
-  }
-
-  if (appliedJobs.includes(jobId)) {
-    throw new Error("You have already applied to this job.");
-  }
-
-  const applicationsQuery = query(
-    collection(db, "applications"),
-    where("candidateId", "==", candidateId),
-    where("jobId", "==", jobId)
-  );
-  const querySnapshot = await getDocs(applicationsQuery);
-
-  if (!querySnapshot.empty) {
-    throw new Error("You have already applied to this job.");
   }
 };
 
@@ -964,4 +939,111 @@ export const useGetJobListingPaginated = (params = {}) => {
     totalPages: Math.ceil(totalItems / itemsPerPage),
     currentPage: page,
   };
+};
+
+export const useGetAppliedJobsPaginated = async (
+  candidateId,
+  page = 1,
+  limit = 10,
+  filterMonths = 6
+) => {
+  try {
+    if (!candidateId) {
+      console.warn(
+        "useGetAppliedJobsPaginated: candidateId is undefined or null"
+      );
+      return { jobs: [], totalJobs: 0, totalPages: 0 };
+    }
+
+    // Fetch applied job IDs with pagination
+    const applicationsRef = collection(db, "applications");
+    const applicationsQuery = query(
+      applicationsRef,
+      where("candidateId", "==", candidateId),
+      orderBy("appliedAt", "desc")
+    );
+
+    const querySnapshot = await getDocs(applicationsQuery);
+    const applications = querySnapshot.docs.map((doc) => ({
+      jobId: doc.data().jobId,
+      appliedAt: doc.data().appliedAt,
+      status: doc.data().status,
+    }));
+
+    // Filter applications by date range
+    const now = new Date();
+    const monthsAgo = new Date(
+      now.getFullYear(),
+      now.getMonth() - filterMonths,
+      now.getDate()
+    );
+
+    const filteredApplications = applications.filter((app) => {
+      if (!app.appliedAt) return false;
+      const appliedDate = new Date(app.appliedAt);
+      return appliedDate >= monthsAgo;
+    });
+
+    // Calculate pagination
+    const totalJobs = filteredApplications.length;
+    const totalPages = Math.ceil(totalJobs / limit);
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    const paginatedApplications = filteredApplications.slice(
+      startIndex,
+      endIndex
+    );
+
+    // Fetch job details for paginated applications
+    const jobDetailsPromises = paginatedApplications.map(
+      async ({ jobId, appliedAt, status }) => {
+        const jobDocRef = doc(db, "jobs", jobId);
+        const jobDocSnap = await getDoc(jobDocRef);
+        if (jobDocSnap.exists()) {
+          return {
+            id: jobId,
+            appliedAt,
+            status,
+            createdAt: appliedAt, // Use appliedAt as createdAt for filtering
+            ...jobDocSnap.data(),
+          };
+        }
+        return null;
+      }
+    );
+
+    const jobDetails = (await Promise.all(jobDetailsPromises)).filter(
+      (job) => job !== null
+    );
+
+    return {
+      jobs: jobDetails,
+      totalJobs,
+      totalPages,
+      currentPage: page,
+    };
+  } catch (error) {
+    console.error("Error fetching paginated applied jobs:", error);
+    throw error;
+  }
+};
+
+export const checkIfJobApplied = async (candidateId, jobId) => {
+  try {
+    if (!candidateId || !jobId) {
+      return false;
+    }
+
+    const applicationsQuery = query(
+      collection(db, "applications"),
+      where("candidateId", "==", candidateId),
+      where("jobId", "==", jobId)
+    );
+    const querySnapshot = await getDocs(applicationsQuery);
+
+    return !querySnapshot.empty;
+  } catch (error) {
+    console.error("Error checking if job is applied:", error);
+    return false;
+  }
 };

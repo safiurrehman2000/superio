@@ -4,6 +4,7 @@ import {
   useJobViewIncrement,
   useSaveJob,
   useUnsaveJob,
+  checkIfJobApplied,
 } from "@/APIs/auth/jobs";
 import CircularLoader from "@/components/circular-loading/CircularLoading";
 import LoginPopup from "@/components/common/form/login/LoginPopup";
@@ -81,9 +82,19 @@ const JobSingleDynamicV3 = ({ params }) => {
     }
   };
 
-  const [hasApplied, setHasApplied] = useState(
-    selector.appliedJobs.some((job) => job.id === id)
-  );
+  const [hasApplied, setHasApplied] = useState(false);
+
+  // Check if job is applied on component mount
+  useEffect(() => {
+    const checkAppliedStatus = async () => {
+      if (selector?.user?.uid && id) {
+        const isApplied = await checkIfJobApplied(selector.user.uid, id);
+        setHasApplied(isApplied);
+      }
+    };
+
+    checkAppliedStatus();
+  }, [selector?.user?.uid, id]);
 
   const onApplicationSuccess = () => {
     setHasApplied(true);

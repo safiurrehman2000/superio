@@ -5,7 +5,7 @@ import {
   useFetchApplications,
   useFetchEmployerJobs,
 } from "@/APIs/auth/jobs";
-import Loading from "@/components/loading/Loading";
+
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { Tab, TabList, TabPanel, Tabs } from "react-tabs";
