@@ -187,7 +187,6 @@ const RouteGuard = ({ children }) => {
       } else {
         dispatch(removeUser());
         dispatch(clearResumes());
-        dispatch(clearAppliedJobs());
 
         if (selector.user) {
           localStorage.removeItem(`lastOnboardingPage_${selector.user}`);
