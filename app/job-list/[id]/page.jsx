@@ -5,6 +5,7 @@ import {
   useSaveJob,
   useUnsaveJob,
   checkIfJobApplied,
+  checkIfJobSaved,
 } from "@/APIs/auth/jobs";
 import CircularLoader from "@/components/circular-loading/CircularLoading";
 import LoginPopup from "@/components/common/form/login/LoginPopup";
@@ -39,12 +40,15 @@ const JobSingleDynamicV3 = ({ params }) => {
   const [bookmarkLoading, setBookmarkLoading] = useState(false);
 
   useEffect(() => {
-    // Check if savedJobs is an array before calling some
-    const isAlreadySaved = Array.isArray(selector.savedJobs)
-      ? selector.savedJobs.some((savedJob) => savedJob?.jobId === id)
-      : false;
-    setIsBookmarked(isAlreadySaved);
-  }, [selector.savedJobs, id]);
+    const checkSavedStatus = async () => {
+      if (selector?.user?.uid && id) {
+        const isSaved = await checkIfJobSaved(selector.user.uid, id);
+        setIsBookmarked(isSaved);
+      }
+    };
+
+    checkSavedStatus();
+  }, [selector?.user?.uid, id]);
 
   const handleBookmarkClick = async () => {
     try {
@@ -59,20 +63,14 @@ const JobSingleDynamicV3 = ({ params }) => {
         return;
       }
 
-      const isAlreadySaved = selector.savedJobs?.some(
-        (job) => job.jobId === id
-      );
+      const isAlreadySaved = await checkIfJobSaved(selector.user.uid, id);
 
       if (isAlreadySaved) {
         await useUnsaveJob(selector.user.uid, id);
-        dispatch(removeSavedJob(id));
         setIsBookmarked(false);
       } else {
-        const savedJob = await useSaveJob(selector.user.uid, id);
-        if (savedJob) {
-          dispatch(addSavedJob(savedJob));
-          setIsBookmarked(true);
-        }
+        await useSaveJob(selector.user.uid, id);
+        setIsBookmarked(true);
       }
     } catch (error) {
       console.error("Error handling bookmark:", error);

@@ -1,12 +1,11 @@
 "use client";
-import { useGetSavedJobs } from "@/APIs/auth/jobs";
+
 import { useGetUploadedResumes } from "@/APIs/auth/resume";
 import {
   addJobId,
   addUser,
   clearResumes,
   removeUser,
-  setSavedJobs,
 } from "@/slices/userSlice";
 import { LOGO } from "@/utils/constants";
 import { auth, db } from "@/utils/firebase";
@@ -47,8 +46,7 @@ const RouteGuard = ({ children }) => {
             setLoading(false);
             return;
           }
-          const savedJobs = await useGetSavedJobs(user.uid);
-          dispatch(setSavedJobs(savedJobs));
+
           dispatch(
             addUser({
               uid,

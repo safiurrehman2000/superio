@@ -1028,6 +1028,87 @@ export const useGetAppliedJobsPaginated = async (
   }
 };
 
+export const useGetSavedJobsPaginated = async (
+  userId,
+  page = 1,
+  limit = 10,
+  filterMonths = 6
+) => {
+  try {
+    if (!userId) {
+      console.warn("useGetSavedJobsPaginated: userId is undefined or null");
+      return { jobs: [], totalJobs: 0, totalPages: 0 };
+    }
+
+    // Fetch saved job IDs with pagination
+    const savedJobsRef = collection(db, "saved_jobs");
+    const savedJobsQuery = query(
+      savedJobsRef,
+      where("userId", "==", userId),
+      orderBy("savedAt", "desc")
+    );
+
+    const querySnapshot = await getDocs(savedJobsQuery);
+    const savedJobs = querySnapshot.docs.map((doc) => ({
+      jobId: doc.data().jobId,
+      savedAt: doc.data().savedAt,
+    }));
+
+    // Filter saved jobs by date range
+    const now = new Date();
+    const monthsAgo = new Date(
+      now.getFullYear(),
+      now.getMonth() - filterMonths,
+      now.getDate()
+    );
+
+    const filteredSavedJobs = savedJobs.filter((job) => {
+      if (!job.savedAt) return false;
+      const savedDate = new Date(job.savedAt);
+      return savedDate >= monthsAgo;
+    });
+
+    // Calculate pagination
+    const totalJobs = filteredSavedJobs.length;
+    const totalPages = Math.ceil(totalJobs / limit);
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    const paginatedSavedJobs = filteredSavedJobs.slice(startIndex, endIndex);
+
+    // Fetch job details for paginated saved jobs
+    const jobDetailsPromises = paginatedSavedJobs.map(
+      async ({ jobId, savedAt }) => {
+        const jobDocRef = doc(db, "jobs", jobId);
+        const jobDocSnap = await getDoc(jobDocRef);
+        if (jobDocSnap.exists()) {
+          return {
+            id: jobId,
+            jobId: jobId,
+            savedAt,
+            createdAt: savedAt, // Use savedAt as createdAt for filtering
+            ...jobDocSnap.data(),
+          };
+        }
+        return null;
+      }
+    );
+
+    const jobDetails = (await Promise.all(jobDetailsPromises)).filter(
+      (job) => job !== null
+    );
+
+    return {
+      jobs: jobDetails,
+      totalJobs,
+      totalPages,
+      currentPage: page,
+    };
+  } catch (error) {
+    console.error("Error fetching paginated saved jobs:", error);
+    throw error;
+  }
+};
+
 export const checkIfJobApplied = async (candidateId, jobId) => {
   try {
     if (!candidateId || !jobId) {
@@ -1044,6 +1125,26 @@ export const checkIfJobApplied = async (candidateId, jobId) => {
     return !querySnapshot.empty;
   } catch (error) {
     console.error("Error checking if job is applied:", error);
+    return false;
+  }
+};
+
+export const checkIfJobSaved = async (userId, jobId) => {
+  try {
+    if (!userId || !jobId) {
+      return false;
+    }
+
+    const savedJobsQuery = query(
+      collection(db, "saved_jobs"),
+      where("userId", "==", userId),
+      where("jobId", "==", jobId)
+    );
+    const querySnapshot = await getDocs(savedJobsQuery);
+
+    return !querySnapshot.empty;
+  } catch (error) {
+    console.error("Error checking if job is saved:", error);
     return false;
   }
 };
