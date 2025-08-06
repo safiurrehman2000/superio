@@ -1,14 +1,13 @@
 "use client";
-import { useState, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { useParams } from "next/navigation";
-import { useApplyForJob, checkIfJobApplied } from "@/APIs/auth/jobs";
-import { useUploadResume, useDeleteResume } from "@/APIs/auth/resume";
-import { addResume } from "@/slices/userSlice";
-import { errorToast, successToast } from "@/utils/toast";
-import { checkFileSize, checkFileTypes } from "@/utils/constants";
+import { checkIfJobApplied, useApplyForJob } from "@/APIs/auth/jobs";
+import { useDeleteResume, useUploadResume } from "@/APIs/auth/resume";
 import CircularLoader from "@/components/circular-loading/CircularLoading";
 import "@/styles/customStyles.css";
+import { checkFileSize, checkFileTypes } from "@/utils/resumeHelperFunctions";
+import { errorToast } from "@/utils/toast";
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
 const ApplyJobModalContent = ({ onApplicationSuccess }) => {
   const [selected, setSelected] = useState(null);
