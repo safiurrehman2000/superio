@@ -13,7 +13,7 @@ import { debounce } from "@/utils/constants";
 import { errorToast } from "@/utils/toast";
 import styles from "./admin-tables.module.scss";
 
-const PAGE_SIZE = 5;
+const PAGE_SIZE = 10;
 
 export default function JobsTable() {
   const [jobs, setJobs] = useState([]);
