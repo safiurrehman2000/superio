@@ -10,7 +10,10 @@ import {
   getDocs,
 } from "firebase/firestore";
 import { debounce } from "@/utils/constants";
+import { errorToast } from "@/utils/toast";
 import styles from "./admin-tables.module.scss";
+
+const PAGE_SIZE = 5;
 
 export default function JobsTable() {
   const [jobs, setJobs] = useState([]);
@@ -22,7 +25,7 @@ export default function JobsTable() {
   const [jobFirstDoc, setJobFirstDoc] = useState(null);
   const [jobLastDoc, setJobLastDoc] = useState(null);
   const [jobHasNext, setJobHasNext] = useState(false);
-  const JOB_PAGE_SIZE = 10;
+  const [currentPage, setCurrentPage] = useState(1);
   const debounceRef = useRef();
   const [sortBy, setSortBy] = useState("createdAt");
   const [sortDir, setSortDir] = useState("desc");
@@ -32,19 +35,37 @@ export default function JobsTable() {
   }, []);
 
   // Fetch jobs and employers for jobs table with pagination and search
-  const fetchJobsAndEmployers = async (direction = "next", startDoc = null) => {
+  const fetchJobsAndEmployers = async (direction = null, startDoc = null) => {
     setJobsLoading(true);
     try {
-      let constraints = [orderBy(sortBy, sortDir), limit(JOB_PAGE_SIZE + 1)];
-      if (startDoc) constraints.push(startAfter(startDoc));
+      let constraints = [orderBy(sortBy, sortDir), limit(PAGE_SIZE + 1)];
+
+      // Apply server-side search if possible
+      if (jobSearch && sortBy === "title") {
+        // For title search, we can use range queries
+        constraints.unshift(where("title", ">=", jobSearch.toLowerCase()));
+        constraints.unshift(
+          where("title", "<=", jobSearch.toLowerCase() + "\uf8ff")
+        );
+      }
+
+      if (startDoc) {
+        constraints.push(startAfter(startDoc));
+      }
+
       const jobsQuery = query(collection(db, "jobs"), ...constraints);
       const jobsSnap = await getDocs(jobsQuery);
       let docs = jobsSnap.docs;
-      setJobHasNext(docs.length > JOB_PAGE_SIZE);
-      if (docs.length > JOB_PAGE_SIZE) docs = docs.slice(0, JOB_PAGE_SIZE);
+
+      setJobHasNext(docs.length > PAGE_SIZE);
+      if (docs.length > PAGE_SIZE) {
+        docs = docs.slice(0, PAGE_SIZE);
+      }
+
       let jobsList = docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      // Client-side search filter
-      if (jobSearch) {
+
+      // Only apply client-side filtering for cases where server-side search isn't possible
+      if (jobSearch && sortBy !== "title") {
         jobsList = jobsList.filter(
           (job) =>
             (job.title &&
@@ -61,9 +82,19 @@ export default function JobsTable() {
                     .includes(jobSearch.toLowerCase()))))
         );
       }
+
       setJobs(jobsList);
       setJobFirstDoc(docs[0]);
       setJobLastDoc(docs[docs.length - 1]);
+
+      // Update pagination info only when navigating
+      if (direction === "next") {
+        setCurrentPage((prev) => prev + 1);
+      } else if (direction === "prev") {
+        setCurrentPage((prev) => Math.max(1, prev - 1));
+      }
+      // If direction is null (initial load), don't change the page number
+
       // Fetch employers for this page
       const employerIds = Array.from(
         new Set(jobsList.map((job) => job.employerId).filter(Boolean))
@@ -84,7 +115,9 @@ export default function JobsTable() {
         }
         setEmployersMap((prev) => ({ ...prev, ...employers }));
       }
-    } catch (err) {
+    } catch (error) {
+      console.error("Error fetching jobs:", error);
+      errorToast("Error loading jobs");
       setJobs([]);
     } finally {
       setJobsLoading(false);
@@ -93,6 +126,7 @@ export default function JobsTable() {
 
   useEffect(() => {
     setJobPageStack([]);
+    setCurrentPage(1);
     fetchJobsAndEmployers();
     // eslint-disable-next-line
   }, [jobSearch, sortBy, sortDir]);
@@ -101,6 +135,7 @@ export default function JobsTable() {
     setJobPageStack((prev) => [...prev, jobFirstDoc]);
     fetchJobsAndEmployers("next", jobLastDoc);
   };
+
   const handleJobPrev = () => {
     const prevStack = [...jobPageStack];
     const prevDoc = prevStack.pop();
@@ -204,21 +239,35 @@ export default function JobsTable() {
           )}
         </tbody>
       </table>
+
+      {/* Pagination Controls */}
       <div className={styles["admin-table-actions"]}>
-        <button
-          onClick={handleJobPrev}
-          disabled={jobPageStack.length === 0 || jobsLoading}
-          className={styles["admin-table-btn"]}
-        >
-          Previous
-        </button>
-        <button
-          onClick={handleJobNext}
-          disabled={!jobHasNext || jobsLoading}
-          className={styles["admin-table-btn"]}
-        >
-          Next
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <button
+            onClick={handleJobPrev}
+            disabled={jobPageStack.length === 0 || jobsLoading}
+            className={styles["admin-table-btn"]}
+          >
+            Previous
+          </button>
+
+          <span style={{ fontSize: "14px", color: "#666" }}>
+            Page {currentPage}
+            {jobs.length > 0 && (
+              <span style={{ marginLeft: "8px" }}>
+                (Showing {jobs.length} results)
+              </span>
+            )}
+          </span>
+
+          <button
+            onClick={handleJobNext}
+            disabled={!jobHasNext || jobsLoading}
+            className={styles["admin-table-btn"]}
+          >
+            Next
+          </button>
+        </div>
       </div>
     </div>
   );
