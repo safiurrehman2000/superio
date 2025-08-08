@@ -35,6 +35,8 @@ export default function ActiveSubscriptionsTable() {
   const [availablePlans, setAvailablePlans] = useState([]);
   const [changingUserId, setChangingUserId] = useState(null);
   const [cancellingUserId, setCancellingUserId] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
   const debounceRef = useRef();
 
   useEffect(() => {
@@ -49,6 +51,7 @@ export default function ActiveSubscriptionsTable() {
   useEffect(() => {
     if (Object.keys(planMap).length > 0) {
       setPageStack([]);
+      setCurrentPage(1);
       fetchActiveUsers();
     }
     // eslint-disable-next-line
@@ -80,99 +83,123 @@ export default function ActiveSubscriptionsTable() {
     setAvailablePlans(plans);
   };
 
-  const fetchActiveUsers = async (direction = "next", startDoc = null) => {
+  const fetchActiveUsers = async (direction = null, startDoc = null) => {
     setLoading(true);
-    let q = collection(db, "users");
-    let constraints = [orderBy("email"), limit(PAGE_SIZE + 1)];
-    if (startDoc) {
-      constraints.push(startAfter(startDoc));
-    }
-    const usersQuery = query(q, ...constraints);
-    const snapshot = await getDocs(usersQuery);
-    let docs = snapshot.docs;
-    setHasNext(docs.length > PAGE_SIZE);
-    if (docs.length > PAGE_SIZE) {
-      docs = docs.slice(0, PAGE_SIZE);
-    }
-    let usersList = docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-    // For each user, fetch subscription status
-    const usersWithSubs = await Promise.all(
-      usersList.map(async (user) => {
-        let planName = "-";
-        let daysLeft = "-";
-        let planId = null;
-        let hasActiveSubscription = false;
+    try {
+      let q = collection(db, "users");
+      let constraints = [orderBy("email"), limit(PAGE_SIZE + 1)];
 
-        // Check if user has a stripe subscription ID
-        if (user.stripeSubscriptionId) {
-          try {
-            const res = await fetch("/api/subscription-status", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ userId: user.id }),
-            });
-            const data = await res.json();
-            if (data.active && data.current_period_end) {
-              planId = data.planName || "-";
-              planName = planMap[planId] || planId || "-";
-              const days = Math.max(
-                0,
-                Math.ceil(
-                  (data.current_period_end * 1000 - Date.now()) /
-                    (1000 * 60 * 60 * 24)
-                )
-              );
-              daysLeft = days > 0 ? days : 0;
-              hasActiveSubscription = true;
-            }
-          } catch (err) {
-            // ignore
-          }
-        }
-
-        return { ...user, planName, daysLeft, planId, hasActiveSubscription };
-      })
-    );
-    // Filter by plan type
-    let filtered = usersWithSubs;
-    if (selectedPlans.length > 0) {
-      filtered = filtered.filter((u) => selectedPlans.includes(u.planName));
-    }
-    // Search filter
-    if (search) {
-      filtered = filtered.filter(
-        (u) =>
-          (u.email && u.email.toLowerCase().includes(search.toLowerCase())) ||
-          (u.name && u.name.toLowerCase().includes(search.toLowerCase())) ||
-          (u.planName &&
-            u.planName.toLowerCase().includes(search.toLowerCase()))
-      );
-    }
-    // Sort
-    filtered = filtered.sort((a, b) => {
-      let valA = a[sortBy] || "";
-      let valB = b[sortBy] || "";
-      if (sortBy === "daysLeft") {
-        valA = Number(valA);
-        valB = Number(valB);
-      } else {
-        valA = String(valA).toLowerCase();
-        valB = String(valB).toLowerCase();
+      if (startDoc) {
+        constraints.push(startAfter(startDoc));
       }
-      if (valA < valB) return sortDir === "asc" ? -1 : 1;
-      if (valA > valB) return sortDir === "asc" ? 1 : -1;
-      return 0;
-    });
-    setUsers(filtered);
-    setFirstDoc(docs[0]);
-    setLastDoc(docs[docs.length - 1]);
-    setLoading(false);
+
+      const usersQuery = query(q, ...constraints);
+      const snapshot = await getDocs(usersQuery);
+      let docs = snapshot.docs;
+
+      setHasNext(docs.length > PAGE_SIZE);
+      if (docs.length > PAGE_SIZE) {
+        docs = docs.slice(0, PAGE_SIZE);
+      }
+
+      let usersList = docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+
+      // For each user, fetch subscription status
+      const usersWithSubs = await Promise.all(
+        usersList.map(async (user) => {
+          let planName = "-";
+          let daysLeft = "-";
+          let planId = null;
+          let hasActiveSubscription = false;
+
+          // Check if user has a stripe subscription ID
+          if (user.stripeSubscriptionId) {
+            try {
+              const res = await fetch("/api/subscription-status", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ userId: user.id }),
+              });
+              const data = await res.json();
+              if (data.active && data.current_period_end) {
+                planId = data.planName || "-";
+                planName = planMap[planId] || planId || "-";
+                const days = Math.max(
+                  0,
+                  Math.ceil(
+                    (data.current_period_end * 1000 - Date.now()) /
+                      (1000 * 60 * 60 * 24)
+                  )
+                );
+                daysLeft = days > 0 ? days : 0;
+                hasActiveSubscription = true;
+              }
+            } catch (err) {
+              // ignore
+            }
+          }
+
+          return { ...user, planName, daysLeft, planId, hasActiveSubscription };
+        })
+      );
+
+      // Filter by plan type
+      let filtered = usersWithSubs;
+      if (selectedPlans.length > 0) {
+        filtered = filtered.filter((u) => selectedPlans.includes(u.planName));
+      }
+
+      // Search filter
+      if (search) {
+        filtered = filtered.filter(
+          (u) =>
+            (u.email && u.email.toLowerCase().includes(search.toLowerCase())) ||
+            (u.name && u.name.toLowerCase().includes(search.toLowerCase())) ||
+            (u.planName &&
+              u.planName.toLowerCase().includes(search.toLowerCase()))
+        );
+      }
+
+      // Sort
+      filtered = filtered.sort((a, b) => {
+        let valA = a[sortBy] || "";
+        let valB = b[sortBy] || "";
+        if (sortBy === "daysLeft") {
+          valA = Number(valA);
+          valB = Number(valB);
+        } else {
+          valA = String(valA).toLowerCase();
+          valB = String(valB).toLowerCase();
+        }
+        if (valA < valB) return sortDir === "asc" ? -1 : 1;
+        if (valA > valB) return sortDir === "asc" ? 1 : -1;
+        return 0;
+      });
+
+      setUsers(filtered);
+      setFirstDoc(docs[0]);
+      setLastDoc(docs[docs.length - 1]);
+
+      // Update pagination info only when navigating
+      if (direction === "next") {
+        setCurrentPage((prev) => prev + 1);
+      } else if (direction === "prev") {
+        setCurrentPage((prev) => Math.max(1, prev - 1));
+      }
+      // If direction is null (initial load), don't change the page number
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      errorToast("Error loading users");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleNext = () => {
     setPageStack((prev) => [...prev, firstDoc]);
     fetchActiveUsers("next", lastDoc);
   };
+
   const handlePrev = () => {
     const prevStack = [...pageStack];
     const prevDoc = prevStack.pop();
@@ -489,21 +516,35 @@ export default function ActiveSubscriptionsTable() {
           )}
         </tbody>
       </table>
+
+      {/* Pagination Controls */}
       <div className={styles["admin-table-actions"]}>
-        <button
-          onClick={handlePrev}
-          disabled={pageStack.length === 0 || loading}
-          className={styles["admin-table-btn"]}
-        >
-          Previous
-        </button>
-        <button
-          onClick={handleNext}
-          disabled={!hasNext || loading}
-          className={styles["admin-table-btn"]}
-        >
-          Next
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <button
+            onClick={handlePrev}
+            disabled={pageStack.length === 0 || loading}
+            className={styles["admin-table-btn"]}
+          >
+            Previous
+          </button>
+
+          <span style={{ fontSize: "14px", color: "#666" }}>
+            Page {currentPage}
+            {users.length > 0 && (
+              <span style={{ marginLeft: "8px" }}>
+                (Showing {users.length} results)
+              </span>
+            )}
+          </span>
+
+          <button
+            onClick={handleNext}
+            disabled={!hasNext || loading}
+            className={styles["admin-table-btn"]}
+          >
+            Next
+          </button>
+        </div>
       </div>
 
       {/* Change Subscription Modal */}
