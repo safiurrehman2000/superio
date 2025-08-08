@@ -10,6 +10,7 @@ import {
   getDocs,
 } from "firebase/firestore";
 import { debounce } from "@/utils/constants";
+import { errorToast } from "@/utils/toast";
 import styles from "./admin-tables.module.scss";
 
 const PAGE_SIZE = 10;
@@ -27,52 +28,88 @@ export default function UsersTable() {
   const [sortBy, setSortBy] = useState("email");
   const [sortDir, setSortDir] = useState("asc");
   const [hasNext, setHasNext] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
   const debounceRef = useRef();
 
   useEffect(() => {
     debounceRef.current = debounce((val) => setSearch(val), 500);
   }, []);
 
-  const fetchUsers = async (direction = "next", startDoc = null) => {
+  const fetchUsers = async (direction = null, startDoc = null) => {
     setLoading(true);
-    let q = collection(db, "users");
-    let constraints = [orderBy(sortBy, sortDir), limit(PAGE_SIZE + 1)];
-    if (isCandidateSearch) {
-      constraints.unshift(where("userType", "==", "Candidate"));
+    try {
+      let q = collection(db, "users");
+      let constraints = [orderBy(sortBy, sortDir), limit(PAGE_SIZE + 1)];
+
+      // Apply server-side filters
+      if (isCandidateSearch) {
+        constraints.unshift(where("userType", "==", "Candidate"));
+      }
+      if (isEmployerSearch) {
+        constraints.unshift(where("userType", "==", "Employer"));
+      }
+
+      // Apply server-side search if possible
+      if (search && sortBy === "email") {
+        // For email search, we can use range queries
+        constraints.unshift(where("email", ">=", search.toLowerCase()));
+        constraints.unshift(
+          where("email", "<=", search.toLowerCase() + "\uf8ff")
+        );
+      } else if (search && sortBy === "name") {
+        // For name search, we can use range queries
+        constraints.unshift(where("name", ">=", search.toLowerCase()));
+        constraints.unshift(
+          where("name", "<=", search.toLowerCase() + "\uf8ff")
+        );
+      }
+
+      if (startDoc) {
+        constraints.push(startAfter(startDoc));
+      }
+
+      const usersQuery = query(q, ...constraints);
+      const snapshot = await getDocs(usersQuery);
+      let docs = snapshot.docs;
+
+      setHasNext(docs.length > PAGE_SIZE);
+      if (docs.length > PAGE_SIZE) {
+        docs = docs.slice(0, PAGE_SIZE);
+      }
+
+      let usersList = docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+
+      // Only apply client-side filtering for cases where server-side search isn't possible
+      if (search && sortBy !== "email" && sortBy !== "name") {
+        usersList = usersList.filter(
+          (u) =>
+            (u.name && u.name.toLowerCase().includes(search.toLowerCase())) ||
+            (u.email && u.email.toLowerCase().includes(search.toLowerCase()))
+        );
+      }
+
+      setUsers(usersList);
+      setFirstDoc(docs[0]);
+      setLastDoc(docs[docs.length - 1]);
+
+      // Update pagination info only when navigating
+      if (direction === "next") {
+        setCurrentPage((prev) => prev + 1);
+      } else if (direction === "prev") {
+        setCurrentPage((prev) => Math.max(1, prev - 1));
+      }
+      // If direction is null (initial load), don't change the page number
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      errorToast("Error loading users");
+    } finally {
+      setLoading(false);
     }
-    if (isEmployerSearch) {
-      constraints.unshift(where("userType", "==", "Employer"));
-    }
-    if (search) {
-      // Firestore doesn't support contains/LIKE, so we filter client-side after fetching
-    }
-    if (startDoc) {
-      constraints.push(startAfter(startDoc));
-    }
-    const usersQuery = query(q, ...constraints);
-    const snapshot = await getDocs(usersQuery);
-    let docs = snapshot.docs;
-    setHasNext(docs.length > PAGE_SIZE);
-    if (docs.length > PAGE_SIZE) {
-      docs = docs.slice(0, PAGE_SIZE);
-    }
-    let usersList = docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-    // Client-side search filter
-    if (search) {
-      usersList = usersList.filter(
-        (u) =>
-          (u.name && u.name.toLowerCase().includes(search.toLowerCase())) ||
-          (u.email && u.email.toLowerCase().includes(search.toLowerCase()))
-      );
-    }
-    setUsers(usersList);
-    setFirstDoc(docs[0]);
-    setLastDoc(docs[docs.length - 1]);
-    setLoading(false);
   };
 
   useEffect(() => {
     setPageStack([]);
+    setCurrentPage(1);
     fetchUsers();
     // eslint-disable-next-line
   }, [search, isCandidateSearch, isEmployerSearch, sortBy, sortDir]);
@@ -81,6 +118,7 @@ export default function UsersTable() {
     setPageStack((prev) => [...prev, firstDoc]);
     fetchUsers("next", lastDoc);
   };
+
   const handlePrev = () => {
     const prevStack = [...pageStack];
     const prevDoc = prevStack.pop();
@@ -200,21 +238,35 @@ export default function UsersTable() {
           )}
         </tbody>
       </table>
+
+      {/* Pagination Controls */}
       <div className={styles["admin-table-actions"]}>
-        <button
-          onClick={handlePrev}
-          disabled={pageStack.length === 0 || loading}
-          className={styles["admin-table-btn"]}
-        >
-          Previous
-        </button>
-        <button
-          onClick={handleNext}
-          disabled={!hasNext || loading}
-          className={styles["admin-table-btn"]}
-        >
-          Next
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <button
+            onClick={handlePrev}
+            disabled={pageStack.length === 0 || loading}
+            className={styles["admin-table-btn"]}
+          >
+            Previous
+          </button>
+
+          <span style={{ fontSize: "14px", color: "#666" }}>
+            Page {currentPage}
+            {users.length > 0 && (
+              <span style={{ marginLeft: "8px" }}>
+                (Showing {users.length} results)
+              </span>
+            )}
+          </span>
+
+          <button
+            onClick={handleNext}
+            disabled={!hasNext || loading}
+            className={styles["admin-table-btn"]}
+          >
+            Next
+          </button>
+        </div>
       </div>
     </div>
   );
