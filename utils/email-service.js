@@ -100,22 +100,36 @@ export const sendWelcomeEmail = async (
 /**
  * Send job alert email
  * @param {string} userEmail - User's email address
+ * @param {string} userName - User's name
  * @param {Array} jobs - Array of job objects
  * @returns {Promise<boolean>} - Success status
  */
-export const sendJobAlertEmail = async (userEmail, jobs = []) => {
+export const sendJobAlertEmail = async (
+  userEmail,
+  userName = "",
+  jobs = []
+) => {
   try {
     initEmailJS();
 
     const templateParams = {
-      to_email: userEmail,
+      title: "New Job Opportunities for You!",
+      email: userEmail,
+      name: userName || userEmail.split("@")[0],
+      user_type: "Candidate",
+      from_name: "Flexijobber Job Alerts",
+      message: `We found ${jobs.length} new job opportunities that match your profile!`,
+      reply_to: "jobs@flexijobber.com",
       jobs_count: jobs.length,
       jobs_list: jobs
-        .map((job) => `• ${job.title} at ${job.company}`)
+        .slice(0, 10) // Limit to 10 jobs in email
+        .map((job) => `• ${job.title} at ${job.company || "Company"}`)
         .join("\n"),
-      from_name: "Flexijobber Job Alerts",
-      reply_to: "jobs@flexijobber.com",
     };
+
+    console.log(
+      `📧 Sending job alert email to: ${userEmail} with ${jobs.length} jobs`
+    );
 
     const result = await emailjs.send(
       EMAIL_CONFIG.serviceId,
@@ -123,9 +137,18 @@ export const sendJobAlertEmail = async (userEmail, jobs = []) => {
       templateParams
     );
 
-    return result.status === 200;
+    if (result.status === 200) {
+      console.log(`✅ Job alert email sent successfully to: ${userEmail}`);
+      return true;
+    } else {
+      console.error(
+        `❌ EmailJS returned non-200 status for ${userEmail}:`,
+        result.status
+      );
+      return false;
+    }
   } catch (error) {
-    console.error("Error sending job alert email:", error);
+    console.error(`💥 Error sending job alert email to ${userEmail}:`, error);
     return false;
   }
 };

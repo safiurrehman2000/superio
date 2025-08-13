@@ -77,6 +77,13 @@ export const candidateMenuData = [
     active: "",
   },
   {
+    id: 8,
+    name: "Job Alerts",
+    icon: "la-bell",
+    routePath: "/candidates-dashboard/job-alerts",
+    active: "",
+  },
+  {
     id: 10,
     name: "Change Password",
     icon: "la-lock",
