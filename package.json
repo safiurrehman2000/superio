@@ -13,6 +13,7 @@
     "stripe:trigger-delete-updated": "stripe trigger customer.subscription.updated"
   },
   "dependencies": {
+    "@emailjs/browser": "^4.4.1",
     "@faker-js/faker": "^8.1.0",
     "@reduxjs/toolkit": "^1.9.6",
     "@stripe/react-stripe-js": "^3.7.0",

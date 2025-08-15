@@ -5,6 +5,7 @@ import {
   updateUserByAdmin,
   deleteUserByAdmin,
 } from "@/APIs/auth/database";
+import { deleteUserCompletelyByAdmin } from "@/APIs/auth/admin";
 import AutoSelect from "@/components/autoselect/AutoSelect";
 import CircularLoader from "@/components/circular-loading/CircularLoading";
 import { InputField } from "@/components/inputfield/InputField";
@@ -213,12 +214,16 @@ const EditUser = () => {
     setDeleteLoading(true);
     setDeleteError(null);
     try {
-      const { success, error } = await deleteUserByAdmin(selectedUserId);
-      if (!success) throw new Error(error || "Failed to delete user.");
+      // Use the new complete deletion function that removes both Auth and Firestore data
+      const { success, error } = await deleteUserCompletelyByAdmin(
+        selectedUserId
+      );
+      if (!success)
+        throw new Error(error || "Failed to delete user completely.");
       setShowDeleteModal(false);
       setSelectedUserId("");
       reset();
-      successToast("User and all related data deleted successfully.");
+      // Success toast is already shown in the deleteUserCompletelyByAdmin function
     } catch (err) {
       setDeleteError(err.message || "An unexpected error occurred.");
     } finally {

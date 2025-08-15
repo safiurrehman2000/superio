@@ -1,6 +1,7 @@
 import { getFirebaseErrorMessage } from "@/utils/constants";
 import { auth, db } from "@/utils/firebase";
 import { errorToast, successToast } from "@/utils/toast";
+import { sendWelcomeEmail } from "@/utils/email-service";
 import {
   createUserWithEmailAndPassword,
   sendPasswordResetEmail,
@@ -23,6 +24,16 @@ export const useSignUp = async (email, password, userType) => {
       createdAt: new Date(),
       isFirstTime: true,
     });
+
+    // Send welcome email (don't block registration if email fails)
+    try {
+      await sendWelcomeEmail(user.email, user.email.split("@")[0], userType);
+      console.log("Welcome email sent successfully to:", user.email);
+    } catch (emailError) {
+      console.error("Welcome email failed to send:", emailError);
+      // Continue with successful registration even if email fails
+    }
+
     successToast("User Successfully Registered!");
     return { success: true, user: userCredential.user };
   } catch (error) {
