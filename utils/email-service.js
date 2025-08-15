@@ -107,46 +107,62 @@ export const sendWelcomeEmail = async (
 export const sendJobAlertEmail = async (
   userEmail,
   userName = "",
-  jobs = []
+  jobs = [],
+  alertKeywords = ""
 ) => {
   try {
     initEmailJS();
 
-    const templateParams = {
-      title: "New Job Opportunities for You!",
-      email: userEmail,
-      name: userName || userEmail.split("@")[0],
-      user_type: "Candidate",
-      from_name: "Flexijobber Job Alerts",
-      message: `We found ${jobs.length} new job opportunities that match your profile!`,
-      reply_to: "jobs@flexijobber.com",
-      jobs_count: jobs.length,
-      jobs_list: jobs
-        .slice(0, 10) // Limit to 10 jobs in email
-        .map((job) => `• ${job.title} at ${job.company || "Company"}`)
-        .join("\n"),
-    };
+    // For now, we'll send one email per job to match the template
+    // In the future, we could modify the template to handle multiple jobs
+    for (const job of jobs.slice(0, 5)) {
+      // Limit to 5 jobs to avoid spam
+      const jobDate = job.createdAt
+        ? new Date(job.createdAt).toLocaleDateString()
+        : "Recently";
 
-    console.log(
-      `📧 Sending job alert email to: ${userEmail} with ${jobs.length} jobs`
-    );
+      const templateParams = {
+        job_title: job.title || "Job Opportunity",
+        company_name: job.company || job.employerName || "Company",
+        location: job.location || "Location not specified",
+        posted_date: jobDate,
+        job_description: job.description || "No description available",
+        job_url: `${
+          process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
+        }/job-list/${job.id}`,
+        alert_keywords: alertKeywords || "your preferences",
+        manage_alerts_url: `${
+          process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
+        }/candidates-dashboard/job-alerts`,
+        to_email: userEmail,
+        from_name: "Flexijobber Job Alerts",
+        reply_to: "jobs@flexijobber.com",
+      };
 
-    const result = await emailjs.send(
-      EMAIL_CONFIG.serviceId,
-      EMAIL_TEMPLATES.JOB_ALERT,
-      templateParams
-    );
-
-    if (result.status === 200) {
-      console.log(`✅ Job alert email sent successfully to: ${userEmail}`);
-      return true;
-    } else {
-      console.error(
-        `❌ EmailJS returned non-200 status for ${userEmail}:`,
-        result.status
+      console.log(
+        `📧 Sending job alert email to: ${userEmail} for job: ${job.title}`
       );
-      return false;
+
+      const result = await emailjs.send(
+        EMAIL_CONFIG.serviceId,
+        EMAIL_TEMPLATES.JOB_ALERT,
+        templateParams
+      );
+
+      if (result.status === 200) {
+        console.log(
+          `✅ Job alert email sent successfully to: ${userEmail} for job: ${job.title}`
+        );
+      } else {
+        console.error(
+          `❌ EmailJS returned non-200 status for ${userEmail}:`,
+          result.status
+        );
+        return false;
+      }
     }
+
+    return true;
   } catch (error) {
     console.error(`💥 Error sending job alert email to ${userEmail}:`, error);
     return false;
