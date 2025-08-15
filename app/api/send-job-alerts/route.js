@@ -1,66 +1,22 @@
 import { NextResponse } from "next/server";
 import { adminDb } from "@/utils/firebase-admin";
-import emailjs from "@emailjs/browser";
-
-// EmailJS configuration
-const EMAIL_CONFIG = {
-  serviceId: process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID,
-  templateId: process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID,
-  publicKey: process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY,
-};
-
-// Initialize EmailJS
-emailjs.init(EMAIL_CONFIG.publicKey);
+import { sendJobAlertEmailServer } from "@/utils/email-service-server";
 
 /**
  * Send job alert email to a candidate
  */
-const sendJobAlertEmail = async (userEmail, userName, jobs = []) => {
-  try {
-    if (jobs.length === 0) {
-      console.log(`No jobs to send for ${userEmail}`);
-      return true;
-    }
-
-    const templateParams = {
-      title: "New Job Opportunities for You!",
-      email: userEmail,
-      name: userName || userEmail.split("@")[0],
-      user_type: "Candidate",
-      from_name: "Flexijobber Job Alerts",
-      message: `We found ${jobs.length} new job opportunities that match your profile!`,
-      reply_to: "jobs@flexijobber.com",
-      jobs_count: jobs.length,
-      jobs_list: jobs
-        .slice(0, 10) // Limit to 10 jobs in email
-        .map((job) => `• ${job.title} at ${job.company || "Company"}`)
-        .join("\n"),
-    };
-
-    console.log(
-      `Sending job alert email to: ${userEmail} with ${jobs.length} jobs`
-    );
-
-    const result = await emailjs.send(
-      EMAIL_CONFIG.serviceId,
-      EMAIL_CONFIG.templateId,
-      templateParams
-    );
-
-    if (result.status === 200) {
-      console.log(`✅ Job alert email sent successfully to: ${userEmail}`);
-      return true;
-    } else {
-      console.error(
-        `❌ EmailJS returned non-200 status for ${userEmail}:`,
-        result.status
-      );
-      return false;
-    }
-  } catch (error) {
-    console.error(`💥 Error sending job alert email to ${userEmail}:`, error);
-    return false;
-  }
+const sendJobAlertEmail = async (
+  userEmail,
+  userName,
+  jobs = [],
+  alertKeywords = ""
+) => {
+  return await sendJobAlertEmailServer(
+    userEmail,
+    userName,
+    jobs,
+    alertKeywords
+  );
 };
 
 /**
@@ -71,10 +27,14 @@ const getMatchingJobs = async (alertData) => {
     const jobsRef = adminDb.collection("jobs");
     let query = jobsRef.where("status", "==", "active");
 
-    // Filter by date (last 7 days by default)
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-    query = query.where("createdAt", ">=", sevenDaysAgo.getTime());
+    // Filter by date (last 30 days to be more lenient for testing)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const thirtyDaysAgoTimestamp = thirtyDaysAgo.getTime();
+    console.log(
+      `📅 Looking for jobs created after: ${thirtyDaysAgo.toISOString()} (${thirtyDaysAgoTimestamp})`
+    );
+    query = query.where("createdAt", ">=", thirtyDaysAgoTimestamp);
 
     const snapshot = await query.get();
     let jobs = snapshot.docs.map((doc) => ({
@@ -82,12 +42,24 @@ const getMatchingJobs = async (alertData) => {
       ...doc.data(),
     }));
 
+    console.log(`📊 Total jobs found: ${jobs.length}`);
+    if (jobs.length > 0) {
+      console.log(`📋 Sample job:`, {
+        id: jobs[0].id,
+        title: jobs[0].title,
+        tags: jobs[0].tags,
+        location: jobs[0].location,
+        createdAt: jobs[0].createdAt,
+      });
+    }
+
     // Filter by categories in memory
     if (alertData.categories && alertData.categories.length > 0) {
       jobs = jobs.filter(
         (job) =>
           job.tags && job.tags.some((tag) => alertData.categories.includes(tag))
       );
+      console.log(`🏷️  After category filter: ${jobs.length} jobs`);
     }
 
     // Filter by locations in memory
@@ -95,6 +67,36 @@ const getMatchingJobs = async (alertData) => {
       jobs = jobs.filter(
         (job) => job.location && alertData.locations.includes(job.location)
       );
+    }
+
+    // Filter by keywords in memory
+    if (alertData.keywords && alertData.keywords.trim()) {
+      const keywords = alertData.keywords
+        .toLowerCase()
+        .split(",")
+        .map((k) => k.trim());
+      console.log(`🔍 Keywords to search for:`, keywords);
+
+      jobs = jobs.filter((job) => {
+        const jobText = [
+          job.title || "",
+          job.description || "",
+          ...(job.tags || []),
+        ]
+          .join(" ")
+          .toLowerCase();
+
+        const matches = keywords.some(
+          (keyword) => keyword && jobText.includes(keyword)
+        );
+
+        if (matches) {
+          console.log(`✅ Job "${job.title}" matches keywords:`, keywords);
+        }
+
+        return matches;
+      });
+      console.log(`🔍 After keyword filter: ${jobs.length} jobs`);
     }
 
     // Sort by creation date (newest first) and limit to 20 jobs
@@ -169,6 +171,14 @@ export async function POST(request) {
         // Get matching jobs
         const matchingJobs = await getMatchingJobs(alertData);
 
+        // Debug logging
+        console.log(`🔍 Debug for user ${userId}:`);
+        console.log(`  - Alert data:`, alertData);
+        console.log(`  - Matching jobs found:`, matchingJobs.length);
+        if (matchingJobs.length > 0) {
+          console.log(`  - First job:`, matchingJobs[0]);
+        }
+
         if (matchingJobs.length === 0) {
           console.log(`No matching jobs found for user ${userId}`);
           results.push({
@@ -176,6 +186,10 @@ export async function POST(request) {
             email: userData.email,
             status: "skipped",
             reason: "No matching jobs",
+            debug: {
+              alertData,
+              totalJobsChecked: 0, // We'll add this later
+            },
           });
           continue;
         }
@@ -186,7 +200,8 @@ export async function POST(request) {
           emailSent = await sendJobAlertEmail(
             userData.email,
             userData.name || userData.email.split("@")[0],
-            matchingJobs
+            matchingJobs,
+            alertData.keywords || ""
           );
         }
 

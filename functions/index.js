@@ -121,6 +121,25 @@ const getMatchingJobs = async (userData, alertData) => {
       );
     }
 
+    // Filter by keywords in memory
+    if (alertData.keywords && alertData.keywords.trim()) {
+      const keywords = alertData.keywords
+        .toLowerCase()
+        .split(",")
+        .map((k) => k.trim());
+      jobs = jobs.filter((job) => {
+        const jobText = [
+          job.title || "",
+          job.description || "",
+          ...(job.tags || []),
+        ]
+          .join(" ")
+          .toLowerCase();
+
+        return keywords.some((keyword) => keyword && jobText.includes(keyword));
+      });
+    }
+
     // Sort by creation date (newest first) and limit to 20 jobs
     jobs.sort((a, b) => b.createdAt - a.createdAt);
     return jobs.slice(0, 20);
