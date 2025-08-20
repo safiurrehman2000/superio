@@ -15,9 +15,6 @@ export const debugEmailJSResponse = async (
   userEmail,
   userName = "Test User"
 ) => {
-  console.log("🔍 ADVANCED EMAILJS DEBUG - Starting detailed analysis");
-  console.log("=====================================================");
-
   try {
     // Initialize EmailJS
     emailjs.init(EMAIL_CONFIG.publicKey);
