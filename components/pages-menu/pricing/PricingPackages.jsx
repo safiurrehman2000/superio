@@ -15,18 +15,42 @@ const PricingPackages = () => {
   const handleSubmit = async (priceId, planId) => {
     console.log("selector.user.uid", selector?.user?.uid);
     const stripe = await stripePromise;
-    const { sessionId } = await fetch("/api/create-checkout-session", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ priceId, userId: selector.user?.uid, planId }),
-    }).then((res) => res.json());
 
-    const result = await stripe.redirectToCheckout({ sessionId });
+    try {
+      const response = await fetch("/api/create-checkout-session", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ priceId, userId: selector.user?.uid, planId }),
+      });
 
-    if (result.error) {
-      console.error(result.error);
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error("API Error:", data.error);
+        // Handle the error appropriately - you might want to show a toast or alert
+        alert("Failed to create checkout session. Please try again.");
+        return;
+      }
+
+      if (!data.sessionId) {
+        console.error("No sessionId received from API");
+        alert("Failed to create checkout session. Please try again.");
+        return;
+      }
+
+      const result = await stripe.redirectToCheckout({
+        sessionId: data.sessionId,
+      });
+
+      if (result.error) {
+        console.error(result.error);
+        alert("Failed to redirect to checkout. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error in handleSubmit:", error);
+      alert("An error occurred. Please try again.");
     }
   };
   useEffect(() => {
