@@ -1,19 +1,45 @@
 import { adminDb } from "@/utils/firebase-admin";
 import admin from "firebase-admin";
+import {
+  authenticateAdmin,
+  createAuthErrorResponse,
+} from "@/utils/admin-auth-middleware";
 
 /**
  * DELETE /api/admin/delete-user
  * Deletes a user's Firebase Auth account and all related Firestore data
  * This uses Firebase Admin SDK to delete auth accounts from server-side
+ *
+ * Authentication: Requires valid Firebase ID token with Admin privileges
+ * Authorization: Only Admin users can delete other users
  */
 export async function DELETE(request) {
   try {
+    // Authenticate and authorize the admin user
+    const authResult = await authenticateAdmin(request);
+    if (!authResult.success) {
+      return createAuthErrorResponse(authResult);
+    }
+
+    const adminUser = authResult.user;
+    console.log(
+      `Admin ${adminUser.email} (${adminUser.uid}) attempting to delete user`
+    );
+
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get("userId");
 
     if (!userId) {
       return Response.json(
         { success: false, error: "User ID is required" },
+        { status: 400 }
+      );
+    }
+
+    // Prevent admin from deleting themselves
+    if (userId === adminUser.uid) {
+      return Response.json(
+        { success: false, error: "Cannot delete your own account" },
         { status: 400 }
       );
     }
