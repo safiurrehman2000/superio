@@ -25,10 +25,8 @@ export const useGetUploadedResumes = (user, userType) => {
     let isMounted = true; // Flag to track component mount status
 
     const fetchResumes = async () => {
-      if (userType !== "Candidate" || !user?.uid) {
-        if (isMounted && !user?.uid) {
-          setError("Please login first to view resumes");
-        }
+      // Early return if user is not authenticated or not a candidate
+      if (!user?.uid || userType !== "Candidate") {
         return;
       }
 

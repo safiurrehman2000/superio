@@ -1,0 +1,254 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================
+    // HELPER FUNCTIONS
+    // ========================================
+    
+    // Check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Check if user is an admin
+    function isAdmin() {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userType == "Admin";
+    }
+    
+    // Check if user owns the document
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Validate user data structure
+    function isValidUserData(data) {
+      return data.keys().hasAll(['email', 'userType', 'createdAt']) &&
+             data.userType in ['Candidate', 'Employer', 'Admin'] &&
+             data.email is string &&
+             data.createdAt is timestamp;
+    }
+    
+    // Validate job data structure
+    function isValidJobData(data) {
+      return data.keys().hasAll(['title', 'employerId', 'createdAt']) &&
+             data.title is string &&
+             data.employerId is string &&
+             data.createdAt is timestamp;
+    }
+    
+    // Validate application data structure
+    function isValidApplicationData(data) {
+      return data.keys().hasAll(['candidateId', 'jobId', 'appliedAt']) &&
+             data.candidateId is string &&
+             data.jobId is string &&
+             data.appliedAt is timestamp;
+    }
+    
+    // ========================================
+    // USERS COLLECTION
+    // ========================================
+    match /users/{userId} {
+      // Users can read their own profile
+      allow read: if isAuthenticated() && request.auth.uid == userId;
+      
+      // Public read access for employer profiles (for job listings)
+      allow read: if resource.data.userType == "Employer";
+      
+      // Admins can read all user profiles
+      allow read: if isAdmin();
+      
+      // Users can create their own profile during registration
+      allow create: if isAuthenticated() && request.auth.uid == userId && isValidUserData(resource.data);
+      
+      // Users can update their own profile
+      allow update: if isAuthenticated() && request.auth.uid == userId && isValidUserData(resource.data);
+      
+      // Admins can update any user profile
+      allow update: if isAdmin() && isValidUserData(resource.data);
+      
+      // Only admins can delete users (handled server-side for cascading deletes)
+      allow delete: if isAdmin();
+      
+      // ========================================
+      // RESUMES SUBCOLLECTION (for candidates)
+      // ========================================
+      match /resumes/{resumeId} {
+        // Users can manage their own resumes
+        allow read, write: if isAuthenticated() && request.auth.uid == userId;
+        
+        // Admins can read all resumes
+        allow read: if isAdmin();
+      }
+      
+      // ========================================
+      // JOB ALERTS SUBCOLLECTION (for candidates)
+      // ========================================
+      match /jobAlerts/{alertId} {
+        // Candidates can manage their own job alerts
+        allow read, write: if isOwner(userId);
+        
+        // Admins can read all job alerts
+        allow read: if isAdmin();
+      }
+    }
+    
+    // ========================================
+    // JOBS COLLECTION
+    // ========================================
+    match /jobs/{jobId} {
+      // Anyone can read jobs (public job board)
+      allow read: if true;
+      
+      // Authenticated users can create jobs (employer validation done in app)
+      allow create: if isAuthenticated() && 
+        resource.data.employerId == request.auth.uid &&
+        isValidJobData(resource.data);
+      
+      // Job owners can update their jobs
+      allow update: if isAuthenticated() && 
+        resource.data.employerId == request.auth.uid &&
+        isValidJobData(resource.data);
+      
+      // Job owners can delete their jobs
+      allow delete: if isAuthenticated() && 
+        resource.data.employerId == request.auth.uid;
+      
+      // Admins can manage all jobs
+      allow read, write: if isAdmin();
+    }
+    
+    // ========================================
+    // APPLICATIONS COLLECTION
+    // ========================================
+    match /applications/{applicationId} {
+      // Users can read their own applications
+      allow read: if isAuthenticated() && 
+        resource.data.candidateId == request.auth.uid;
+      
+      // Admins can read all applications
+      allow read: if isAdmin();
+      
+      // Authenticated users can create applications
+      allow create: if isAuthenticated() && 
+        resource.data.candidateId == request.auth.uid &&
+        isValidApplicationData(resource.data);
+      
+      // Users can update their own applications
+      allow update: if isAuthenticated() && 
+        resource.data.candidateId == request.auth.uid &&
+        isValidApplicationData(resource.data);
+      
+      // Users can delete their own applications
+      allow delete: if isAuthenticated() && 
+        resource.data.candidateId == request.auth.uid;
+      
+      // Admins can manage all applications
+      allow write: if isAdmin();
+    }
+    
+    // ========================================
+    // SAVED_JOBS COLLECTION
+    // ========================================
+    match /saved_jobs/{savedJobId} {
+      // Authenticated users can manage all saved jobs (temporary for testing)
+      allow read, write: if isAuthenticated();
+      
+      // Admins can manage all saved jobs
+      allow read, write: if isAdmin();
+    }
+    
+    // ========================================
+    // RECEIPTS COLLECTION
+    // ========================================
+    match /receipts/{receiptId} {
+      // Employers can read their own receipts
+      allow read: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+      
+      // Admins can read all receipts
+      allow read: if isAdmin();
+      
+      // System can create receipts (handled server-side)
+      allow create: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid &&
+        resource.data.keys().hasAll(['userId', 'amount', 'createdAt']) &&
+        resource.data.userId is string &&
+        resource.data.amount is number &&
+        resource.data.createdAt is timestamp;
+      
+      // Admins can manage all receipts
+      allow write: if isAdmin();
+    }
+    
+    // ========================================
+    // JOBVIEWS COLLECTION
+    // ========================================
+    match /jobViews/{jobViewId} {
+      // Anyone can read job view data (for analytics)
+      allow read: if true;
+      
+      // System can create job view records
+      allow create: if isAuthenticated() &&
+        resource.data.keys().hasAll(['jobId', 'viewCount']) &&
+        resource.data.jobId is string &&
+        resource.data.viewCount is number;
+      
+      // System can update job view counts
+      allow update: if isAuthenticated() &&
+        resource.data.keys().hasAll(['jobId', 'viewCount']) &&
+        resource.data.jobId is string &&
+        resource.data.viewCount is number;
+      
+      // Admins can manage all job views
+      allow write: if isAdmin();
+      
+      // ========================================
+      // VIEWS SUBCOLLECTION
+      // ========================================
+      match /views/{viewId} {
+        // Users can read their own view records
+        allow read: if isAuthenticated() && 
+          resource.data.userId == request.auth.uid;
+        
+        // Admins can read all view records
+        allow read: if isAdmin();
+        
+        // System can create view records
+        allow create: if isAuthenticated() &&
+          resource.data.userId == request.auth.uid &&
+          resource.data.keys().hasAll(['userId', 'viewedAt']) &&
+          resource.data.userId is string &&
+          resource.data.viewedAt is timestamp;
+        
+        // Users can delete their own view records
+        allow delete: if isAuthenticated() && 
+          resource.data.userId == request.auth.uid;
+        
+        // Admins can manage all view records
+        allow write: if isAdmin();
+      }
+    }
+    
+    // ========================================
+    // PRICING PACKAGES COLLECTION (Read-only)
+    // ========================================
+    match /pricingPackages/{packageId} {
+      // Anyone can read pricing packages
+      allow read: if true;
+      
+      // Only admins can modify pricing packages
+      allow write: if isAdmin();
+    }
+    
+    // ========================================
+    // ADMIN ACCESS (Catch-all for admin operations)
+    // ========================================
+    match /{document=**} {
+      // Admins have full access to all collections
+      allow read, write: if isAdmin();
+    }
+  }
+}
