@@ -230,6 +230,7 @@ const JobAlertsManager = () => {
                     name="keywords"
                     label="Keywords (optional)"
                     placeholder="e.g., React, JavaScript, Remote"
+                    fieldType="Text"
                   />
                 </div>
 

@@ -3,6 +3,7 @@ import {
   authenticateAdmin,
   createAuthErrorResponse,
 } from "@/utils/admin-auth-middleware";
+import { sanitizeFormData } from "@/utils/sanitization";
 
 /**
  * PUT /api/admin/update-user
@@ -100,7 +101,27 @@ export async function PUT(request) {
       }
     }
 
-    if (Object.keys(filteredUpdateData).length === 0) {
+    // Sanitize the filtered data
+    const fieldTypes = {
+      name: "name",
+      title: "title",
+      phone_number: "phone",
+      phone: "phone",
+      gender: "gender",
+      age: "age",
+      description: "description",
+      company_name: "name",
+      website: "url",
+      company_type: "company_type",
+      company_location: "text",
+    };
+
+    const sanitizedUpdateData = sanitizeFormData(
+      filteredUpdateData,
+      fieldTypes
+    );
+
+    if (Object.keys(sanitizedUpdateData).length === 0) {
       return Response.json(
         { success: false, error: "No valid fields to update" },
         { status: 400 }
@@ -108,11 +129,11 @@ export async function PUT(request) {
     }
 
     // Add audit trail
-    filteredUpdateData.lastUpdatedBy = adminUser.uid;
-    filteredUpdateData.lastUpdatedAt = new Date();
+    sanitizedUpdateData.lastUpdatedBy = adminUser.uid;
+    sanitizedUpdateData.lastUpdatedAt = new Date();
 
     // Update the user document
-    await userRef.update(filteredUpdateData);
+    await userRef.update(sanitizedUpdateData);
 
     console.log(
       `✅ Admin ${adminUser.email} successfully updated user ${userId}`

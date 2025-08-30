@@ -1,6 +1,7 @@
 "use client";
 import { Controller, useFormContext } from "react-hook-form";
 import { FormProvider, useForm } from "react-hook-form";
+import { sanitizeDescription } from "@/utils/sanitization";
 
 export const TextAreaField = ({
   label,
@@ -28,11 +29,17 @@ export const TextAreaField = ({
   const validateField = (value) => {
     if (!value && !required) return undefined;
 
-    if (minLength && value && value.length < minLength) {
+    // Sanitize the description
+    const sanitizedValue = sanitizeDescription(value, maxLength || 1000);
+    if (!sanitizedValue && value) {
+      return "Please enter valid text content";
+    }
+
+    if (minLength && sanitizedValue && sanitizedValue.length < minLength) {
       return `This field must be at least ${minLength} characters long`;
     }
 
-    if (maxLength && value && value.length > maxLength) {
+    if (maxLength && sanitizedValue && sanitizedValue.length > maxLength) {
       return `This field must not exceed ${maxLength} characters`;
     }
 

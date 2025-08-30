@@ -5,9 +5,10 @@ import { adminDb } from "@/utils/firebase-admin";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export async function POST(request) {
-  const { priceId, userId, planId, source } = await request.json();
-
   try {
+    const body = await request.json();
+    const { priceId, userId, planId, source } = body;
+
     console.log("Creating Stripe session for userId:", userId);
     console.log("Price ID:", priceId, "Plan ID:", planId, "Source:", source);
 

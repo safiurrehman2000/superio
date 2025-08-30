@@ -1,6 +1,7 @@
 import { db } from "@/utils/firebase";
 import { fileToBase64, resumeToFile } from "@/utils/resumeHelperFunctions";
 import { errorToast, successToast } from "@/utils/toast";
+import { sanitizeText } from "@/utils/sanitization";
 import {
   addDoc,
   collection,
@@ -122,11 +123,14 @@ export const useUploadResume = async (user, data, dispatch, setError) => {
       // Convert file to base64
       const base64Data = await fileToBase64(file);
 
+      // Sanitize the filename to prevent XSS
+      const sanitizedFileName = sanitizeText(file.name) || "resume";
+
       // Upload to Firestore and get document reference
       const docRef = await addDoc(
         collection(db, "users", user.uid, "resumes"),
         {
-          fileName: file.name,
+          fileName: sanitizedFileName,
           fileData: base64Data,
           fileType: file.type,
           size: file.size,
@@ -137,7 +141,7 @@ export const useUploadResume = async (user, data, dispatch, setError) => {
       // Create resume object with Firestore document ID
       const resume = {
         id: docRef.id, // Firestore-generated ID
-        fileName: file.name,
+        fileName: sanitizedFileName,
         fileType: file.type,
         size: file.size,
         uploadedAt: new Date().toISOString(),

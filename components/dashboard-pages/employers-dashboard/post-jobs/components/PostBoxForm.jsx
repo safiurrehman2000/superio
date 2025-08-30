@@ -163,6 +163,7 @@ const PostBoxForm = () => {
               placeholder="Title"
               required
               label="Job Title"
+              fieldType="Text"
               disabled={isFormDisabled}
             />
           </div>
@@ -185,6 +186,7 @@ const PostBoxForm = () => {
               name="email"
               placeholder="candidate@gmail.com"
               required
+              fieldType="Email"
               disabled={isFormDisabled}
             />
           </div>

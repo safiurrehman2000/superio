@@ -101,6 +101,7 @@ const Form = () => {
               name="old_password"
               label="Current Password"
               placeholder="Enter your current password"
+              fieldType="Password"
               validation={{
                 required: "Current password is required",
               }}
@@ -114,6 +115,7 @@ const Form = () => {
               type="password"
               label="New Password"
               placeholder="Enter your new password"
+              fieldType="Password"
               validation={{
                 required: "New password is required",
                 minLength: {
@@ -131,6 +133,7 @@ const Form = () => {
               type="password"
               label="Confirm New Password"
               placeholder="Confirm your new password"
+              fieldType="Password"
               validation={{
                 required: "Please confirm your new password",
                 validate: (value) =>

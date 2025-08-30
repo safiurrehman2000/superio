@@ -1,5 +1,6 @@
 import { auth, db } from "@/utils/firebase";
 import { errorToast, successToast } from "@/utils/toast";
+import { sanitizeFormData } from "@/utils/sanitization";
 import {
   deleteUser,
   EmailAuthProvider,
@@ -20,9 +21,32 @@ import { useEffect, useState } from "react";
 
 export const useUpdateIsFirstTime = async (id, additionalFields = {}) => {
   try {
+    // Sanitize additional fields if they contain user input
+    const fieldTypes = {
+      // Common fields that might be passed as additional fields
+      email: "email",
+      name: "name",
+      title: "text",
+      phone_number: "phone",
+      phone: "phone",
+      gender: "gender",
+      age: "age",
+      description: "description",
+      company_name: "name",
+      website: "url",
+      company_type: "company_type",
+      company_location: "text",
+    };
+
+    // Sanitize the additional fields
+    const sanitizedAdditionalFields = sanitizeFormData(
+      additionalFields,
+      fieldTypes
+    );
+
     await setDoc(
       doc(db, "users", id),
-      { isFirstTime: false, ...additionalFields },
+      { isFirstTime: false, ...sanitizedAdditionalFields },
       { merge: true }
     );
     return { success: true };
@@ -42,9 +66,35 @@ export const useUpdateUserInfo = () => {
         throw new Error("Payload or user ID is missing");
       }
 
-      let updateData = { ...payload };
+      // Sanitize the payload based on user type
+      const fieldTypes = {
+        // Common fields
+        email: "email",
+        logo: "text", // Logo is handled separately
 
-      // Handle logo as base64
+        // Candidate fields
+        name: "name",
+        title: "text",
+        phone_number: "phone",
+        gender: "gender",
+        age: "age",
+        profile_visibility: "profile_visibility",
+        description: "description",
+
+        // Employer fields
+        company_name: "name",
+        phone: "phone",
+        website: "url",
+        company_type: "company_type",
+        company_location: "text",
+      };
+
+      // Sanitize the form data
+      const sanitizedPayload = sanitizeFormData(payload, fieldTypes);
+
+      let updateData = { ...sanitizedPayload };
+
+      // Handle logo as base64 (after sanitization)
       if (payload.logo && payload.logo instanceof File) {
         const base64Logo = await new Promise((resolve, reject) => {
           const reader = new FileReader();
@@ -55,6 +105,9 @@ export const useUpdateUserInfo = () => {
         updateData.logo = base64Logo; // Store base64 string
       } else if (payload.logo === null) {
         updateData.logo = null; // Clear logo if removed
+      } else if (payload.logo) {
+        // If logo is already a base64 string, keep it
+        updateData.logo = payload.logo;
       }
 
       // Update user document
@@ -449,7 +502,33 @@ export const updateUserByAdmin = async (userId, updateData) => {
       throw new Error("User not found");
     }
 
-    let updatePayload = { ...updateData };
+    // Sanitize the update data
+    const fieldTypes = {
+      // Common fields
+      email: "email",
+      logo: "text", // Logo is handled separately
+
+      // Candidate fields
+      name: "name",
+      title: "text",
+      phone_number: "phone",
+      gender: "gender",
+      age: "age",
+      profile_visibility: "profile_visibility",
+      description: "description",
+
+      // Employer fields
+      company_name: "name",
+      phone: "phone",
+      website: "url",
+      company_type: "company_type",
+      company_location: "text",
+    };
+
+    // Sanitize the form data
+    const sanitizedUpdateData = sanitizeFormData(updateData, fieldTypes);
+
+    let updatePayload = { ...sanitizedUpdateData };
 
     // Handle logo - if it's a data URL, extract just the base64 part
     if (updateData.logo && typeof updateData.logo === "string") {

@@ -343,7 +343,7 @@ const EditUser = () => {
                           name="name"
                           placeholder="John Doe"
                           required
-                          fieldType="text"
+                          fieldType="Name"
                           defaultValue=""
                           disabled={false}
                         />
@@ -354,7 +354,7 @@ const EditUser = () => {
                           label="Job Title"
                           name="title"
                           placeholder="Software Developer"
-                          fieldType="text"
+                          fieldType="Text"
                           defaultValue=""
                           disabled={false}
                           required={false}
@@ -366,7 +366,7 @@ const EditUser = () => {
                           label="Phone"
                           name="phone_number"
                           placeholder="1234567890"
-                          fieldType="text"
+                          fieldType="Phone"
                           defaultValue=""
                           disabled={false}
                           required={false}
@@ -423,7 +423,7 @@ const EditUser = () => {
                           name="company_name"
                           placeholder="Company Name"
                           required
-                          fieldType="text"
+                          fieldType="Name"
                           defaultValue=""
                           disabled={false}
                         />
@@ -435,7 +435,7 @@ const EditUser = () => {
                           name="phone"
                           placeholder="1234567890"
                           required
-                          fieldType="text"
+                          fieldType="Phone"
                           defaultValue=""
                           disabled={false}
                         />
@@ -446,7 +446,7 @@ const EditUser = () => {
                           label="Website"
                           name="website"
                           placeholder="www.example.com"
-                          fieldType="text"
+                          fieldType="URL"
                           defaultValue=""
                           disabled={false}
                           required={false}

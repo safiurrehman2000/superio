@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { adminDb } from "@/utils/firebase-admin";
+import { sanitizeFormData } from "@/utils/sanitization";
 
 /**
  * Create a new job and trigger job alerts
@@ -8,9 +9,26 @@ export async function POST(request) {
   try {
     const jobData = await request.json();
 
+    // Sanitize job data
+    const fieldTypes = {
+      title: "title",
+      description: "description",
+      requirements: "description",
+      location: "text",
+      salary: "text",
+      company_name: "name",
+      employerId: "text",
+      jobType: "text",
+      experience: "text",
+      education: "text",
+      skills: "company_type", // Array of skills
+    };
+
+    const sanitizedJobData = sanitizeFormData(jobData, fieldTypes);
+
     // Add the job to Firestore
     const jobRef = await adminDb.collection("jobs").add({
-      ...jobData,
+      ...sanitizedJobData,
       createdAt: Date.now(),
       status: "active",
     });

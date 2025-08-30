@@ -2,6 +2,7 @@
 import { setAppliedJobs } from "@/slices/userSlice";
 import { db } from "@/utils/firebase";
 import { errorToast, successToast } from "@/utils/toast";
+import { sanitizeFormData } from "@/utils/sanitization";
 import {
   addDoc,
   collection,
@@ -23,6 +24,19 @@ import { useEffect, useState, useRef } from "react";
 
 export const useCreateJobPost = async (payload) => {
   try {
+    // Sanitize the job data before processing
+    const fieldTypes = {
+      title: "title",
+      description: "description",
+      email: "email",
+      location: "text",
+      jobType: "text",
+      tags: "company_type", // Array of tags
+      employerId: "employerid",
+    };
+
+    const sanitizedPayload = sanitizeFormData(payload, fieldTypes);
+
     // Validate subscription and job posting limits before creating job
     const validationResponse = await fetch("/api/validate-job-posting", {
       method: "POST",
@@ -30,8 +44,8 @@ export const useCreateJobPost = async (payload) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        userId: payload.employerId,
-        jobData: payload,
+        userId: sanitizedPayload.employerId,
+        jobData: sanitizedPayload,
       }),
     });
 
@@ -50,10 +64,10 @@ export const useCreateJobPost = async (payload) => {
       );
     }
 
-    const docRef = await addDoc(collection(db, "jobs"), payload);
+    const docRef = await addDoc(collection(db, "jobs"), sanitizedPayload);
     const jobData = {
       id: docRef.id,
-      ...payload,
+      ...sanitizedPayload,
     };
     successToast("Job Created Successfully");
     return { success: true, job: jobData };

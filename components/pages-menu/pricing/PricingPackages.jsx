@@ -14,6 +14,13 @@ const PricingPackages = () => {
   const selector = useSelector((store) => store.user);
   const handleSubmit = async (priceId, planId) => {
     console.log("selector.user.uid", selector?.user?.uid);
+
+    // Check if user is authenticated
+    if (!selector?.user?.uid) {
+      alert("Please log in to purchase a subscription.");
+      return;
+    }
+
     const stripe = await stripePromise;
 
     try {
@@ -24,6 +31,20 @@ const PricingPackages = () => {
         },
         body: JSON.stringify({ priceId, userId: selector.user?.uid, planId }),
       });
+
+      // Log the response for debugging
+      console.log("Response status:", response.status);
+      console.log("Response headers:", response.headers);
+
+      // Check if response is JSON
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        console.error("Response is not JSON:", contentType);
+        const text = await response.text();
+        console.error("Response text:", text);
+        alert("Server error. Please try again later.");
+        return;
+      }
 
       const data = await response.json();
 

@@ -2,6 +2,13 @@
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 import { useEffect, useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import {
+  sanitizeText,
+  sanitizeEmail,
+  sanitizePhone,
+  sanitizeName,
+  sanitizeUrl,
+} from "@/utils/sanitization";
 
 export const InputField = ({
   label,
@@ -43,10 +50,28 @@ export const InputField = ({
   const validateField = (value) => {
     if (!value && !required) return undefined;
 
+    // Sanitize the value first
+    let sanitizedValue = value;
+
     if (fieldType === "Email") {
-      const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-      if (!emailPattern.test(value)) {
+      sanitizedValue = sanitizeEmail(value);
+      if (!sanitizedValue) {
         return "Please enter a valid email address";
+      }
+    } else if (fieldType === "Phone") {
+      sanitizedValue = sanitizePhone(value);
+      if (!sanitizedValue) {
+        return "Please enter a valid phone number";
+      }
+    } else if (fieldType === "Name") {
+      sanitizedValue = sanitizeName(value);
+      if (!sanitizedValue) {
+        return "Please enter a valid name (letters, spaces, hyphens, and apostrophes only)";
+      }
+    } else if (fieldType === "URL") {
+      sanitizedValue = sanitizeUrl(value);
+      if (!sanitizedValue) {
+        return "Please enter a valid URL";
       }
     } else if (fieldType === "Password") {
       const passwordPattern =
@@ -56,6 +81,12 @@ export const InputField = ({
       }
       if (value.length < 8) {
         return "Password must be at least 8 characters long";
+      }
+    } else {
+      // Default sanitization for text fields
+      sanitizedValue = sanitizeText(value);
+      if (!sanitizedValue && value) {
+        return "Please enter valid text content";
       }
     }
 

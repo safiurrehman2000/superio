@@ -10,6 +10,7 @@ import {
   Timestamp,
 } from "firebase/firestore";
 import { successToast, errorToast } from "@/utils/toast";
+import { sanitizeFormData } from "@/utils/sanitization";
 import { FormProvider, useForm } from "react-hook-form";
 import { InputField } from "@/components/inputfield/InputField";
 import { SelectField } from "@/components/selectfield/SelectField";
@@ -77,7 +78,21 @@ const PostJobForEmployer = () => {
         createdAt: Date.now(),
         viewCount: 0,
       };
-      await addDoc(collection(db, "jobs"), payload);
+
+      // Sanitize the job data before saving
+      const fieldTypes = {
+        title: "title",
+        description: "description",
+        email: "email",
+        location: "text",
+        jobType: "text",
+        tags: "company_type",
+        employerId: "employerid",
+      };
+
+      const sanitizedPayload = sanitizeFormData(payload, fieldTypes);
+
+      await addDoc(collection(db, "jobs"), sanitizedPayload);
       setSuccess(true);
       reset();
       successToast("Job posted successfully for employer.");
@@ -122,6 +137,7 @@ const PostJobForEmployer = () => {
                     placeholder="Title"
                     required
                     label="Job Title"
+                    fieldType="Text"
                   />
                 </div>
                 <div className="form-group col-lg-12 col-md-12">
@@ -138,6 +154,7 @@ const PostJobForEmployer = () => {
                     name="email"
                     placeholder="candidate@gmail.com"
                     required
+                    fieldType="Email"
                   />
                 </div>
                 <div className="form-group col-lg-6 col-md-12">

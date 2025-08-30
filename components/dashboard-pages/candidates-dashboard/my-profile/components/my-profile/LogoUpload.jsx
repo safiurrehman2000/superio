@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { FiEdit2, FiTrash2 } from "react-icons/fi";
 import { useSelector } from "react-redux";
+import { validateFile } from "@/utils/sanitization";
 
 const LogoUpload = () => {
   const { setValue } = useFormContext();
@@ -25,21 +26,14 @@ const LogoUpload = () => {
   }, [selector.user?.logo, setValue]);
 
   const validateImage = (file) => {
-    const allowedFileTypes = ["image/jpeg", "image/png"];
-    const maxFileSize = 1 * 1024 * 1024; // 1MB
+    const validation = validateFile(file, {
+      maxSize: 1 * 1024 * 1024, // 1MB
+      allowedTypes: ["image/jpeg", "image/png"],
+      allowedExtensions: [".jpg", ".jpeg", ".png"],
+    });
 
-    if (!file) {
-      alert("No file selected. Please choose a file to upload.");
-      return false;
-    }
-
-    if (!allowedFileTypes.includes(file.type)) {
-      alert("Invalid file type. Please upload a JPG or PNG file.");
-      return false;
-    }
-
-    if (file.size > maxFileSize) {
-      alert("File size exceeds the maximum limit of 1MB.");
+    if (!validation.valid) {
+      alert(validation.error);
       return false;
     }
 

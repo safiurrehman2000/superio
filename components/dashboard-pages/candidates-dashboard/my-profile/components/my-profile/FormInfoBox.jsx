@@ -21,13 +21,19 @@ const FormInfoBox = () => {
           name="name"
           placeholder="Jerome"
           required
+          fieldType="Name"
           defaultValue={selector.user?.name}
         />
       </div>
 
       {/* <!-- Input --> */}
       <div className="form-group col-lg-6 col-md-12">
-        <InputField label="Job Title" name="title" placeholder="Cashier" />
+        <InputField
+          label="Job Title"
+          name="title"
+          placeholder="Cashier"
+          fieldType="Text"
+        />
       </div>
 
       {/* <!-- Input --> */}
@@ -36,6 +42,7 @@ const FormInfoBox = () => {
           label="Phone"
           name="phone_number"
           placeholder="111222333444"
+          fieldType="Phone"
         />
       </div>
 
@@ -45,6 +52,7 @@ const FormInfoBox = () => {
           label="Email"
           name="email"
           placeholder="candidate@gmail.com"
+          fieldType="Email"
         />
       </div>
 

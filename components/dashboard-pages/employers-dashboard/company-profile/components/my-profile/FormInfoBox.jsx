@@ -20,6 +20,7 @@ const FormInfoBox = () => {
           name="company_name"
           defaultValue={selector?.user?.company_name}
           required
+          fieldType="Name"
         />
       </div>
 
@@ -31,6 +32,7 @@ const FormInfoBox = () => {
           type="Email"
           defaultValue={selector?.user?.email}
           name="email"
+          fieldType="Email"
           // disabled={true}
         />
       </div>
@@ -43,6 +45,7 @@ const FormInfoBox = () => {
           defaultValue={selector?.user?.phone}
           name="phone"
           required
+          fieldType="Phone"
         />
       </div>
 
@@ -53,6 +56,7 @@ const FormInfoBox = () => {
           placeholder="www.google.com"
           defaultValue={selector?.user?.website}
           name="website"
+          fieldType="URL"
         />
       </div>
 

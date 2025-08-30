@@ -246,7 +246,7 @@ const EditJobPost = () => {
                       placeholder="Title"
                       required
                       label="Job Title"
-                      fieldType="text"
+                      fieldType="Text"
                       defaultValue=""
                       disabled={false}
                     />
