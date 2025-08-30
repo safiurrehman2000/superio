@@ -244,6 +244,33 @@ service cloud.firestore {
     }
     
     // ========================================
+    // RATE LIMITING COLLECTIONS
+    // ========================================
+    match /rateLimits/{docId} {
+      allow read, write: if isAuthenticated();
+    }
+    
+    match /authRateLimits/{docId} {
+      allow read, write: if true; // Allow unauthenticated for auth endpoints
+    }
+    
+    match /jobPostingRateLimits/{docId} {
+      allow read, write: if isAuthenticated();
+    }
+    
+    match /applicationRateLimits/{docId} {
+      allow read, write: if isAuthenticated();
+    }
+    
+    match /emailRateLimits/{docId} {
+      allow read, write: if isAuthenticated();
+    }
+    
+    match /adminRateLimits/{docId} {
+      allow read, write: if isAdmin();
+    }
+    
+    // ========================================
     // ADMIN ACCESS (Catch-all for admin operations)
     // ========================================
     match /{document=**} {

@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 /**
  * Next.js Middleware
  * Applies security headers and basic request sanitization
+ * Note: Rate limiting is handled at the API route level for better performance
  */
 export function middleware(request) {
   // Get the response
@@ -26,13 +27,6 @@ export function middleware(request) {
       "Strict-Transport-Security",
       "max-age=31536000; includeSubDomains; preload"
     );
-  }
-
-  // Basic request sanitization for API routes
-  if (request.nextUrl.pathname.startsWith("/api/")) {
-    // For API routes, just add security headers without rewriting
-    // The API routes will handle their own sanitization
-    return response;
   }
 
   return response;

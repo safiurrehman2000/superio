@@ -40,3 +40,4 @@ if (!admin.apps.length) {
 }
 
 export const adminDb = admin.firestore();
+export const db = admin.firestore(); // Alias for compatibility
