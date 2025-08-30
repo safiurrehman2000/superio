@@ -1,7 +1,7 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import {
   dismissBanner,
   showBanner,
@@ -11,26 +11,107 @@ import { IoClose } from "react-icons/io5";
 const SubscriptionBanner = () => {
   const dispatch = useDispatch();
   const router = useRouter();
+  const pathname = usePathname();
   const { isVisible, isDismissed, showForEmployers, showForCandidates } =
     useSelector((state) => state.subscriptionBanner);
   const user = useSelector((state) => state.user.user);
   const [isMounted, setIsMounted] = useState(false);
+  const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
+  const [isCheckingSubscription, setIsCheckingSubscription] = useState(false);
+
+  // Check if current route is onboarding, pricing, or other pages where banner shouldn't show
+  const isOnboardingRoute = useCallback(() => {
+    const excludedRoutes = [
+      "/create-profile-employer",
+      "/create-profile-candidate",
+      "/onboard-pricing",
+      "/onboard-order-completed",
+      "/register",
+      "/login",
+      "/pricing",
+      "/success",
+      "/shop",
+      "/admin-dashboard",
+    ];
+    return excludedRoutes.some((route) => pathname.startsWith(route));
+  }, [pathname]);
+
+  // Check subscription status
+  const checkSubscriptionStatus = useCallback(async (userId) => {
+    if (!userId) return false;
+
+    try {
+      setIsCheckingSubscription(true);
+      const response = await fetch("/api/subscription-status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        return data.active || false;
+      }
+      return false;
+    } catch (error) {
+      console.error("Error checking subscription status:", error);
+      return false;
+    } finally {
+      setIsCheckingSubscription(false);
+    }
+  }, []);
 
   useEffect(() => {
     setIsMounted(true);
 
     // Check if user is logged in and should see the banner
-    if (user && !isDismissed) {
+    if (user && !isDismissed && !isOnboardingRoute()) {
       const userType = user.userType || "Candidate";
 
-      if (
-        (userType === "Employer" && showForEmployers) ||
-        (userType === "Candidate" && showForCandidates)
-      ) {
+      if (userType === "Employer" && showForEmployers) {
+        // Check subscription status for employers
+        checkSubscriptionStatus(user.uid).then((hasSubscription) => {
+          setHasActiveSubscription(hasSubscription);
+
+          // Only show banner if employer doesn't have active subscription
+          if (!hasSubscription) {
+            dispatch(showBanner());
+          }
+        });
+      } else if (userType === "Candidate" && showForCandidates) {
         dispatch(showBanner());
       }
     }
-  }, [user, isDismissed, showForEmployers, showForCandidates, dispatch]);
+  }, [
+    user,
+    isDismissed,
+    showForEmployers,
+    showForCandidates,
+    dispatch,
+    pathname,
+    checkSubscriptionStatus,
+  ]);
+
+  // Re-check subscription status when user changes or pathname changes
+  useEffect(() => {
+    if (user?.uid && user?.userType === "Employer" && !isOnboardingRoute()) {
+      checkSubscriptionStatus(user.uid).then((hasSubscription) => {
+        setHasActiveSubscription(hasSubscription);
+
+        // Hide banner if user now has active subscription
+        if (hasSubscription && isVisible) {
+          dispatch(dismissBanner());
+        }
+      });
+    }
+  }, [
+    user?.uid,
+    pathname,
+    checkSubscriptionStatus,
+    isVisible,
+    dispatch,
+    isOnboardingRoute,
+  ]);
 
   const handleClose = () => {
     dispatch(dismissBanner());
@@ -51,7 +132,15 @@ const SubscriptionBanner = () => {
   }, [isVisible, isMounted, user]);
 
   // Don't render until mounted to avoid hydration issues
-  if (!isMounted || !isVisible || !user) {
+  // Also don't render if checking subscription or if user has active subscription
+  if (
+    !isMounted ||
+    !isVisible ||
+    !user ||
+    isCheckingSubscription ||
+    hasActiveSubscription ||
+    isOnboardingRoute()
+  ) {
     return null;
   }
 
