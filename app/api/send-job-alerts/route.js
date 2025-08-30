@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { adminDb } from "@/utils/firebase-admin";
-import { sendJobAlertEmailServer } from "@/utils/email-service-server";
+import { sendJobAlertEmailBrevo } from "@/utils/brevo-email-service";
 
 /**
  * Send job alert email to a candidate
@@ -11,12 +11,7 @@ const sendJobAlertEmail = async (
   jobs = [],
   alertKeywords = ""
 ) => {
-  return await sendJobAlertEmailServer(
-    userEmail,
-    userName,
-    jobs,
-    alertKeywords
-  );
+  return await sendJobAlertEmailBrevo(userEmail, userName, jobs, alertKeywords);
 };
 
 /**

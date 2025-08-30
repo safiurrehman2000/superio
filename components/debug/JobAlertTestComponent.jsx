@@ -1,22 +1,14 @@
 "use client";
+import React, { useState } from "react";
 
-import { useState } from "react";
-import { useSelector } from "react-redux";
-import CircularLoader from "@/components/circular-loading/CircularLoading";
-import { errorToast, successToast } from "@/utils/toast";
-
-/**
- * Job Alert Test Component - Use this to test job alert functionality
- * Add this component temporarily to test job alerts
- */
 const JobAlertTestComponent = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [results, setResults] = useState(null);
-  const selector = useSelector((state) => state.user);
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState(null);
+  const [testMode, setTestMode] = useState(true);
 
-  const triggerJobAlerts = async (testMode = false, userId = null) => {
-    setIsLoading(true);
-    setResults(null);
+  const handleSendJobAlerts = async () => {
+    setLoading(true);
+    setResult(null);
 
     try {
       const response = await fetch("/api/send-job-alerts", {
@@ -25,178 +17,230 @@ const JobAlertTestComponent = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          userId,
-          testMode,
+          testMode: testMode,
         }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        setResults(data);
-        successToast(
-          `Job alerts ${
-            testMode ? "tested" : "sent"
-          } successfully! Check console for details.`
-        );
-        console.log("Job Alerts Results:", data);
+        setResult({
+          success: true,
+          message: "Job alerts sent successfully!",
+          data: data,
+        });
       } else {
-        errorToast(data.error || "Failed to trigger job alerts");
+        setResult({
+          success: false,
+          error: data.error,
+          details: data.details,
+        });
       }
     } catch (error) {
-      console.error("Error triggering job alerts:", error);
-      errorToast("Failed to trigger job alerts");
+      setResult({
+        success: false,
+        error: "Network error",
+        details: error.message,
+      });
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  const triggerForCurrentUser = () => {
-    if (!selector?.user?.uid) {
-      errorToast("Please log in first");
-      return;
-    }
-    triggerJobAlerts(false, selector.user.uid);
-  };
+  const handleCreateTestJob = async () => {
+    setLoading(true);
+    setResult(null);
 
-  const testForCurrentUser = () => {
-    if (!selector?.user?.uid) {
-      errorToast("Please log in first");
-      return;
+    try {
+      const testJob = {
+        title: "Test Job - Software Developer",
+        description:
+          "This is a test job for testing job alerts. We are looking for a skilled software developer.",
+        company: "Test Company",
+        location: "Brussels",
+        tags: ["Software Development", "JavaScript", "React"],
+        employerId: "test-employer-id",
+        salary: "€50,000 - €70,000",
+        jobType: "Full-time",
+      };
+
+      const response = await fetch("/api/jobs", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(testJob),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setResult({
+          success: true,
+          message: "Test job created successfully!",
+          data: data,
+        });
+      } else {
+        setResult({
+          success: false,
+          error: data.error,
+          details: data.details,
+        });
+      }
+    } catch (error) {
+      setResult({
+        success: false,
+        error: "Network error",
+        details: error.message,
+      });
+    } finally {
+      setLoading(false);
     }
-    triggerJobAlerts(true, selector.user.uid);
   };
 
   return (
-    <div className="ls-widget">
-      <div className="tabs-box">
-        <div className="widget-title">
-          <h4>Job Alert Test Component</h4>
-          <p className="text-muted">
-            Use this component to test job alert functionality. Remove in
-            production.
+    <div style={{ padding: "20px", maxWidth: "800px", margin: "0 auto" }}>
+      <h2>🧪 Job Alert Testing Component</h2>
+
+      <div style={{ marginBottom: "20px" }}>
+        <label
+          style={{
+            display: "flex",
+            alignItems: "center",
+            marginBottom: "10px",
+          }}
+        >
+          <input
+            type="checkbox"
+            checked={testMode}
+            onChange={(e) => setTestMode(e.target.checked)}
+            style={{ marginRight: "10px" }}
+          />
+          Test Mode (won't send real emails)
+        </label>
+      </div>
+
+      <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
+        <button
+          onClick={handleSendJobAlerts}
+          disabled={loading}
+          style={{
+            backgroundColor: "#007bff",
+            color: "white",
+            padding: "12px 24px",
+            border: "none",
+            borderRadius: "4px",
+            fontSize: "16px",
+            cursor: loading ? "not-allowed" : "pointer",
+            opacity: loading ? 0.6 : 1,
+          }}
+        >
+          {loading ? "Sending..." : "Send Job Alerts"}
+        </button>
+
+        <button
+          onClick={handleCreateTestJob}
+          disabled={loading}
+          style={{
+            backgroundColor: "#28a745",
+            color: "white",
+            padding: "12px 24px",
+            border: "none",
+            borderRadius: "4px",
+            fontSize: "16px",
+            cursor: loading ? "not-allowed" : "pointer",
+            opacity: loading ? 0.6 : 1,
+          }}
+        >
+          {loading ? "Creating..." : "Create Test Job"}
+        </button>
+      </div>
+
+      {result && (
+        <div
+          style={{
+            marginTop: "20px",
+            padding: "15px",
+            borderRadius: "4px",
+            backgroundColor: result.success ? "#d4edda" : "#f8d7da",
+            border: `1px solid ${result.success ? "#c3e6cb" : "#f5c6cb"}`,
+            color: result.success ? "#155724" : "#721c24",
+          }}
+        >
+          <h4>{result.success ? "✅ Success!" : "❌ Error"}</h4>
+          <p>
+            <strong>Message:</strong> {result.message || result.error}
           </p>
-        </div>
-        <div className="widget-content">
-          <div className="row">
-            <div className="col-lg-6 col-md-12 col-sm-12">
-              <div className="form-group">
-                <label>Test Job Alerts (No emails sent)</label>
-                <div className="d-flex gap-2">
-                  <button
-                    className="theme-btn btn-style-one"
-                    onClick={() => triggerJobAlerts(true)}
-                    disabled={isLoading}
-                  >
-                    {isLoading ? (
-                      <>
-                        <CircularLoader size={16} />
-                        Testing...
-                      </>
-                    ) : (
-                      "Test All Users"
-                    )}
-                  </button>
-                  <button
-                    className="theme-btn btn-style-two"
-                    onClick={testForCurrentUser}
-                    disabled={isLoading || !selector?.user?.uid}
-                  >
-                    Test Current User
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div className="col-lg-6 col-md-12 col-sm-12">
-              <div className="form-group">
-                <label>Send Job Alerts (Real emails)</label>
-                <div className="d-flex gap-2">
-                  <button
-                    className="theme-btn btn-style-one"
-                    onClick={() => triggerJobAlerts(false)}
-                    disabled={isLoading}
-                  >
-                    {isLoading ? (
-                      <>
-                        <CircularLoader size={16} />
-                        Sending...
-                      </>
-                    ) : (
-                      "Send to All Users"
-                    )}
-                  </button>
-                  <button
-                    className="theme-btn btn-style-two"
-                    onClick={triggerForCurrentUser}
-                    disabled={isLoading || !selector?.user?.uid}
-                  >
-                    Send to Current User
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {results && (
-            <div className="mt-4">
-              <h5>Results:</h5>
-              <div className="alert alert-info">
-                <strong>Emails Sent:</strong> {results.emailsSent}
-                <br />
-                <strong>Emails Failed:</strong> {results.emailsFailed}
-                <br />
-                <strong>Test Mode:</strong> {results.testMode ? "Yes" : "No"}
-                <br />
-                <strong>Total Results:</strong> {results.results?.length || 0}
-              </div>
-
-              {results.results && results.results.length > 0 && (
-                <div className="table-responsive">
-                  <table className="table table-sm">
-                    <thead>
-                      <tr>
-                        <th>Email</th>
-                        <th>Status</th>
-                        <th>Jobs Count</th>
-                        <th>Reason</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {results.results.map((result, index) => (
-                        <tr key={index}>
-                          <td>{result.email}</td>
-                          <td>
-                            <span
-                              className={`badge ${
-                                result.status === "sent"
-                                  ? "bg-success"
-                                  : result.status === "failed"
-                                  ? "bg-danger"
-                                  : "bg-warning"
-                              }`}
-                            >
-                              {result.status}
-                            </span>
-                          </td>
-                          <td>{result.jobsCount || "-"}</td>
-                          <td>{result.reason || "-"}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+          {result.data && (
+            <div>
+              <strong>Data:</strong>
+              <pre
+                style={{
+                  backgroundColor: "rgba(0,0,0,0.1)",
+                  padding: "10px",
+                  borderRadius: "4px",
+                  fontSize: "12px",
+                  overflow: "auto",
+                }}
+              >
+                {JSON.stringify(result.data, null, 2)}
+              </pre>
             </div>
           )}
-
-          <div className="mt-4">
-            <div className="alert alert-warning">
-              <strong>Note:</strong> This component is for testing purposes
-              only. Remove it from production code.
+          {result.details && (
+            <div>
+              <strong>Details:</strong>
+              <pre
+                style={{
+                  backgroundColor: "rgba(0,0,0,0.1)",
+                  padding: "10px",
+                  borderRadius: "4px",
+                  fontSize: "12px",
+                  overflow: "auto",
+                }}
+              >
+                {result.details}
+              </pre>
             </div>
-          </div>
+          )}
         </div>
+      )}
+
+      <div
+        style={{
+          marginTop: "30px",
+          padding: "15px",
+          backgroundColor: "#f8f9fa",
+          borderRadius: "4px",
+          fontSize: "14px",
+        }}
+      >
+        <h4>📋 Instructions:</h4>
+        <ol>
+          <li>
+            <strong>Send Job Alerts:</strong> Triggers job alerts for all
+            candidates with active alerts
+          </li>
+          <li>
+            <strong>Create Test Job:</strong> Creates a test job that should
+            trigger alerts for matching candidates
+          </li>
+          <li>Check the console for detailed logs</li>
+          <li>Check recipient emails for job alert emails</li>
+        </ol>
+
+        <h4>🔧 How it works:</h4>
+        <ul>
+          <li>
+            When you create a job, it automatically checks all candidates with
+            job alerts
+          </li>
+          <li>
+            If a job matches a candidate's alert preferences, they get an
+            immediate email
+          </li>
+          <li>You can also manually trigger job alerts for all candidates</li>
+        </ul>
       </div>
     </div>
   );

@@ -1,0 +1,13 @@
+{
+  "crons": [
+    {
+      "path": "/api/send-job-alerts",
+      "schedule": "0 9 * * *"
+    }
+  ],
+  "functions": {
+    "app/api/send-job-alerts/route.js": {
+      "maxDuration": 300
+    }
+  }
+}

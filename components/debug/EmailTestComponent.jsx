@@ -135,6 +135,47 @@ const EmailTestComponent = () => {
     setIsLoading(false);
   };
 
+  const handleTestBrevo = async () => {
+    if (!testEmail) {
+      addResult("❌ Please enter an email address", "error");
+      return;
+    }
+
+    setIsLoading(true);
+    addResult(`🧪 Testing Brevo email to: ${testEmail}`, "info");
+
+    try {
+      const response = await fetch("/api/test-brevo", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          testEmail,
+          testName: testName || "Test User",
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        addResult(
+          `✅ Brevo test email sent successfully! Message ID: ${data.messageId}`,
+          "success"
+        );
+      } else {
+        addResult(`❌ Brevo test failed: ${data.error}`, "error");
+        if (data.details) {
+          addResult(`📋 Details: ${data.details}`, "error");
+        }
+      }
+    } catch (error) {
+      addResult(`💥 Brevo test error: ${error.message}`, "error");
+    }
+
+    setIsLoading(false);
+  };
+
   return (
     <div
       style={{
@@ -262,6 +303,22 @@ const EmailTestComponent = () => {
           }}
         >
           {isLoading ? "⏳ Analyzing..." : "🚨 Debug Charging Issue"}
+        </button>
+
+        <button
+          onClick={handleTestBrevo}
+          disabled={isLoading}
+          style={{
+            backgroundColor: "#17a2b8",
+            color: "white",
+            padding: "10px 15px",
+            border: "none",
+            borderRadius: "4px",
+            marginRight: "10px",
+            cursor: "pointer",
+          }}
+        >
+          {isLoading ? "⏳ Sending..." : "📧 Test Brevo Email"}
         </button>
 
         <button
