@@ -19,6 +19,7 @@ import { useState, useEffect } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { useSelector } from "react-redux";
 import { DeleteConfirmationModal } from "@/components/dashboard-pages/employers-dashboard/manage-jobs/components/DeleteModal";
+import Select from "react-select";
 
 const EditJobPost = () => {
   const [selectedJobId, setSelectedJobId] = useState("");
@@ -63,7 +64,17 @@ const EditJobPost = () => {
 
   const { handleSubmit, reset, setValue } = methods;
 
-  const handleJobSelection = (jobId) => {
+  // Transform jobs data for react-select
+  const jobOptions = jobs.map((job) => ({
+    value: job.id,
+    label: `${job.title} - ${job.location} (${new Date(
+      job.createdAt
+    ).toLocaleDateString()})`,
+    job: job, // Keep the full job object for reference
+  }));
+
+  const handleJobSelection = (selectedOption) => {
+    const jobId = selectedOption ? selectedOption.value : "";
     setSelectedJobId(jobId);
     if (jobId) {
       const selectedJob = jobs.find((job) => job.id === jobId);
@@ -213,19 +224,33 @@ const EditJobPost = () => {
 
         <div className="widget-content">
           <div className="form-group col-lg-12 col-md-12 mb-4">
-            <select
-              className="chosen-single form-select"
-              value={selectedJobId}
-              onChange={(e) => handleJobSelection(e.target.value)}
+            <label
+              style={{
+                display: "flex",
+                alignItems: "center",
+                fontSize: "15px",
+                fontWeight: "500",
+                marginBottom: "6px",
+              }}
             >
-              <option value="">Select a job to edit...</option>
-              {jobs.map((job) => (
-                <option key={job.id} value={job.id}>
-                  {job.title} - {job.location} (
-                  {new Date(job.createdAt).toLocaleDateString()})
-                </option>
-              ))}
-            </select>
+              Select Job to Edit
+            </label>
+            <Select
+              value={
+                jobOptions.find((option) => option.value === selectedJobId) ||
+                null
+              }
+              onChange={handleJobSelection}
+              options={jobOptions}
+              placeholder="Search and select a job to edit..."
+              isClearable
+              isSearchable
+              className="basic-single-select"
+              classNamePrefix="select"
+              noOptionsMessage={() => "No jobs found"}
+              loadingMessage={() => "Loading jobs..."}
+              isLoading={jobsLoading}
+            />
           </div>
 
           {selectedJobId && (

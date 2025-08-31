@@ -22,6 +22,7 @@ import { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import AdminLogoUpload from "./AdminLogoUpload";
 import { successToast } from "@/utils/toast";
+import Select from "react-select";
 
 const EditUser = () => {
   const [selectedUserId, setSelectedUserId] = useState("");
@@ -81,7 +82,20 @@ const EditUser = () => {
 
   console.log("selectedUser", selectedUser);
 
-  const handleUserSelection = (userId) => {
+  // Transform users data for react-select
+  const userOptions = users.map((user) => ({
+    value: user.id,
+    label:
+      user.userType === "Candidate"
+        ? `${user.name || "Unknown"} (Candidate) - ${user.email}`
+        : `${user.company_name || "Unknown Company"} (Employer) - ${
+            user.email
+          }`,
+    user: user, // Keep the full user object for reference
+  }));
+
+  const handleUserSelection = (selectedOption) => {
+    const userId = selectedOption ? selectedOption.value : "";
     setSelectedUserId(userId);
     if (userId) {
       const selectedUser = users.find((user) => user.id === userId);
@@ -201,7 +215,9 @@ const EditUser = () => {
 
       // Reset form and reload the selected user's data after successful update
       reset();
-      handleUserSelection(selectedUserId);
+      handleUserSelection(
+        userOptions.find((option) => option.value === selectedUserId) || null
+      );
     } catch (err) {
       setError(
         err.message || "An unexpected error occurred. Please try again."
@@ -284,24 +300,33 @@ const EditUser = () => {
         <div className="widget-content">
           {/* User Selection */}
           <div className="form-group col-lg-12 col-md-12 mb-4">
-            <select
-              className="chosen-single form-select"
-              value={selectedUserId}
-              onChange={(e) => handleUserSelection(e.target.value)}
+            <label
+              style={{
+                display: "flex",
+                alignItems: "center",
+                fontSize: "15px",
+                fontWeight: "500",
+                marginBottom: "6px",
+              }}
             >
-              <option value="">Select a user to edit...</option>
-              {users.map((user) => (
-                <option key={user.id} value={user.id}>
-                  {user.userType === "Candidate"
-                    ? `${user.name || "Unknown"} (Candidate) - ${user.email}`
-                    : `${user.company_name || "Unknown Company"} (Employer) - ${
-                        user.email
-                      }`}{" "}
-                  ({new Date(user.createdAt || Date.now()).toLocaleDateString()}
-                  )
-                </option>
-              ))}
-            </select>
+              Select User to Edit
+            </label>
+            <Select
+              value={
+                userOptions.find((option) => option.value === selectedUserId) ||
+                null
+              }
+              onChange={handleUserSelection}
+              options={userOptions}
+              placeholder="Search and select a user to edit..."
+              isClearable
+              isSearchable
+              className="basic-single-select"
+              classNamePrefix="select"
+              noOptionsMessage={() => "No users found"}
+              loadingMessage={() => "Loading users..."}
+              isLoading={usersLoading}
+            />
           </div>
 
           {/* Edit Form */}
