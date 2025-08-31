@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { InputField } from "@/components/inputfield/InputField";
 import { TextAreaField } from "@/components/textarea/TextArea";
+import RichTextArea from "@/components/textarea/RichTextArea";
 
 const PricingPackagesManager = () => {
   const [packages, setPackages] = useState([]);
@@ -55,11 +56,21 @@ const PricingPackagesManager = () => {
     try {
       setSubmitting(true);
 
-      // Parse features from text to array
-      const features = data.features
-        .split("\n")
-        .map((feature) => feature.trim())
-        .filter((feature) => feature.length > 0);
+      // Handle features - if it's HTML content from rich text editor, convert to array
+      let features = [];
+      if (data.features) {
+        if (typeof data.features === "string" && data.features.includes("<")) {
+          // It's HTML content from rich text editor
+          // For now, we'll store the HTML content directly
+          features = data.features;
+        } else {
+          // It's plain text, convert to array as before
+          features = data.features
+            .split("\n")
+            .map((feature) => feature.trim())
+            .filter((feature) => feature.length > 0);
+        }
+      }
 
       const payload = {
         ...data,
@@ -113,10 +124,12 @@ const PricingPackagesManager = () => {
     setValue("currency", pkg.currency || "eur");
     setValue("interval", pkg.interval || "month");
     setValue("jobLimit", (pkg.jobPosts || pkg.jobLimit || 0).toString());
-    setValue(
-      "features",
-      Array.isArray(pkg.features) ? pkg.features.join("\n") : ""
-    );
+    // Handle features - if it's an array, join with newlines; if it's HTML, use as is
+    if (Array.isArray(pkg.features)) {
+      setValue("features", pkg.features.join("\n"));
+    } else {
+      setValue("features", pkg.features || "");
+    }
     setValue("isActive", pkg.isActive.toString());
   };
 
@@ -252,19 +265,21 @@ const PricingPackagesManager = () => {
                 </label>
               </div>
               <div className="col-lg-12 col-md-12 col-sm-12">
-                <TextAreaField
+                <RichTextArea
                   label="Description"
                   name="description"
                   placeholder="Describe what this package includes..."
                   required={false}
+                  maxLength={1000}
                 />
               </div>
               <div className="col-lg-12 col-md-12 col-sm-12">
-                <TextAreaField
-                  label="Features (one per line)"
+                <RichTextArea
+                  label="Features"
                   name="features"
-                  placeholder="Feature 1&#10;Feature 2&#10;Feature 3"
+                  placeholder="Add features for this package... Use bullet points or numbered lists for better formatting."
                   required={false}
+                  maxLength={2000}
                 />
               </div>
               <div className="col-lg-12 col-md-12 col-sm-12 form-group">
@@ -347,11 +362,29 @@ const PricingPackagesManager = () => {
                         )}
                         <br />
                         <small style={{ color: "#666" }}>
-                          {pkg.description ||
-                            (pkg.features && pkg.features.length > 0
-                              ? pkg.features.slice(0, 2).join(", ") +
-                                (pkg.features.length > 2 ? "..." : "")
-                              : "No description")}
+                          {pkg.description ? (
+                            <div
+                              dangerouslySetInnerHTML={{
+                                __html: pkg.description,
+                              }}
+                            />
+                          ) : pkg.features && pkg.features.length > 0 ? (
+                            Array.isArray(pkg.features) ? (
+                              pkg.features.slice(0, 2).join(", ") +
+                              (pkg.features.length > 2 ? "..." : "")
+                            ) : (
+                              <div
+                                dangerouslySetInnerHTML={{
+                                  __html:
+                                    pkg.features.length > 100
+                                      ? pkg.features.substring(0, 100) + "..."
+                                      : pkg.features,
+                                }}
+                              />
+                            )
+                          ) : (
+                            "No description"
+                          )}
                         </small>
                       </td>
                       <td>
