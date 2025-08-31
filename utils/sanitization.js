@@ -52,6 +52,68 @@ export const sanitizeText = (input) => {
 };
 
 /**
+ * Sanitize rich text content (allows safe HTML tags)
+ * @param {string} input - The input string to sanitize
+ * @returns {string} - Sanitized string
+ */
+export const sanitizeRichText = (input) => {
+  if (typeof input !== "string") return input;
+
+  // Remove script tags and their content
+  let sanitized = input.replace(
+    /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
+    ""
+  );
+
+  // Remove any remaining script references
+  if (sanitized.toLowerCase().includes("script")) {
+    sanitized = sanitized.replace(/script/gi, "");
+  }
+
+  // Remove dangerous attributes
+  sanitized = sanitized.replace(/\s*on\w+\s*=\s*["'][^"']*["']/gi, ""); // Remove event handlers
+  sanitized = sanitized.replace(/\s*javascript\s*:/gi, ""); // Remove javascript: protocol
+  sanitized = sanitized.replace(/\s*data\s*:/gi, ""); // Remove data: protocol
+
+  // Only allow safe HTML tags
+  const allowedTags = [
+    "p",
+    "br",
+    "strong",
+    "b",
+    "em",
+    "i",
+    "u",
+    "s",
+    "strike",
+    "ul",
+    "ol",
+    "li",
+    "blockquote",
+    "h1",
+    "h2",
+    "h3",
+    "h4",
+    "h5",
+    "h6",
+    "a",
+    "span",
+    "div",
+  ];
+
+  // Remove any tags that are not in the allowed list
+  sanitized = sanitized.replace(/<(\/?)([^>]+)>/g, (match, slash, tagName) => {
+    const tag = tagName.split(" ")[0].toLowerCase();
+    if (allowedTags.includes(tag)) {
+      return match; // Keep allowed tags
+    }
+    return ""; // Remove disallowed tags
+  });
+
+  return sanitized;
+};
+
+/**
  * Sanitize email address
  * @param {string} email - Email to sanitize
  * @returns {string} - Sanitized email or null if invalid

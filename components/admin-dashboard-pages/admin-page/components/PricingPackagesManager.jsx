@@ -16,7 +16,6 @@ const PricingPackagesManager = () => {
   const methods = useForm({
     defaultValues: {
       name: "",
-      description: "",
       price: "",
       currency: "eur",
       interval: "month",
@@ -56,20 +55,17 @@ const PricingPackagesManager = () => {
     try {
       setSubmitting(true);
 
-      // Handle features - if it's HTML content from rich text editor, convert to array
+      // Handle features - convert text area content to array
       let features = [];
-      if (data.features) {
-        if (typeof data.features === "string" && data.features.includes("<")) {
-          // It's HTML content from rich text editor
-          // For now, we'll store the HTML content directly
-          features = data.features;
-        } else {
-          // It's plain text, convert to array as before
-          features = data.features
-            .split("\n")
-            .map((feature) => feature.trim())
-            .filter((feature) => feature.length > 0);
-        }
+      if (
+        data.features &&
+        typeof data.features === "string" &&
+        data.features.trim()
+      ) {
+        features = data.features
+          .split("\n")
+          .map((feature) => feature.trim())
+          .filter((feature) => feature.length > 0);
       }
 
       const payload = {
@@ -119,17 +115,28 @@ const PricingPackagesManager = () => {
   const handleEdit = (pkg) => {
     setEditingPackage(pkg);
     setValue("name", pkg.packageType || pkg.name || "");
-    setValue("description", pkg.description || "");
     setValue("price", pkg.price.toString());
     setValue("currency", pkg.currency || "eur");
     setValue("interval", pkg.interval || "month");
     setValue("jobLimit", (pkg.jobPosts || pkg.jobLimit || 0).toString());
-    // Handle features - if it's an array, join with newlines; if it's HTML, use as is
+
+    // Handle features - convert array to newline-separated text
     if (Array.isArray(pkg.features)) {
       setValue("features", pkg.features.join("\n"));
+    } else if (typeof pkg.features === "string") {
+      // If it's a string, check if it's HTML or plain text
+      if (pkg.features.includes("<")) {
+        // It's HTML, convert to plain text for display
+        const tempDiv = document.createElement("div");
+        tempDiv.innerHTML = pkg.features;
+        setValue("features", tempDiv.textContent || tempDiv.innerText || "");
+      } else {
+        setValue("features", pkg.features);
+      }
     } else {
-      setValue("features", pkg.features || "");
+      setValue("features", "");
     }
+
     setValue("isActive", pkg.isActive.toString());
   };
 
@@ -264,22 +271,15 @@ const PricingPackagesManager = () => {
                   Status
                 </label>
               </div>
+
               <div className="col-lg-12 col-md-12 col-sm-12">
-                <RichTextArea
-                  label="Description"
-                  name="description"
-                  placeholder="Describe what this package includes..."
-                  required={false}
-                  maxLength={1000}
-                />
-              </div>
-              <div className="col-lg-12 col-md-12 col-sm-12">
-                <RichTextArea
-                  label="Features"
+                <TextAreaField
+                  label="Features (one per line)"
                   name="features"
-                  placeholder="Add features for this package... Use bullet points or numbered lists for better formatting."
+                  placeholder="Enter features, one per line:&#10;• Feature 1&#10;• Feature 2&#10;• Feature 3"
                   required={false}
                   maxLength={2000}
+                  rows={6}
                 />
               </div>
               <div className="col-lg-12 col-md-12 col-sm-12 form-group">

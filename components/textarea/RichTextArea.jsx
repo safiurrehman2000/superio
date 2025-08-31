@@ -1,6 +1,8 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
+import { sanitizeRichText } from "@/utils/sanitization";
+import "react-quill/dist/quill.snow.css";
 
 // Dynamically import ReactQuill to avoid SSR issues
 const ReactQuill = dynamic(() => import("react-quill"), {
@@ -54,13 +56,14 @@ const RichTextArea = ({
 
   const handleChange = (content, delta, source, editor) => {
     const text = editor.getText(); // Get plain text for validation
-    setEditorValue(content);
+    const sanitizedContent = sanitizeRichText(content); // Sanitize the HTML content
+    setEditorValue(sanitizedContent);
 
     if (onChange) {
       onChange({
         target: {
           name,
-          value: content,
+          value: sanitizedContent,
           textContent: text,
         },
       });
@@ -68,17 +71,20 @@ const RichTextArea = ({
   };
 
   const validateContent = () => {
-    if (required && !editorValue.trim()) {
+    // Get plain text length for validation (without HTML tags)
+    const plainText = editorValue.replace(/<[^>]*>/g, "").trim();
+
+    if (required && !plainText) {
       return `${label || "This field"} is required!`;
     }
 
-    if (minLength && editorValue.length < minLength) {
+    if (minLength && plainText.length < minLength) {
       return `${
         label || "This field"
       } must be at least ${minLength} characters long.`;
     }
 
-    if (maxLength && editorValue.length > maxLength) {
+    if (maxLength && plainText.length > maxLength) {
       return `${
         label || "This field"
       } must not exceed ${maxLength} characters.`;
@@ -88,6 +94,9 @@ const RichTextArea = ({
   };
 
   const error = validateContent();
+
+  // Get plain text length for character count
+  const plainTextLength = editorValue.replace(/<[^>]*>/g, "").length;
 
   return (
     <div className="form-group">
@@ -123,10 +132,48 @@ const RichTextArea = ({
       {/* Character count */}
       {(minLength || maxLength) && (
         <small className="text-muted mt-1 d-block">
-          {editorValue.length} characters
+          {plainTextLength} characters
           {maxLength && ` / ${maxLength} max`}
         </small>
       )}
+
+      <style jsx global>{`
+        .rich-text-editor {
+          margin-bottom: 1rem;
+        }
+
+        .rich-text-editor .ql-container {
+          min-height: 120px;
+          font-size: 14px;
+          border: 1px solid #ced4da;
+          border-top: none;
+        }
+
+        .rich-text-editor .ql-editor {
+          min-height: 100px;
+          padding: 12px 15px;
+          font-size: 14px;
+          line-height: 1.5;
+        }
+
+        .rich-text-editor .ql-toolbar {
+          border: 1px solid #ced4da;
+          border-top-left-radius: 4px;
+          border-top-right-radius: 4px;
+          background-color: #f8f9fa;
+          padding: 8px;
+        }
+
+        .rich-text-editor .ql-container {
+          border-bottom-left-radius: 4px;
+          border-bottom-right-radius: 4px;
+        }
+
+        .rich-text-editor .ql-editor.ql-blank::before {
+          color: #6c757d;
+          font-style: italic;
+        }
+      `}</style>
     </div>
   );
 };

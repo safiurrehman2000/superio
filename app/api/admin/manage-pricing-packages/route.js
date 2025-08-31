@@ -47,7 +47,7 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    const { name, description, price, currency, interval, features, jobLimit } =
+    const { name, price, currency, interval, features, jobLimit } =
       await request.json();
 
     // Validate required fields
@@ -58,10 +58,19 @@ export async function POST(request) {
       );
     }
 
+    // Validate Stripe secret key
+    if (!process.env.STRIPE_SECRET_KEY) {
+      console.error("STRIPE_SECRET_KEY is not configured");
+      return NextResponse.json(
+        { error: "Stripe configuration is missing" },
+        { status: 500 }
+      );
+    }
+
     // Create Stripe product
     const stripeProduct = await stripe.products.create({
       name: name,
-      description: description || "",
+      description: "Pricing package for job postings",
       metadata: {
         jobLimit: jobLimit.toString(),
         interval: interval,
@@ -78,15 +87,28 @@ export async function POST(request) {
       },
     });
 
+    // Handle features - ensure it's properly formatted as an array
+    let processedFeatures = [];
+    if (features) {
+      if (typeof features === "string" && features.trim()) {
+        // Convert text area content to array
+        processedFeatures = features
+          .split("\n")
+          .map((feature) => feature.trim())
+          .filter((feature) => feature.length > 0);
+      } else if (Array.isArray(features) && features.length > 0) {
+        processedFeatures = features;
+      }
+    }
+
     // Create package in Firebase
     const packageData = {
       packageType: name, // Use packageType for consistency with existing data
       name, // Also store as name for new format
-      description: description || "",
       price,
       currency: currency || "eur",
       interval,
-      features: features || [],
+      features: processedFeatures,
       jobLimit: parseInt(jobLimit),
       jobPosts: parseInt(jobLimit), // Store both for compatibility
       stripeProductId: stripeProduct.id,
@@ -108,6 +130,12 @@ export async function POST(request) {
     });
   } catch (error) {
     console.error("Error creating pricing package:", error);
+    console.error("Error details:", {
+      message: error.message,
+      type: error.type,
+      code: error.code,
+      stack: error.stack,
+    });
 
     // If Stripe creation failed, clean up any partial creation
     if (error.type === "StripeError") {
@@ -129,7 +157,6 @@ export async function PUT(request) {
     const {
       id,
       name,
-      description,
       price,
       currency,
       interval,
@@ -160,13 +187,26 @@ export async function PUT(request) {
       updatedAt: new Date(),
     };
 
+    // Handle features - convert text area content to array
+    let processedFeatures = [];
+    if (features !== undefined) {
+      if (typeof features === "string" && features.trim()) {
+        // Convert text area content to array
+        processedFeatures = features
+          .split("\n")
+          .map((feature) => feature.trim())
+          .filter((feature) => feature.length > 0);
+      } else if (Array.isArray(features) && features.length > 0) {
+        processedFeatures = features;
+      }
+      updateData.features = processedFeatures;
+    }
+
     // Update Firebase data
     if (name !== undefined) {
       updateData.name = name;
       updateData.packageType = name; // Update both fields for consistency
     }
-    if (description !== undefined) updateData.description = description;
-    if (features !== undefined) updateData.features = features;
     if (jobLimit !== undefined) {
       updateData.jobLimit = parseInt(jobLimit);
       updateData.jobPosts = parseInt(jobLimit); // Update both fields
@@ -196,7 +236,7 @@ export async function PUT(request) {
       // Update Stripe product
       await stripe.products.update(existingPackage.stripeProductId, {
         name: name || existingPackage.name,
-        description: description || existingPackage.description,
+        description: "Pricing package for job postings",
         metadata: {
           jobLimit: (jobLimit || existingPackage.jobLimit).toString(),
           interval: newInterval,
