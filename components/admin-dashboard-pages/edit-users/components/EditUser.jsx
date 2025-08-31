@@ -15,9 +15,8 @@ import {
   AGE_OPTIONS,
   GENDERS,
   PROFILE_VISIBILITY_OPTIONS,
-  SECTORS,
-  STATES,
 } from "@/utils/constants";
+import { useStates, useSectors } from "@/utils/hooks/useOptionsFromFirebase";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
@@ -34,6 +33,10 @@ const EditUser = () => {
     loading: usersLoading,
     error: usersError,
   } = useGetAllUsers();
+
+  // Fetch options from Firebase
+  const { options: states, loading: statesLoading } = useStates();
+  const { options: sectors, loading: sectorsLoading } = useSectors();
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -456,11 +459,16 @@ const EditUser = () => {
                       <div className="form-group col-lg-6 col-md-12">
                         <AutoSelect
                           label="Company Type"
-                          placeholder="Select company types"
+                          placeholder={
+                            sectorsLoading
+                              ? "Loading sectors..."
+                              : "Select company types"
+                          }
                           name="company_type"
-                          options={SECTORS}
+                          options={sectors}
                           required
                           defaultValue={[]}
+                          disabled={sectorsLoading}
                         />
                       </div>
 
@@ -468,9 +476,14 @@ const EditUser = () => {
                         <SelectField
                           label="Location"
                           name="company_location"
-                          options={STATES}
-                          placeholder="Select a state"
+                          options={states}
+                          placeholder={
+                            statesLoading
+                              ? "Loading states..."
+                              : "Select a state"
+                          }
                           required
+                          disabled={statesLoading}
                         />
                       </div>
 

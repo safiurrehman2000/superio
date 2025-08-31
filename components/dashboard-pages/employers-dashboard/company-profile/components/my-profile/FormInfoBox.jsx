@@ -4,11 +4,15 @@ import AutoSelect from "@/components/autoselect/AutoSelect";
 import { InputField } from "@/components/inputfield/InputField";
 import { SelectField } from "@/components/selectfield/SelectField";
 import { TextAreaField } from "@/components/textarea/TextArea";
-import { SECTORS, STATES } from "@/utils/constants";
 import { useSelector } from "react-redux";
+import { useStates, useSectors } from "@/utils/hooks/useOptionsFromFirebase";
 
 const FormInfoBox = () => {
   const selector = useSelector((store) => store.user);
+
+  // Fetch options from Firebase
+  const { options: states, loading: statesLoading } = useStates();
+  const { options: sectors, loading: sectorsLoading } = useSectors();
 
   return (
     <div className="row default-form">
@@ -64,21 +68,23 @@ const FormInfoBox = () => {
       <div className="form-group col-lg-6 col-md-12">
         <AutoSelect
           label="Company Type"
-          placeholder="Select Tags"
+          placeholder={sectorsLoading ? "Loading sectors..." : "Select Tags"}
           name="company_type"
           defaultValue={selector?.user?.company_type}
-          options={SECTORS}
+          options={sectors}
           required
+          disabled={sectorsLoading}
         />
       </div>
       <div className="form-group col-lg-6 col-md-12">
         <SelectField
           label="Location"
           name="company_location"
-          options={STATES}
-          placeholder="Select a state"
+          options={states}
+          placeholder={statesLoading ? "Loading states..." : "Select a state"}
           defaultValue={selector?.user?.company_location}
           required
+          disabled={statesLoading}
         />
       </div>
 

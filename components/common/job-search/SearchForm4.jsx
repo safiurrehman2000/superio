@@ -1,6 +1,6 @@
 "use client";
 
-import { SECTORS } from "@/utils/constants";
+import { useSectors } from "@/utils/hooks/useOptionsFromFirebase";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -11,6 +11,9 @@ const SearchForm4 = () => {
     province: "",
     category: "",
   });
+
+  // Fetch sectors from Firebase
+  const { options: sectors, loading: sectorsLoading } = useSectors();
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -68,9 +71,12 @@ const SearchForm4 = () => {
             name="category"
             value={searchParams.category}
             onChange={handleInputChange}
+            disabled={sectorsLoading}
           >
-            <option value="">Choose a category</option>
-            {SECTORS.map((item, index) => (
+            <option value="">
+              {sectorsLoading ? "Loading categories..." : "Choose a category"}
+            </option>
+            {sectors.map((item, index) => (
               <option key={index} value={item.value}>
                 {item.label}
               </option>

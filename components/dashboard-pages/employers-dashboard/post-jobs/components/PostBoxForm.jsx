@@ -8,7 +8,8 @@ import { InputField } from "@/components/inputfield/InputField";
 import { SelectField } from "@/components/selectfield/SelectField";
 import { TextAreaField } from "@/components/textarea/TextArea";
 import { addEmployerJob } from "@/slices/userSlice";
-import { JOB_TYPE_OPTIONS, SECTORS, STATES } from "@/utils/constants";
+import { JOB_TYPE_OPTIONS } from "@/utils/constants";
+import { useStates, useSectors } from "@/utils/hooks/useOptionsFromFirebase";
 import {
   checkSubscriptionStatus,
   validateJobPostingPermission,
@@ -28,6 +29,10 @@ const PostBoxForm = () => {
   const [refreshing, setRefreshing] = useState(false);
   const selector = useSelector((store) => store.user);
   const { push } = useRouter();
+
+  // Fetch options from Firebase
+  const { options: states, loading: statesLoading } = useStates();
+  const { options: sectors, loading: sectorsLoading } = useSectors();
 
   const methods = useForm({
     mode: "onSubmit",
@@ -207,20 +212,24 @@ const PostBoxForm = () => {
             <SelectField
               label="State"
               name="state"
-              options={STATES}
-              placeholder="Select a state"
+              options={states}
+              placeholder={
+                statesLoading ? "Loading states..." : "Select a state"
+              }
               required
-              disabled={isFormDisabled}
+              disabled={isFormDisabled || statesLoading}
             />
           </div>
           <div className="form-group col-lg-6 col-md-12">
             <AutoSelect
               label="Job Tags"
-              placeholder="Select Tags"
+              placeholder={
+                sectorsLoading ? "Loading sectors..." : "Select Tags"
+              }
               name="tags"
-              options={SECTORS}
+              options={sectors}
               required
-              disabled={isFormDisabled}
+              disabled={isFormDisabled || sectorsLoading}
             />
           </div>
 

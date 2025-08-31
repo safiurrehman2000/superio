@@ -1,6 +1,6 @@
 "use client";
 import { setSelectedCategory } from "@/features/job/newJobSlice";
-import { SECTORS } from "@/utils/constants";
+import { useSectors } from "@/utils/hooks/useOptionsFromFirebase";
 import { useDispatch, useSelector } from "react-redux";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -13,6 +13,9 @@ const Categories = () => {
     (state) => state.newJob.selectedCategory
   );
   const [categoryValue, setCategoryValue] = useState(selectedCategory || "");
+
+  // Fetch sectors from Firebase
+  const { options: sectors, loading: sectorsLoading } = useSectors();
 
   useEffect(() => {
     const urlCategory = searchParams.get("category");
@@ -34,9 +37,12 @@ const Categories = () => {
         className="form-select"
         value={categoryValue}
         onChange={handleCategoryChange}
+        disabled={sectorsLoading}
       >
-        <option value="">Choose a category</option>
-        {SECTORS.map((item, index) => (
+        <option value="">
+          {sectorsLoading ? "Loading categories..." : "Choose a category"}
+        </option>
+        {sectors.map((item, index) => (
           <option key={index} value={item.value}>
             {item.label}
           </option>

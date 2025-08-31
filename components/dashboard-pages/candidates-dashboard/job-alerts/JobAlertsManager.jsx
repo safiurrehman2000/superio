@@ -15,7 +15,7 @@ import {
   Timestamp,
 } from "firebase/firestore";
 import { errorToast, successToast } from "@/utils/toast";
-import { SECTORS, STATES } from "@/utils/constants";
+import { useStates, useSectors } from "@/utils/hooks/useOptionsFromFirebase";
 import { FormProvider, useForm } from "react-hook-form";
 import { InputField } from "@/components/inputfield/InputField";
 import { SelectField } from "@/components/selectfield/SelectField";
@@ -28,6 +28,10 @@ const JobAlertsManager = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [editingAlert, setEditingAlert] = useState(null);
+
+  // Fetch options from Firebase
+  const { options: states, loading: statesLoading } = useStates();
+  const { options: sectors, loading: sectorsLoading } = useSectors();
 
   const methods = useForm({
     mode: "onChange",
@@ -179,12 +183,12 @@ const JobAlertsManager = () => {
     { value: "monthly", label: "Monthly" },
   ];
 
-  const categoryOptions = SECTORS.map((sector) => ({
+  const categoryOptions = sectors?.map((sector) => ({
     value: sector.value,
     label: sector.label,
   }));
 
-  const locationOptions = STATES.map((state) => ({
+  const locationOptions = states?.map((state) => ({
     value: state?.value,
     label: state?.label,
   }));
@@ -239,8 +243,13 @@ const JobAlertsManager = () => {
                     name="categories"
                     label="Job Categories"
                     options={categoryOptions}
-                    placeholder="Select categories"
+                    placeholder={
+                      sectorsLoading
+                        ? "Loading categories..."
+                        : "Select categories"
+                    }
                     isMulti
+                    disabled={sectorsLoading}
                   />
                 </div>
 
@@ -249,8 +258,13 @@ const JobAlertsManager = () => {
                     name="locations"
                     label="Preferred Locations"
                     options={locationOptions}
-                    placeholder="Select locations"
+                    placeholder={
+                      statesLoading
+                        ? "Loading locations..."
+                        : "Select locations"
+                    }
                     isMulti
+                    disabled={statesLoading}
                   />
                 </div>
 

@@ -16,13 +16,18 @@ import { InputField } from "@/components/inputfield/InputField";
 import { SelectField } from "@/components/selectfield/SelectField";
 import AutoSelect from "@/components/autoselect/AutoSelect";
 import { TextAreaField } from "@/components/textarea/TextArea";
-import { JOB_TYPE_OPTIONS, SECTORS, STATES } from "@/utils/constants";
+import { JOB_TYPE_OPTIONS } from "@/utils/constants";
+import { useStates, useSectors } from "@/utils/hooks/useOptionsFromFirebase";
 
 const PostJobForEmployer = () => {
   const [employers, setEmployers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+
+  // Fetch options from Firebase
+  const { options: states, loading: statesLoading } = useStates();
+  const { options: sectors, loading: sectorsLoading } = useSectors();
 
   useEffect(() => {
     const fetchEmployers = async () => {
@@ -170,18 +175,24 @@ const PostJobForEmployer = () => {
                   <SelectField
                     label="State"
                     name="state"
-                    options={STATES}
-                    placeholder="Select a state"
+                    options={states}
+                    placeholder={
+                      statesLoading ? "Loading states..." : "Select a state"
+                    }
                     required
+                    disabled={statesLoading}
                   />
                 </div>
                 <div className="form-group col-lg-6 col-md-12">
                   <AutoSelect
                     label="Job Tags"
-                    placeholder="Select Tags"
+                    placeholder={
+                      sectorsLoading ? "Loading sectors..." : "Select Tags"
+                    }
                     name="tags"
-                    options={SECTORS}
+                    options={sectors}
                     required
+                    disabled={sectorsLoading}
                   />
                 </div>
                 {error && (
