@@ -144,6 +144,13 @@ export const adminMenuData = [
   },
   {
     id: 6,
+    name: "Manage Pricing",
+    icon: "la-credit-card",
+    routePath: "/admin-dashboard/manage-pricing",
+    active: "",
+  },
+  {
+    id: 7,
     name: "Logout",
     icon: "la-sign-out",
     routePath: "/login",
