@@ -137,6 +137,13 @@ export const adminMenuData = [
   },
   {
     id: 5,
+    name: "Manage Options",
+    icon: "la-cog",
+    routePath: "/admin-dashboard/manage-options",
+    active: "",
+  },
+  {
+    id: 6,
     name: "Logout",
     icon: "la-sign-out",
     routePath: "/login",
