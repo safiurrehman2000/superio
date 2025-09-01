@@ -267,6 +267,17 @@ service cloud.firestore {
     }
     
     // ========================================
+    // FAQS COLLECTION (Public read, Admin write)
+    // ========================================
+    match /faqs/{faqId} {
+      // Anyone can read FAQs (public information)
+      allow read: if true;
+      
+      // Only admins can create, update, and delete FAQs
+      allow write: if isAdmin();
+    }
+    
+    // ========================================
     // RATE LIMITING COLLECTIONS
     // ========================================
     match /rateLimits/{docId} {
@@ -315,6 +326,18 @@ service cloud.firestore {
       allow read: if isAuthenticated();
       
       // Only admins can write to undefined collections
+      allow write: if isAdmin();
+    }
+
+    // Categories collection - admins can manage, public can read
+    match /categories/{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // FAQs collection - admins can manage, public can read
+    match /faqs/{document=**} {
+      allow read: if true;
       allow write: if isAdmin();
     }
   }

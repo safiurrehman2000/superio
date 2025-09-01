@@ -151,6 +151,13 @@ export const adminMenuData = [
   },
   {
     id: 7,
+    name: "Manage FAQ",
+    icon: "la-question-circle",
+    routePath: "/admin-dashboard/manage-faq",
+    active: "",
+  },
+  {
+    id: 8,
     name: "Logout",
     icon: "la-sign-out",
     routePath: "/login",

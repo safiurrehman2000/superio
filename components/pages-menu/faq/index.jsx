@@ -3,7 +3,7 @@ import Breadcrumb from "../../common/Breadcrumb";
 import LoginPopup from "../../common/form/login/LoginPopup";
 import FooterDefault from "../../footer/common-footer";
 import MobileMenu from "../../header/MobileMenu";
-import FaqChild from "./FaqChild";
+import FAQDisplay from "../../faq/FAQDisplay";
 
 const index = () => {
   return (
@@ -27,17 +27,8 @@ const index = () => {
             <div className="text">Home / Faq</div>
           </div>
 
-          <h3>Payments</h3>
-          {/* <!--Accordian Box--> */}
-          <ul className="accordion-box">
-            <FaqChild />
-          </ul>
-
-          <h3>Suggestions</h3>
-          {/* <!--Accordian Box--> */}
-          <ul className="accordion-box mb-0">
-            <FaqChild />
-          </ul>
+          {/* Dynamic FAQ Display with Categories */}
+          <FAQDisplay />
         </div>
       </section>
       {/* <!-- End Faqs Section --> */}
