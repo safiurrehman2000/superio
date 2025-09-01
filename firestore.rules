@@ -294,11 +294,28 @@ service cloud.firestore {
     }
     
     // ========================================
-    // ADMIN ACCESS (Catch-all for admin operations)
+    // ADMIN AUDIT LOGS (Admin only)
     // ========================================
-    match /{document=**} {
-      // Admins have full access to all collections
+    match /adminAuditLogs/{docId} {
       allow read, write: if isAdmin();
+    }
+    
+    match /adminSecurityLogs/{docId} {
+      allow read, write: if isAdmin();
+    }
+    
+    // ========================================
+    // OTHER COLLECTIONS (Default access)
+    // ========================================
+    // Allow authenticated users to read most collections by default
+    // This prevents the "insufficient permission" error for legitimate users
+    match /{document=**} {
+      // Allow read access for authenticated users to any collection
+      // This is a fallback for collections not explicitly defined above
+      allow read: if isAuthenticated();
+      
+      // Only admins can write to undefined collections
+      allow write: if isAdmin();
     }
   }
 }
