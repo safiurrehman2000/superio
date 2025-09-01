@@ -23,10 +23,18 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.uid == userId;
     }
     
-    // Validate user data structure
+    // Validate user data structure with strict admin prevention
     function isValidUserData(data) {
       return data.keys().hasAll(['email', 'userType', 'createdAt']) &&
-             data.userType in ['Candidate', 'Employer', 'Admin'] &&
+             data.userType in ['Candidate', 'Employer'] && // REMOVED 'Admin' from allowed types
+             data.email is string &&
+             data.createdAt is timestamp;
+    }
+    
+    // Validate admin user data (only for admin operations)
+    function isValidAdminUserData(data) {
+      return data.keys().hasAll(['email', 'userType', 'createdAt']) &&
+             data.userType == "Admin" &&
              data.email is string &&
              data.createdAt is timestamp;
     }
@@ -61,13 +69,28 @@ service cloud.firestore {
       allow read: if isAdmin();
       
       // Users can create their own profile during registration
-      allow create: if isAuthenticated() && request.auth.uid == userId && isValidUserData(resource.data);
+      // BUT they CANNOT create admin accounts
+      allow create: if isAuthenticated() && 
+        request.auth.uid == userId && 
+        isValidUserData(resource.data) &&
+        resource.data.userType != "Admin"; // Explicitly prevent admin creation
       
       // Users can update their own profile
-      allow update: if isAuthenticated() && request.auth.uid == userId && isValidUserData(resource.data);
+      // BUT they CANNOT change their userType to Admin
+      allow update: if isAuthenticated() && 
+        request.auth.uid == userId && 
+        isValidUserData(resource.data) &&
+        resource.data.userType != "Admin" &&
+        resource.data.userType == resource.data.userType; // Prevent userType changes
       
       // Admins can update any user profile
-      allow update: if isAdmin() && isValidUserData(resource.data);
+      // BUT they CANNOT create new admin accounts through updates
+      allow update: if isAdmin() && 
+        (isValidUserData(resource.data) || isValidAdminUserData(resource.data)) &&
+        // Prevent changing non-admin users to admin
+        (resource.data.userType == "Admin" || 
+         (resource.data.userType != "Admin" && 
+          resource.data.userType in ['Candidate', 'Employer']));
       
       // Only admins can delete users (handled server-side for cascading deletes)
       allow delete: if isAdmin();

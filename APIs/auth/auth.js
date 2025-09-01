@@ -12,17 +12,43 @@ import { doc, setDoc } from "firebase/firestore";
 
 export const useSignUp = async (email, password, userType) => {
   try {
+    // SECURITY: Prevent admin creation during registration
+    if (userType === "Admin") {
+      console.error(
+        "🚨 SECURITY ALERT: Attempted to create admin account during registration"
+      );
+      errorToast("Invalid user type selected");
+      return { success: false, apiError: "Invalid user type" };
+    }
+
+    // Validate userType is one of the allowed types
+    const allowedUserTypes = ["Candidate", "Employer"];
+    if (!allowedUserTypes.includes(userType)) {
+      console.error(
+        "🚨 SECURITY ALERT: Invalid user type attempted:",
+        userType
+      );
+      errorToast("Invalid user type selected");
+      return { success: false, apiError: "Invalid user type" };
+    }
+
     const userCredential = await createUserWithEmailAndPassword(
       auth,
       email,
       password
     );
     const user = userCredential.user;
+
+    // Create user document with validated userType
     await setDoc(doc(db, "users", user.uid), {
       email: user.email,
-      userType: userType,
+      userType: userType, // This is now guaranteed to be safe
       createdAt: new Date(),
       isFirstTime: true,
+      // Add security metadata
+      createdBy: "self_registration",
+      lastUpdatedBy: "self_registration",
+      lastUpdatedAt: new Date(),
     });
 
     // Send welcome email (don't block registration if email fails)
