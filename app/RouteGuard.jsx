@@ -34,6 +34,11 @@ const RouteGuard = ({ children }) => {
         const userDoc = await getDoc(doc(db, "users", uid));
         const userData = userDoc.exists() ? userDoc.data() : {};
 
+        // Debug logging
+        console.log("RouteGuard - User data:", userData);
+        console.log("RouteGuard - isFirstTime:", userData.isFirstTime);
+        console.log("RouteGuard - userType:", userData.userType);
+
         if (userData.userType === "Candidate") {
           // Restrict Candidate from Employer/Admin routes
           const employerPrefixes = [
