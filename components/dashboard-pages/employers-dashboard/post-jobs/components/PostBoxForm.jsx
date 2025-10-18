@@ -165,9 +165,9 @@ const PostBoxForm = () => {
           <div className="form-group col-lg-12 col-md-12">
             <InputField
               name="name"
-              placeholder="Title"
+              placeholder="Titel"
               required
-              label="Job Title"
+              label="Functietitel"
               fieldType="Text"
               disabled={isFormDisabled}
             />
@@ -176,9 +176,9 @@ const PostBoxForm = () => {
           {/* <!-- About Company --> */}
           <div className="form-group col-lg-12 col-md-12">
             <TextAreaField
-              label="Description"
+              label="Beschrijving"
               name="description"
-              placeholder="Describe what type of job it is"
+              placeholder="Beschrijf het type job"
               required
               disabled={isFormDisabled}
             />
@@ -187,9 +187,9 @@ const PostBoxForm = () => {
           {/* <!-- Input --> */}
           <div className="form-group col-lg-6 col-md-12">
             <InputField
-              label="Email"
+              label="E-mail"
               name="email"
-              placeholder="candidate@gmail.com"
+              placeholder="kandidaat@email.be"
               required
               fieldType="Email"
               disabled={isFormDisabled}
@@ -201,7 +201,7 @@ const PostBoxForm = () => {
               label="Job Type"
               name="job-type"
               options={JOB_TYPE_OPTIONS}
-              placeholder="Select a Job Type"
+              placeholder="Selecteer een Job Type"
               required
               disabled={isFormDisabled}
             />
@@ -210,11 +210,13 @@ const PostBoxForm = () => {
           {/* <!-- Input --> */}
           <div className="form-group col-lg-6 col-md-12">
             <SelectField
-              label="State"
+              label="Provincie"
               name="state"
               options={states}
               placeholder={
-                statesLoading ? "Loading states..." : "Select a state"
+                statesLoading
+                  ? "Provincies laden..."
+                  : "Selecteer een provincie"
               }
               required
               disabled={isFormDisabled || statesLoading}
@@ -224,7 +226,7 @@ const PostBoxForm = () => {
             <AutoSelect
               label="Job Tags"
               placeholder={
-                sectorsLoading ? "Loading sectors..." : "Select Tags"
+                sectorsLoading ? "Sectoren laden..." : "Selecteer Tags"
               }
               name="tags"
               options={sectors}
@@ -333,12 +335,12 @@ const PostBoxForm = () => {
                   style={{ display: "flex", alignItems: "center", gap: "10px" }}
                 >
                   <CircularLoader />
-                  <p style={{ margin: 0 }}>Creating Job Post...</p>
+                  <p style={{ margin: 0 }}>Job Plaatsen...</p>
                 </div>
               ) : jobPostingPermission?.canPost ? (
-                "Post Job"
+                "Job Plaatsen"
               ) : (
-                "Cannot Post Job"
+                "Kan Geen Job Plaatsen"
               )}
             </button>
           </div>

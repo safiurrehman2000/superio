@@ -5,7 +5,7 @@ import TopCardBlock from "./components/TopCardBlock";
 
 const Index = () => {
   return (
-    <EmployerDashboardLayout title="Dashboard Home!">
+    <EmployerDashboardLayout title="Dashboard Overzicht">
       <div className="row">
         <TopCardBlock />
       </div>
@@ -25,7 +25,7 @@ const Index = () => {
           {/* <!-- Notification Widget --> */}
           <div className="notification-widget ls-widget">
             <div className="widget-title">
-              <h4>Notifications</h4>
+              <h4>Meldingen</h4>
             </div>
             <div className="widget-content">
               <Notification />

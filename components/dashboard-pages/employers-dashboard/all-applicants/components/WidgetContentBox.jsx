@@ -181,12 +181,12 @@ const WidgetContentBox = () => {
                           {/* Status indicator */}
                           {candidate.status === "Accepted" && (
                             <span className="badge bg-success me-2">
-                              Accepted
+                              Geaccepteerd
                             </span>
                           )}
                           {candidate.status === "Rejected" && (
                             <span className="badge bg-danger me-2">
-                              Rejected
+                              Afgewezen
                             </span>
                           )}
                         </div>

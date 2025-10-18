@@ -97,14 +97,15 @@ const CvUploader = () => {
             multiple
             onChange={cvManagerHandler}
             disabled={
-              !user?.uid || getError === "Only Candidates can upload resumes"
+              !user?.uid ||
+              getError === "Alleen kandidaten kunnen CV's uploaden"
             }
           />
           <label className="cv-uploadButton" htmlFor="upload">
-            <span className="title">Drop files here to upload</span>
+            <span className="title">Sleep bestanden hier om te uploaden</span>
             <span className="text">
-              To upload file size is (Max 500 KB) and allowed file types are
-              (.doc, .docx, .pdf)
+              Maximale bestandsgrootte is 500 KB en toegestane bestandstypen
+              zijn (.doc, .docx, .pdf)
             </span>
             <span className="theme-btn btn-style-one">
               {isLoading ? (
@@ -112,10 +113,10 @@ const CvUploader = () => {
                   style={{ display: "flex", alignItems: "center", gap: "10px" }}
                 >
                   <CircularLoader />
-                  <p style={{ margin: 0 }}>Uploading Resume...</p>
+                  <p style={{ margin: 0 }}>CV Uploaden...</p>
                 </div>
               ) : (
-                "Upload Resume"
+                "CV Uploaden"
               )}
             </span>
             {getError && <p className="ui-danger mb-0">{getError}</p>}

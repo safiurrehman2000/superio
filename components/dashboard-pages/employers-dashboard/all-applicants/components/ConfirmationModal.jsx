@@ -7,7 +7,7 @@ export const ConfirmationModal = ({
 }) => {
   if (!isOpen) return null;
 
-  const actionText = actionType === "accept" ? "Accept" : "Reject";
+  const actionText = actionType === "accept" ? "Accepteren" : "Afwijzen";
   const actionBtnClass = actionType === "accept" ? "btn-success" : "btn-danger";
 
   return (
@@ -34,12 +34,12 @@ export const ConfirmationModal = ({
       >
         <div className="modal-content">
           <div className="modal-header">
-            <h5 className="modal-title">Confirm {actionText} Application</h5>
+            <h5 className="modal-title">Bevestig {actionText} Sollicitatie</h5>
           </div>
           <div className="modal-body">
             <p>
-              Are you sure you want to {actionText.toLowerCase()} this
-              application?
+              Weet u zeker dat u deze sollicitatie wilt{" "}
+              {actionText.toLowerCase()}?
             </p>
           </div>
           <div className="modal-footer">
@@ -48,7 +48,7 @@ export const ConfirmationModal = ({
               className="btn btn-secondary"
               onClick={onClose}
             >
-              Cancel
+              Annuleren
             </button>
             <button
               type="button"

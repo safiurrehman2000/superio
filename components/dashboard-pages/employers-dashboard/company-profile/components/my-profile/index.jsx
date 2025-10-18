@@ -82,10 +82,12 @@ const index = () => {
                   style={{ display: "flex", alignItems: "center", gap: "10px" }}
                 >
                   {" "}
-                  <CircularLoader /> <p style={{ margin: 0 }}>Saving...</p>{" "}
+                  <CircularLoader /> <p style={{ margin: 0 }}>
+                    Opslaan...
+                  </p>{" "}
                 </div>
               ) : (
-                "Save"
+                "Opslaan"
               )}
             </button>
           </div>

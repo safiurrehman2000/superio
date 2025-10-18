@@ -113,7 +113,7 @@ export const DeleteConfirmationModal = ({
               opacity: isDeleting ? 0.6 : 1,
             }}
           >
-            Cancel
+            Annuleren
           </button>
           <button
             onClick={onConfirm}
@@ -132,7 +132,7 @@ export const DeleteConfirmationModal = ({
             }}
           >
             {isDeleting && <span className="la la-spinner la-spin"></span>}
-            {isDeleting ? "Deleting..." : "Delete Job"}
+            {isDeleting ? "Verwijderen..." : "Job Verwijderen"}
           </button>
         </div>
       </div>

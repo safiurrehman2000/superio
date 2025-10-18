@@ -17,9 +17,9 @@ const FormInfoBox = () => {
       {/* <!-- Input --> */}
       <div className="form-group col-lg-6 col-md-12">
         <InputField
-          label="Full Name"
+          label="Volledige Naam"
           name="name"
-          placeholder="Jerome"
+          placeholder="Jan Janssens"
           required
           fieldType="Name"
           defaultValue={selector.user?.name}
@@ -29,9 +29,9 @@ const FormInfoBox = () => {
       {/* <!-- Input --> */}
       <div className="form-group col-lg-6 col-md-12">
         <InputField
-          label="Job Title"
+          label="Functietitel"
           name="title"
-          placeholder="Cashier"
+          placeholder="Kassier"
           fieldType="Text"
         />
       </div>
@@ -39,9 +39,9 @@ const FormInfoBox = () => {
       {/* <!-- Input --> */}
       <div className="form-group col-lg-6 col-md-12">
         <InputField
-          label="Phone"
+          label="Telefoon"
           name="phone_number"
-          placeholder="111222333444"
+          placeholder="0412345678"
           fieldType="Phone"
         />
       </div>
@@ -49,9 +49,9 @@ const FormInfoBox = () => {
       {/* <!-- Input --> */}
       <div className="form-group col-lg-6 col-md-12">
         <InputField
-          label="Email"
+          label="E-mail"
           name="email"
-          placeholder="candidate@gmail.com"
+          placeholder="kandidaat@email.be"
           fieldType="Email"
         />
       </div>
@@ -59,25 +59,25 @@ const FormInfoBox = () => {
       {/* <!-- Input --> */}
       <div className="form-group col-lg-6 col-md-12">
         <SelectField
-          label="Gender"
+          label="Geslacht"
           name="gender"
           options={GENDERS}
-          placeholder="Select a gender"
+          placeholder="Selecteer geslacht"
         />
       </div>
       <div className="form-group col-lg-6 col-md-12">
         <SelectField
-          label="Age"
+          label="Leeftijd"
           name="age"
           options={AGE_OPTIONS}
-          placeholder="Age"
+          placeholder="Leeftijd"
         />
       </div>
 
       {/* <!-- Input --> */}
       <div className="form-group col-lg-6 col-md-12">
         <SelectField
-          label="Show My Profile"
+          label="Toon Mijn Profiel"
           name="profile_visibility"
           options={PROFILE_VISIBILITY_OPTIONS}
           placeholder=""
@@ -86,7 +86,7 @@ const FormInfoBox = () => {
 
       {/* <!-- About Company --> */}
       <div className="form-group col-lg-12 col-md-12">
-        <TextAreaField label="Description" name="description" />
+        <TextAreaField label="Beschrijving" name="description" />
       </div>
 
       {/* <!-- Input --> */}

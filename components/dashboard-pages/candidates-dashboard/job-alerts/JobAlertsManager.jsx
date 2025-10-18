@@ -138,17 +138,17 @@ const JobAlertsManager = () => {
   };
 
   const handleDelete = async (alertId) => {
-    if (!confirm("Are you sure you want to delete this job alert?")) {
+    if (!confirm("Weet u zeker dat u deze job melding wilt verwijderen?")) {
       return;
     }
 
     try {
       await deleteDoc(doc(db, `users/${selector.user.uid}/jobAlerts`, alertId));
-      successToast("Job alert deleted successfully!");
+      successToast("Job melding succesvol verwijderd!");
       loadJobAlerts();
     } catch (error) {
       console.error("Error deleting job alert:", error);
-      errorToast("Failed to delete job alert");
+      errorToast("Kon job melding niet verwijderen");
     }
   };
 
@@ -160,14 +160,14 @@ const JobAlertsManager = () => {
         { status: newStatus, updatedAt: Timestamp.now() }
       );
       successToast(
-        `Job alert ${
-          newStatus === "active" ? "activated" : "deactivated"
-        } successfully!`
+        `Job melding ${
+          newStatus === "active" ? "geactiveerd" : "gedeactiveerd"
+        } met succes!`
       );
       loadJobAlerts();
     } catch (error) {
       console.error("Error toggling alert status:", error);
-      errorToast("Failed to update alert status");
+      errorToast("Kon melding status niet bijwerken");
     }
   };
 
@@ -177,10 +177,10 @@ const JobAlertsManager = () => {
   };
 
   const frequencyOptions = [
-    { value: "daily", label: "Daily" },
-    { value: "weekly", label: "Weekly" },
-    { value: "biweekly", label: "Bi-weekly" },
-    { value: "monthly", label: "Monthly" },
+    { value: "daily", label: "Dagelijks" },
+    { value: "weekly", label: "Wekelijks" },
+    { value: "biweekly", label: "Tweewekelijks" },
+    { value: "monthly", label: "Maandelijks" },
   ];
 
   const categoryOptions = sectors?.map((sector) => ({
@@ -256,12 +256,10 @@ const JobAlertsManager = () => {
                 <div className="col-lg-6 col-md-12 col-sm-12 form-group">
                   <AutoSelect
                     name="locations"
-                    label="Preferred Locations"
+                    label="Voorkeur Locaties"
                     options={locationOptions}
                     placeholder={
-                      statesLoading
-                        ? "Loading locations..."
-                        : "Select locations"
+                      statesLoading ? "Locaties laden..." : "Selecteer locaties"
                     }
                     isMulti
                     disabled={statesLoading}
@@ -278,12 +276,12 @@ const JobAlertsManager = () => {
                       {saving ? (
                         <>
                           <CircularLoader size={16} />
-                          {editingAlert ? "Updating..." : "Creating..."}
+                          {editingAlert ? "Bijwerken..." : "Aanmaken..."}
                         </>
                       ) : editingAlert ? (
-                        "Update Alert"
+                        "Melding Bijwerken"
                       ) : (
-                        "Create Alert"
+                        "Melding Aanmaken"
                       )}
                     </button>
                     {editingAlert && (
@@ -292,7 +290,7 @@ const JobAlertsManager = () => {
                         className="theme-btn btn-style-two"
                         onClick={handleCancel}
                       >
-                        Cancel
+                        Annuleren
                       </button>
                     )}
                   </div>
