@@ -67,16 +67,20 @@ const DashboardAdmin = () => {
               key={item.id}
               onClick={menuToggleHandler}
             >
-              {item.name === "Logout" ? (
+              {item.name === "Uitloggen" ? (
                 <Link
-                  onClick={() => {
-                    const { success } = useSignOut();
+                  onClick={async (e) => {
+                    e.preventDefault();
+                    const { success } = await useSignOut();
+                    if (success) {
+                      window.location.href = item.routePath;
+                    }
                   }}
                   href={item.routePath}
                 >
                   <i className={`la ${item.icon}`}></i> {item.name}
                 </Link>
-              ) : item.name === "Delete Profile" ? (
+              ) : item.name === "Profiel Verwijderen" ? (
                 <Link
                   onClick={(e) => {
                     e.preventDefault();

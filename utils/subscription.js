@@ -1,6 +1,6 @@
 export const checkSubscriptionStatus = async (userId) => {
   if (!userId) {
-    return { active: false, message: "No user ID provided" };
+    return { active: false, message: "Geen gebruikers-ID opgegeven" };
   }
 
   try {
@@ -13,14 +13,14 @@ export const checkSubscriptionStatus = async (userId) => {
     });
 
     if (!response.ok) {
-      throw new Error("Failed to fetch subscription status");
+      throw new Error("Kon abonnementsstatus niet ophalen");
     }
 
     const data = await response.json();
     return data;
   } catch (error) {
     console.error("Error checking subscription status:", error);
-    return { active: false, message: "Failed to check subscription status" };
+    return { active: false, message: "Kon abonnementsstatus niet controleren" };
   }
 };
 
@@ -30,7 +30,7 @@ export const checkSubscriptionWithJobLimits = async (userId) => {
     return {
       active: false,
       canPost: false,
-      message: "No user ID provided",
+      message: "Geen gebruikers-ID opgegeven",
       jobLimit: 0,
       jobsPosted: 0,
       remainingJobs: 0,
@@ -47,7 +47,7 @@ export const checkSubscriptionWithJobLimits = async (userId) => {
     });
 
     if (!response.ok) {
-      throw new Error("Failed to fetch subscription status");
+      throw new Error("Kon abonnementsstatus niet ophalen");
     }
 
     const data = await response.json();
@@ -57,7 +57,7 @@ export const checkSubscriptionWithJobLimits = async (userId) => {
       return {
         active: false,
         canPost: false,
-        message: "No active subscription",
+        message: "Geen actief abonnement",
         jobLimit: 0,
         jobsPosted: 0,
         remainingJobs: 0,
@@ -74,7 +74,7 @@ export const checkSubscriptionWithJobLimits = async (userId) => {
     });
 
     if (!jobLimitsResponse.ok) {
-      throw new Error("Failed to fetch job posting limits");
+      throw new Error("Kon limieten voor vacatureplaatsing niet ophalen");
     }
 
     const jobLimitsData = await jobLimitsResponse.json();
@@ -89,7 +89,7 @@ export const checkSubscriptionWithJobLimits = async (userId) => {
     return {
       active: false,
       canPost: false,
-      message: "Failed to check subscription status",
+      message: "Kon abonnementsstatus niet controleren",
       jobLimit: 0,
       jobsPosted: 0,
       remainingJobs: 0,
@@ -105,7 +105,7 @@ export const validateJobPostingPermission = async (userId) => {
     return {
       canPost: false,
       message:
-        "You need an active subscription to post jobs. Please subscribe to a plan first.",
+        "U heeft een actief abonnement nodig om vacatures te plaatsen. Abonneer u eerst op een pakket.",
       subscriptionData,
     };
   }
@@ -113,14 +113,14 @@ export const validateJobPostingPermission = async (userId) => {
   if (subscriptionData.remainingJobs <= 0) {
     return {
       canPost: false,
-      message: `You have reached your job posting limit (${subscriptionData.jobLimit} jobs). Please upgrade your subscription to post more jobs.`,
+      message: `U heeft uw limiet voor vacatureplaatsing bereikt (${subscriptionData.jobLimit} vacatures). Upgrade uw abonnement om meer vacatures te plaatsen.`,
       subscriptionData,
     };
   }
 
   return {
     canPost: true,
-    message: `You can post ${subscriptionData.remainingJobs} more job(s) with your current subscription.`,
+    message: `U kunt nog ${subscriptionData.remainingJobs} vacature(s) plaatsen met uw huidige abonnement.`,
     subscriptionData,
   };
 };
@@ -128,7 +128,7 @@ export const validateJobPostingPermission = async (userId) => {
 // Function to manually refresh subscription status (for debugging)
 export const refreshSubscriptionStatus = async (userId) => {
   if (!userId) {
-    return { success: false, message: "No user ID provided" };
+    return { success: false, message: "Geen gebruikers-ID opgegeven" };
   }
 
   try {
@@ -141,13 +141,13 @@ export const refreshSubscriptionStatus = async (userId) => {
     });
 
     if (!response.ok) {
-      throw new Error("Failed to refresh subscription status");
+      throw new Error("Kon abonnementsstatus niet vernieuwen");
     }
 
     const data = await response.json();
     return data;
   } catch (error) {
     console.error("Error refreshing subscription status:", error);
-    return { success: false, message: "Failed to refresh subscription status" };
+    return { success: false, message: "Kon abonnementsstatus niet vernieuwen" };
   }
 };
