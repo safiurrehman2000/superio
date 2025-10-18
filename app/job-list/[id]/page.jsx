@@ -52,12 +52,12 @@ const JobSingleDynamicV3 = ({ params }) => {
     try {
       setBookmarkLoading(true);
       if (!selector?.user?.uid) {
-        errorToast("Please login to bookmark a job");
+        errorToast("Log in om een job op te slaan");
         return;
       }
 
       if (selector?.userType !== "Candidate") {
-        errorToast("Employer cannot bookmark a job");
+        errorToast("Werkgevers kunnen geen jobs opslaan");
         return;
       }
 
@@ -72,7 +72,7 @@ const JobSingleDynamicV3 = ({ params }) => {
       }
     } catch (error) {
       console.error("Error handling bookmark:", error);
-      errorToast("Failed to update bookmark");
+      errorToast("Kon bladwijzer niet bijwerken");
     } finally {
       setBookmarkLoading(false);
     }
@@ -182,14 +182,14 @@ const JobSingleDynamicV3 = ({ params }) => {
                         data-bs-toggle="modal"
                         data-bs-target="#applyJobModal"
                       >
-                        {hasApplied ? "Applied" : "Apply for Job"}
+                        {hasApplied ? "Gesolliciteerd" : "Solliciteer"}
                       </button>
                     ) : (
                       <button
                         onClick={() => push(`/login?id=${id}`)}
                         className="theme-btn btn-style-one"
                       >
-                        Login to Apply
+                        Log in om te Solliciteren
                       </button>
                     )}
                     <button
@@ -197,7 +197,9 @@ const JobSingleDynamicV3 = ({ params }) => {
                       className="bookmark-btn"
                       disabled={bookmarkLoading}
                       aria-label={
-                        isBookmarked ? "Remove bookmark" : "Add bookmark"
+                        isBookmarked
+                          ? "Bladwijzer verwijderen"
+                          : "Bladwijzer toevoegen"
                       }
                       style={{
                         alignItems: !bookmarkLoading ? "center" : undefined,

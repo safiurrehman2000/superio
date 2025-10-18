@@ -2,8 +2,9 @@ import dynamic from "next/dynamic";
 import ChangePassword from "@/components/dashboard-pages/employers-dashboard/change-password";
 
 export const metadata = {
-  title: "Change Password || Superio - Job Borad React NextJS Template",
-  description: "Superio - Job Borad React NextJS Template",
+  title: "Wachtwoord Wijzigen | De Flexijobber - Account Beveiliging",
+  description:
+    "Wijzig uw wachtwoord voor uw De Flexijobber werkgeversaccount voor optimale beveiliging van uw bedrijfsprofiel.",
 };
 
 const index = () => {

@@ -35,7 +35,7 @@ const DefaulHeader2 = () => {
 
   const onSubmit = async (data) => {
     if (!selector.user) {
-      errorToast("Please login to delete your account");
+      errorToast("Log in om uw account te verwijderen");
       return;
     }
     try {
@@ -94,13 +94,13 @@ const DefaulHeader2 = () => {
                 data-bs-toggle="modal"
                 data-bs-target="#loginPopupModal"
               >
-                Login / Register
+                Inloggen / Registreren
               </a>
               <Link
                 href="/employers-dashboard/post-jobs"
                 className="theme-btn btn-style-one"
               >
-                Job Post
+                Vacature Plaatsen
               </Link>
             </div>
           </div>

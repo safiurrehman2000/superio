@@ -26,13 +26,15 @@ export const sendWelcomeEmail = async (
 
     // Updated to match your working EmailJS template parameters
     const templateParams = {
-      title: "Welcome to Flexijobber!",
+      title: "Welkom bij De Flexijobber!",
       email: userEmail, // Changed from to_email to email
       name: userName || userEmail.split("@")[0], // Changed from to_name to name
       // Keeping additional parameters for enhanced templates
       user_type: userType,
-      from_name: "Flexijobber Team",
-      message: `Welcome to Flexijobber! We're excited to have you join our community as a ${userType.toLowerCase()}.`,
+      from_name: "De Flexijobber Team",
+      message: `Welkom bij De Flexijobber! We zijn blij dat u deel uitmaakt van onze community als ${
+        userType === "Candidate" ? "kandidaat" : "werkgever"
+      }.`,
       reply_to: "support@flexijobber.com",
     };
 
@@ -122,20 +124,20 @@ export const sendJobAlertEmail = async (
         : "Recently";
 
       const templateParams = {
-        job_title: job.title || "Job Opportunity",
-        company_name: job.company || job.employerName || "Company",
-        location: job.location || "Location not specified",
+        job_title: job.title || "Job Mogelijkheid",
+        company_name: job.company || job.employerName || "Bedrijf",
+        location: job.location || "Locatie niet gespecificeerd",
         posted_date: jobDate,
-        job_description: job.description || "No description available",
+        job_description: job.description || "Geen beschrijving beschikbaar",
         job_url: `${
           process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
         }/job-list/${job.id}`,
-        alert_keywords: alertKeywords || "your preferences",
+        alert_keywords: alertKeywords || "uw voorkeuren",
         manage_alerts_url: `${
           process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
         }/candidates-dashboard/job-alerts`,
         to_email: userEmail,
-        from_name: "Flexijobber Job Alerts",
+        from_name: "De Flexijobber Job Alerts",
         reply_to: "jobs@flexijobber.com",
       };
 

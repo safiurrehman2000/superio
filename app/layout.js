@@ -25,7 +25,7 @@ export default function RootLayout({ children }) {
   }, []);
 
   return (
-    <html lang="en">
+    <html lang="nl">
       <head>
         <link
           rel="stylesheet"
@@ -34,11 +34,11 @@ export default function RootLayout({ children }) {
         <meta httpEquiv="x-ua-compatible" content="ie=edge" />
         <meta
           name="keywords"
-          content="	candidates, career, employment, indeed, job board, job listing, job portal, job postings, job search, job seeker, jobs, recruiters, recruiting, recruitment, resume"
+          content="flexibele jobs, vacatures, werkgevers, kandidaten, flexwerkers, studentenjobs, bijverdienste, Vlaanderen, flexijobber, jobplatform, werken, solliciteren"
         />
         <meta
           name="description"
-          content="Superio - Job Borad React NextJS Template"
+          content="De Flexijobber - Het toonaangevende platform voor flexibele jobs in Vlaanderen. Verbindt werkgevers met flexwerkers in verschillende sectoren."
         />
         <meta name="ibthemes" content="ATFN" />
 

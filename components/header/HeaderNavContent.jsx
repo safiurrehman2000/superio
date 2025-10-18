@@ -21,7 +21,7 @@ const HeaderNavContent = () => {
               }`}
               href="/"
             >
-              Home
+              Startpagina
             </Link>
           </li>
           {/* End Home menu item */}
@@ -33,7 +33,7 @@ const HeaderNavContent = () => {
               }`}
               href="/job-list"
             >
-              Find Jobs
+              Vacatures zoeken
             </Link>
           </li>
           {/* End findjobs menu items */}
@@ -70,7 +70,7 @@ const HeaderNavContent = () => {
               }`}
               href="/pricing"
             >
-              Pricing
+              Prijzen
             </Link>
           </li>
           <li className={`${pathname === "/faq" ? "current" : ""}`}>
@@ -80,7 +80,7 @@ const HeaderNavContent = () => {
               }`}
               href="/faq"
             >
-              FAQs
+              Veelgestelde vragen
             </Link>
           </li>
         </ul>

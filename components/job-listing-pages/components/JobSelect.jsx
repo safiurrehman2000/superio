@@ -13,11 +13,11 @@ export default function JobSelect() {
   );
 
   const datePostedOptions = [
-    { value: "", label: "Any Time" },
-    { value: "today", label: "Today" },
-    { value: "3days", label: "Last 3 Days" },
-    { value: "week", label: "Last Week" },
-    { value: "month", label: "Last Month" },
+    { value: "", label: "Elke tijd" },
+    { value: "today", label: "Vandaag" },
+    { value: "3days", label: "Laatste 3 Dagen" },
+    { value: "week", label: "Laatste Week" },
+    { value: "month", label: "Laatste Maand" },
   ];
 
   const popularTags = [
@@ -43,7 +43,7 @@ export default function JobSelect() {
               value={selectedJobType}
               onChange={(e) => dispatch(setSelectedJobType(e.target.value))}
             >
-              <option value="">Job Type</option>
+              <option value="">Functie Type</option>
               {JOB_TYPE_OPTIONS.map((type) => (
                 <option key={type.value} value={type.value}>
                   {type.label}

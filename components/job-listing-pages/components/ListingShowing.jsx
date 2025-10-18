@@ -41,15 +41,15 @@ const ListingShowing = () => {
   return (
     <div className="ls-show-more">
       <p>
-        Showing {showingCount} of {totalJobs} Jobs
+        {showingCount} van {totalJobs} Jobs weergegeven
       </p>
       <div className="bar">
         <span className="bar-inner" style={{ width: `${percentage}%` }}></span>
       </div>
       <button className="show-more" onClick={handleShowMore}>
         {totalJobs - showingCount <= 10
-          ? "Show All"
-          : `Show More (+${Math.min(10, totalJobs - showingCount)})`}
+          ? "Toon Alles"
+          : `Toon Meer (+${Math.min(10, totalJobs - showingCount)})`}
       </button>
     </div>
   );

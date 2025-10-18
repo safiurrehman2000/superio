@@ -45,7 +45,7 @@ const SearchForm4 = () => {
           <input
             type="text"
             name="job_title"
-            placeholder="Job title, keywords, or company"
+            placeholder="Functie, sleutelwoorden, of bedrijf"
             value={searchParams.job_title}
             onChange={handleInputChange}
           />
@@ -57,7 +57,7 @@ const SearchForm4 = () => {
           <input
             type="text"
             name="province"
-            placeholder="Province"
+            placeholder="Provincie"
             value={searchParams.province}
             onChange={handleInputChange}
           />
@@ -69,12 +69,13 @@ const SearchForm4 = () => {
           <select
             className="chosen-single form-select"
             name="category"
+            placeholder="Kies een categorie"
             value={searchParams.category}
             onChange={handleInputChange}
             disabled={sectorsLoading}
           >
             <option value="">
-              {sectorsLoading ? "Loading categories..." : "Choose a category"}
+              {sectorsLoading ? "Loading categories..." : "Kies een categorie"}
             </option>
             {sectors.map((item, index) => (
               <option key={index} value={item.value}>
@@ -87,7 +88,7 @@ const SearchForm4 = () => {
         {/* Submit Button */}
         <div className="form-group col-lg-3 col-md-6 col-sm-12 text-right">
           <button type="submit" className="theme-btn btn-style-one">
-            Find Jobs
+            Vacatures zoeken
           </button>
         </div>
       </div>

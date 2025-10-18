@@ -25,7 +25,7 @@ const JobSearchForm = () => {
 
           <div className="form-group col-lg-2 col-md-12 col-sm-12 text-right">
             <button type="submit" className="theme-btn btn-style-one">
-              Find Jobs
+              Vacatures zoeken
             </button>
           </div>
           {/* <!-- Form Group --> */}

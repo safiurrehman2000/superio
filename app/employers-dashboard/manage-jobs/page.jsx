@@ -2,8 +2,9 @@ import dynamic from "next/dynamic";
 import ManageJobs from "@/components/dashboard-pages/employers-dashboard/manage-jobs";
 
 export const metadata = {
-  title: "Manage Jobs || Superio - Job Borad React NextJS Template",
-  description: "Superio - Job Borad React NextJS Template",
+  title: "Jobs Beheren | De Flexijobber - Vacatures Beheer",
+  description:
+    "Beheer en bewerk uw gepubliceerde vacatures voor flexibele jobs in Vlaanderen via uw De Flexijobber werkgeversdashboard.",
 };
 
 const index = () => {

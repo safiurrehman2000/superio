@@ -36,7 +36,7 @@ const FormContent = () => {
     try {
       await setAuthPersistence(data.rememberMe);
     } catch (e) {
-      setApiError("Failed to set authentication persistence.");
+      setApiError("Kon authenticatiepersistentie niet instellen.");
       setIsLoading(false);
       return;
     }
@@ -67,7 +67,7 @@ const FormContent = () => {
       <div className="text-center mb-5">
         <Image width={154} height={50} src={LOGO} alt="De Flexijobber Logo" />
       </div>
-      <h3 className="text-center">Login to Flexijobber</h3>
+      <h3 className="text-center">Login bij De Flexijobber</h3>
 
       <FormProvider {...methods}>
         <form
@@ -80,18 +80,18 @@ const FormContent = () => {
           method="post"
         >
           <InputField
-            label="Email"
+            label="E-mail"
             name="email"
             type="email"
-            placeholder="Email"
+            placeholder="E-mail"
             required
             fieldType="Email"
           />
           <InputField
-            label="Password"
+            label="Wachtwoord"
             name="password"
             type="password"
-            placeholder="Password"
+            placeholder="Wachtwoord"
             required
             fieldType="Password"
           />
@@ -109,7 +109,7 @@ const FormContent = () => {
                   }
                 />
                 <label htmlFor="remember" className="remember">
-                  <span className="custom-checkbox"></span> Remember me
+                  <span className="custom-checkbox"></span> Onthoud mij
                 </label>
               </div>
               <a
@@ -117,7 +117,7 @@ const FormContent = () => {
                 className="pwd"
                 style={{ textDecoration: "underline", color: "#fa5508" }}
               >
-                Forgot password?
+                Wachtwoord vergeten?
               </a>
             </div>
           </div>
@@ -133,11 +133,11 @@ const FormContent = () => {
                 <div className="d-flex justify-content-center gap-2">
                   <CircularLoader />
                   <p className={`${isLoading ? "text-black" : "text-white"}`}>
-                    Logging in...
+                    Inloggen...
                   </p>
                 </div>
               ) : (
-                "Login"
+                "Inloggen"
               )}
             </button>
             {apiError && (
@@ -149,7 +149,7 @@ const FormContent = () => {
 
       <div className="bottom-box">
         <div className="text d-flex justify-content-center">
-          Don't have an account?&nbsp;
+          Nog geen account?&nbsp;
           <div
             style={{
               cursor: "pointer",
@@ -162,7 +162,7 @@ const FormContent = () => {
               } else push("/register");
             }}
           >
-            Signup
+            Registreren
           </div>
         </div>
       </div>

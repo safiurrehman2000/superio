@@ -3,18 +3,14 @@ import dynamic from "next/dynamic";
 import Faq from "@/components/pages-menu/faq";
 
 export const metadata = {
-  title: 'Faq || Superio - Job Borad React NextJS Template',
+  title: "Veelgestelde Vragen | De Flexijobber - FAQ",
   description:
-    'Superio - Job Borad React NextJS Template',
-  
-}
-
-
+    "Vind antwoorden op veelgestelde vragen over flexibele jobs, vacatures plaatsen, solliciteren en meer bij De Flexijobber.",
+};
 
 const index = () => {
   return (
     <>
-      
       <Faq />
     </>
   );

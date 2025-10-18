@@ -16,20 +16,20 @@ const Register = () => {
       <div className="text-center mb-5">
         <Image width={154} height={50} src={LOGO} alt="De Flexijobber Logo" />
       </div>
-      <h3 className="text-center">Create your Flexijobber account</h3>
+      <h3 className="text-center">Maak uw Flexijobber account aan</h3>
 
       <Tabs>
         <div className="form-group register-dual">
           <TabList className="btn-box row">
             <Tab className="col-lg-6 col-md-12">
               <button className="theme-btn btn-style-four">
-                <i className="la la-user"></i> Candidate
+                <i className="la la-user"></i> Kandidaat
               </button>
             </Tab>
 
             <Tab className="col-lg-6 col-md-12">
               <button className="theme-btn btn-style-four">
-                <i className="la la-briefcase"></i> Employer
+                <i className="la la-briefcase"></i> Werkgever
               </button>
             </Tab>
           </TabList>
@@ -50,7 +50,7 @@ const Register = () => {
 
       <div className="bottom-box">
         <div className="text d-flex justify-content-center">
-          Already have an account?&nbsp;
+          Heeft u al een account?&nbsp;
           <div
             style={{ cursor: "pointer" }}
             onClick={() => {
@@ -59,11 +59,11 @@ const Register = () => {
               } else push("/login");
             }}
           >
-            Login
+            Inloggen
           </div>
         </div>
         <div className="divider">
-          <span>or</span>
+          <span>of</span>
         </div>
         <LoginWithSocial />
       </div>

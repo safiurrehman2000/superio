@@ -52,18 +52,18 @@ const FormContent = ({ userType }) => {
         action="add-parcel.html"
       >
         <InputField
-          label="Email Address"
+          label="E-mailadres"
           name="email"
           type="email"
-          placeholder="Email"
+          placeholder="E-mail"
           required
           fieldType="Email"
         />
         <InputField
-          label="Password"
+          label="Wachtwoord"
           name="password"
           type="password"
-          placeholder="Password"
+          placeholder="Wachtwoord"
           required
           fieldType="Password"
         />
@@ -79,11 +79,11 @@ const FormContent = ({ userType }) => {
               <div className="d-flex justify-content-center gap-2 align-items-center">
                 <CircularLoader size={24} strokeColor="#000" />
                 <p className={isLoading ? "text-black" : "text-white"}>
-                  Registering...
+                  Registreren...
                 </p>
               </div>
             ) : (
-              "Register"
+              "Registreren"
             )}
           </button>
           {apiError && (

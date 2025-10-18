@@ -8,16 +8,17 @@ const CallToAction2 = () => {
     >
       <div className="auto-container" data-aos="fade-up">
         <div className="sec-title light text-center">
-          <h2>Make a difference with your Flexi-Job CV!</h2>
+          <h2>Maak het verschil met je Flexi-Job CV!</h2>
           <div className="text">
-            Create an account today! ( Login/Register). Complete your profile on
-            the dashboard. Upload your CV. Highlight your skills and experience
-            and choose the flexi-job that suits you best. Follow all
-            applications very easily via the dashboard. Also follow us on
-            Facebook for the latest new vacancies Subscribe to our newsletter to
-            stay informed of fun news in the world of De flexijobber. Do you
-            have any questions? Consult the FAQ questions under the heading
-            Flexi-Jobbers. Use our WhatsApp chat. We are happy to help you.
+            Maak vandaag nog een account aan ! ( Login/Registreer). Vervolledig
+            jouw profiel op het dashboard. Upload jouw CV. Benadruk jouw
+            vaardigheden en ervaring en kies de flexi-job die het best bij jouw
+            past. Volg alle sollicitaties heel eenvoudig op via het dashboard.
+            Volg ons ook op Facebook voor de laatste nieuwe vacatures Schrijf je
+            in voor onze nieuwsbrief om op de hoogte te blijven van leuk nieuws
+            in de wereld van De flexijobber. Heb je nog vragen ? Raadpleeg de
+            FAQ vragen onder de rubriek Flexi-Jobbers. Gebruik onze WhatsApp
+            chat. Wij helpen je graag verder.
           </div>
         </div>
 

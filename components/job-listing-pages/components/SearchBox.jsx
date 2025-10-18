@@ -42,7 +42,7 @@ const SearchBox = () => {
       <input
         type="text"
         name="listing-search"
-        placeholder="Job title, keywords, or company"
+        placeholder="Functie, sleutelwoorden, of bedrijf"
         value={searchValue}
         onChange={handleSearch}
       />

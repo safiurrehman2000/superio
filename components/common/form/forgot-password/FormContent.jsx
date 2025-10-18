@@ -52,7 +52,7 @@ const FormContent2 = () => {
               alt="De Flexijobber Logo"
             />
           </div>
-          <h3 className="text-center">Forgot Password</h3>
+          <h3 className="text-center">Wachtwoord Vergeten</h3>
           {/* <!--Login Form--> */}
 
           <div className="form-group">
@@ -60,7 +60,7 @@ const FormContent2 = () => {
               name="email"
               fieldType="Email"
               required
-              label="Type your email to reset your password"
+              label="Voer uw e-mailadres in om uw wachtwoord te resetten"
             />
           </div>
           {/* name */}
@@ -82,11 +82,11 @@ const FormContent2 = () => {
                 <div className="d-flex justify-content-center gap-2">
                   <CircularLoader />
                   <p className={`${loading ? "text-black" : "text-white"}`}>
-                    Sending Link...
+                    Link Verzenden...
                   </p>
                 </div>
               ) : (
-                "Send Reset Link"
+                "Reset Link Verzenden"
               )}
             </button>
           </div>
@@ -108,7 +108,7 @@ const FormContent2 = () => {
                   textDecoration: "none",
                 }}
               >
-                Back to Login
+                Terug naar Login
               </span>
             </p>
           </div>

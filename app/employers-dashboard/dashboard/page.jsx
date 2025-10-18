@@ -2,8 +2,9 @@ import dynamic from "next/dynamic";
 import DashboadHome from "@/components/dashboard-pages/employers-dashboard/dashboard";
 
 export const metadata = {
-  title: "Employeers Dashboard || Superio - Job Borad React NextJS Template",
-  description: "Superio - Job Borad React NextJS Template",
+  title: "Werkgever Dashboard | De Flexijobber - Beheer Vacatures",
+  description:
+    "Beheer uw vacatures en bekijk sollicitanten voor flexibele jobs in Vlaanderen via uw De Flexijobber werkgeversdashboard.",
 };
 
 const index = () => {

@@ -1,44 +1,44 @@
 export const getFirebaseErrorMessage = (error) => {
-  let errorMessage = "An error occurred. Please try again.";
+  let errorMessage = "Er is een fout opgetreden. Probeer het opnieuw.";
   switch (error.code) {
     // Registration/Sign-up errors
     case "auth/email-already-in-use":
-      errorMessage = "This email is already registered.";
+      errorMessage = "Dit e-mailadres is al geregistreerd.";
       break;
     case "auth/invalid-email":
-      errorMessage = "Please enter a valid email address.";
+      errorMessage = "Voer een geldig e-mailadres in.";
       break;
     case "auth/weak-password":
-      errorMessage = "Password is too weak. Please use a stronger password.";
+      errorMessage = "Wachtwoord is te zwak. Gebruik een sterker wachtwoord.";
       break;
     case "auth/operation-not-allowed":
-      errorMessage = "This operation is currently disabled.";
+      errorMessage = "Deze bewerking is momenteel uitgeschakeld.";
       break;
 
     // Login errors
     case "auth/user-not-found":
-      errorMessage = "No account found with this email.";
+      errorMessage = "Geen account gevonden met dit e-mailadres.";
       break;
     case "auth/wrong-password":
-      errorMessage = "Incorrect password. Please try again.";
+      errorMessage = "Onjuist wachtwoord. Probeer het opnieuw.";
       break;
     case "auth/too-many-requests":
-      errorMessage = "Too many attempts. Please try again later.";
+      errorMessage = "Te veel pogingen. Probeer het later opnieuw.";
       break;
 
     // Sign-out errors
     case "auth/network-request-failed":
       errorMessage =
-        "Network error. Please check your connection and try again.";
+        "Netwerkfout. Controleer uw verbinding en probeer het opnieuw.";
       break;
 
     // General errors
     case "auth/invalid-credential":
       errorMessage =
-        "Invalid credentials. Please check your email and password.";
+        "Ongeldige inloggegevens. Controleer uw e-mail en wachtwoord.";
       break;
     default:
-      errorMessage = `Operation failed: ${error.message}`;
+      errorMessage = `Bewerking mislukt: ${error.message}`;
   }
   return errorMessage;
 };
@@ -48,7 +48,7 @@ export const LOGO = "/images/logo-deflexijobber.png";
 export const candidateMenuData = [
   {
     id: 2,
-    name: "My Profile",
+    name: "Mijn Profiel",
     icon: "la-user-tie",
     routePath: "/candidates-dashboard/my-profile",
     active: "",
@@ -56,7 +56,7 @@ export const candidateMenuData = [
 
   {
     id: 4,
-    name: "Applied Jobs",
+    name: "Gesolliciteerde Jobs",
     icon: "la-briefcase",
     routePath: "/candidates-dashboard/applied-jobs",
     active: "",
@@ -64,42 +64,42 @@ export const candidateMenuData = [
 
   {
     id: 6,
-    name: "Shortlisted Jobs",
+    name: "Bewaarde Jobs",
     icon: "la-bookmark-o",
     routePath: "/candidates-dashboard/short-listed-jobs",
     active: "",
   },
   {
     id: 7,
-    name: "CV manager",
+    name: "CV Beheer",
     icon: "la la-file-invoice",
     routePath: "/candidates-dashboard/cv-manager",
     active: "",
   },
   {
     id: 8,
-    name: "Job Alerts",
+    name: "Job Meldingen",
     icon: "la-bell",
     routePath: "/candidates-dashboard/job-alerts",
     active: "",
   },
   {
     id: 10,
-    name: "Change Password",
+    name: "Wachtwoord Wijzigen",
     icon: "la-lock",
     routePath: "/candidates-dashboard/change-password",
     active: "",
   },
   {
     id: 11,
-    name: "Logout",
+    name: "Uitloggen",
     icon: "la-sign-out",
     routePath: "/login",
     active: "",
   },
   {
     id: 12,
-    name: "Delete Profile",
+    name: "Profiel Verwijderen",
     icon: "la-trash",
     routePath: "/",
     active: "",
@@ -116,49 +116,49 @@ export const adminMenuData = [
   },
   {
     id: 2,
-    name: "Edit Job Posts",
+    name: "Jobs Bewerken",
     icon: "la-edit",
     routePath: "/admin-dashboard/edit-job-posts",
     active: "",
   },
   {
     id: 3,
-    name: "Edit Users",
+    name: "Gebruikers Bewerken",
     icon: "la-users",
     routePath: "/admin-dashboard/edit-users",
     active: "",
   },
   {
     id: 4,
-    name: "Post Job for Employer",
+    name: "Job Plaatsen Voor Werkgever",
     icon: "la-paper-plane",
     routePath: "/admin-dashboard/post-job-for-employer",
     active: "",
   },
   {
     id: 5,
-    name: "Manage Options",
+    name: "Opties Beheren",
     icon: "la-cog",
     routePath: "/admin-dashboard/manage-options",
     active: "",
   },
   {
     id: 6,
-    name: "Manage Pricing",
+    name: "Prijzen Beheren",
     icon: "la-credit-card",
     routePath: "/admin-dashboard/manage-pricing",
     active: "",
   },
   {
     id: 7,
-    name: "Manage FAQ",
+    name: "FAQ Beheren",
     icon: "la-question-circle",
     routePath: "/admin-dashboard/manage-faq",
     active: "",
   },
   {
     id: 8,
-    name: "Logout",
+    name: "Uitloggen",
     icon: "la-sign-out",
     routePath: "/login",
     active: "",
@@ -175,28 +175,28 @@ export const employerMenuData = [
   },
   {
     id: 2,
-    name: "Company Profile",
+    name: "Bedrijfsprofiel",
     icon: "la-user-tie",
     routePath: "/employers-dashboard/company-profile",
     active: "",
   },
   {
     id: 3,
-    name: "Post a New Job",
+    name: "Nieuwe Job Plaatsen",
     icon: "la-paper-plane",
     routePath: "/employers-dashboard/post-jobs",
     active: "",
   },
   {
     id: 4,
-    name: "Manage Jobs",
+    name: "Jobs Beheren",
     icon: "la-briefcase",
     routePath: "/employers-dashboard/manage-jobs",
     active: "",
   },
   {
     id: 5,
-    name: "All Applicants",
+    name: "Alle Sollicitanten",
     icon: "la-file-invoice",
     routePath: "/employers-dashboard/all-applicants",
     active: "",
@@ -204,7 +204,7 @@ export const employerMenuData = [
 
   {
     id: 7,
-    name: "Packages",
+    name: "Pakketten",
     icon: "la-box",
     routePath: "/employers-dashboard/packages",
     active: "",
@@ -212,21 +212,21 @@ export const employerMenuData = [
 
   {
     id: 10,
-    name: "Change Password",
+    name: "Wachtwoord Wijzigen",
     icon: "la-lock",
     routePath: "/employers-dashboard/change-password",
     active: "",
   },
   {
     id: 11,
-    name: "Logout",
+    name: "Uitloggen",
     icon: "la-sign-out",
     routePath: "/login",
     active: "",
   },
   {
     id: 12,
-    name: "Delete Profile",
+    name: "Profiel Verwijderen",
     icon: "la-trash",
     routePath: "/",
     active: "",
@@ -234,51 +234,51 @@ export const employerMenuData = [
 ];
 
 export const GENDERS = [
-  { value: "male", label: "Male" },
-  { value: "female", label: "Female" },
-  { value: "other", label: "Other" },
+  { value: "male", label: "Man" },
+  { value: "female", label: "Vrouw" },
+  { value: "other", label: "Anders" },
 ];
 
 export const STATES = [
-  { value: "antwerp", label: "Antwerp" },
+  { value: "antwerp", label: "Antwerpen" },
   { value: "limburg", label: "Limburg" },
-  { value: "east-flanders", label: "East Flanders" },
-  { value: "flemish-brabant", label: "Flemish Brabant" },
-  { value: "west-flanders", label: "West Flanders" },
+  { value: "east-flanders", label: "Oost-Vlaanderen" },
+  { value: "flemish-brabant", label: "Vlaams-Brabant" },
+  { value: "west-flanders", label: "West-Vlaanderen" },
 ];
 
 export const SECTORS = [
-  { value: "funeral-sector", label: "Funeral sector" },
-  { value: "moving-sector", label: "Moving sector" },
-  { value: "power-supply", label: "Power supply" },
-  { value: "department-stores", label: "Department stores" },
-  { value: "independent-retail", label: "Independent retail" },
-  { value: "automotive-sector", label: "Automotive sector" },
-  { value: "bakeries", label: "Bakeries" },
-  { value: "cinemas", label: "Cinemas" },
-  { value: "buses-and-coaches", label: "Buses and coaches" },
+  { value: "funeral-sector", label: "Uitvaartsector" },
+  { value: "moving-sector", label: "Verhuissector" },
+  { value: "power-supply", label: "Energievoorziening" },
+  { value: "department-stores", label: "Warenhuizen" },
+  { value: "independent-retail", label: "Zelfstandige detailhandel" },
+  { value: "automotive-sector", label: "Autosector" },
+  { value: "bakeries", label: "Bakkerijen" },
+  { value: "cinemas", label: "Bioscopen" },
+  { value: "buses-and-coaches", label: "Bussen en touringcars" },
   { value: "entertainment", label: "Entertainment" },
-  { value: "event-sector", label: "Event Sector" },
-  { value: "fashion-clothing", label: "Fashion/Clothing" },
-  { value: "food-products", label: "Trade in Food Products" },
-  { value: "hotel-sector", label: "Hotel Sector" },
-  { value: "real-estate-sector", label: "Real Estate Sector" },
-  { value: "childcare", label: "Childcare" },
-  { value: "food-retail-trade", label: "Food Retail Trade" },
+  { value: "event-sector", label: "Eventsector" },
+  { value: "fashion-clothing", label: "Mode/Kledij" },
+  { value: "food-products", label: "Handel in voedingsproducten" },
+  { value: "hotel-sector", label: "Hotelsector" },
+  { value: "real-estate-sector", label: "Vastgoedsector" },
+  { value: "childcare", label: "Kinderopvang" },
+  { value: "food-retail-trade", label: "Voedingsdetailhandel" },
   {
     value: "agriculture-and-horticulture",
-    label: "Agriculture and Horticulture",
+    label: "Land- en tuinbouw",
   },
   {
     value: "medium-sized-food-companies",
-    label: "Medium Sized Food Companies",
+    label: "Middelgrote voedingsbedrijven",
   },
-  { value: "education", label: "Education" },
-  { value: "driving-schools", label: "Driving Schools" },
+  { value: "education", label: "Onderwijs" },
+  { value: "driving-schools", label: "Rijscholen" },
   { value: "sport", label: "Sport" },
   {
     value: "sports-and-culture-in-the-flemish-community",
-    label: "Sports and Culture in the Flemish Community",
+    label: "Sport en Cultuur in de Vlaamse Gemeenschap",
   },
 ];
 export const AGE_OPTIONS = [
@@ -290,15 +290,15 @@ export const AGE_OPTIONS = [
 ];
 
 export const PROFILE_VISIBILITY_OPTIONS = [
-  { value: "yes", label: "Yes" },
-  { value: "no", label: "No" },
+  { value: "yes", label: "Ja" },
+  { value: "no", label: "Nee" },
 ];
 
 export const JOB_TYPE_OPTIONS = [
-  { value: "english_speaking_job", label: "English speaking job" },
+  { value: "english_speaking_job", label: "Engels sprekend werk" },
   { value: "flexijobber", label: "Flexijobber" },
-  { value: "retired_people", label: "Retired people" },
-  { value: "student_job", label: "Student job" },
+  { value: "retired_people", label: "Ouderen" },
+  { value: "student_job", label: "Student werk" },
 ];
 
 export const formatString = (str) => {

@@ -23,14 +23,13 @@ const index = ({ footerStyle = "" }) => {
                   </a>
                 </div>
                 <p className="phone-num">
-                  <span>Call us </span>
-                  <a href="thebeehost@support.com">123 456 7890</a>
+                  <span>Bel ons </span>
+                  <a href="tel:+32123456789">+32 123 456 789</a>
                 </p>
                 <p className="address">
-                  329 Queensberry Street, North Melbourne VIC
-                  <br /> 3051, Australia. <br />
-                  <a href="mailto:support@superio.com" className="email">
-                    support@superio.com
+                  Vlaanderen, België <br />
+                  <a href="mailto:support@deflexijobber.be" className="email">
+                    support@deflexijobber.be
                   </a>
                 </p>
               </div>

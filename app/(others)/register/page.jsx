@@ -3,8 +3,9 @@ import dynamic from "next/dynamic";
 import RegisterForm from "@/components/pages-menu/register";
 
 export const metadata = {
-  title: "Register || Superio - Job Borad React NextJS Template",
-  description: "Superio - Job Borad React NextJS Template",
+  title: "Registreren | De Flexijobber - Maak een Account aan",
+  description:
+    "Registreer bij De Flexijobber als flexwerker of werkgever en ontdek flexibele job mogelijkheden in Vlaanderen.",
 };
 
 const index = () => {

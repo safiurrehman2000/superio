@@ -3,18 +3,14 @@ import dynamic from "next/dynamic";
 import About from "@/components/pages-menu/about";
 
 export const metadata = {
-  title: 'About || Superio - Job Borad React NextJS Template',
+  title: "Over Ons | De Flexijobber - Flexibele Jobs Platform",
   description:
-    'Superio - Job Borad React NextJS Template',
-  
-}
-
-
+    "Leer meer over De Flexijobber, het toonaangevende platform voor flexibele jobs in Vlaanderen. Ontdek onze missie en hoe wij werkgevers en flexwerkers met elkaar verbinden.",
+};
 
 const index = () => {
   return (
     <>
-      
       <About />
     </>
   );

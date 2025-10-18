@@ -30,7 +30,7 @@ const LocationBox = () => {
       <input
         type="text"
         name="listing-search"
-        placeholder="City or postcode"
+        placeholder="Stad of postcode"
         value={locationValue}
         onChange={handleLocationChange}
         className="location-search-input"

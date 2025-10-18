@@ -23,7 +23,7 @@ const index = () => {
       <section className="pricing-section">
         <div className="auto-container">
           <div className="sec-title text-center">
-            <h2>Pricing Packages</h2>
+            <h2>Adverteren</h2>
             <div className="text">
               <PricingPackages />
             </div>

@@ -40,7 +40,7 @@ const Categories = () => {
         disabled={sectorsLoading}
       >
         <option value="">
-          {sectorsLoading ? "Loading categories..." : "Choose a category"}
+          {sectorsLoading ? "Categorieën laden..." : "Kies een categorie"}
         </option>
         {sectors.map((item, index) => (
           <option key={index} value={item.value}>
