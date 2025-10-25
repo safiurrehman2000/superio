@@ -1,10 +1,5 @@
-import Image from "next/image";
-import CommentBox from "./CommentBox";
-import Form from "./Form";
-import Pagination from "./Pagination";
-import SocialShare from "./SocialShare";
-import Tag from "./Tag";
 import { blogContent } from "@/data/blogs";
+import Link from "next/link";
 
 const index = ({ blogId = 1 }) => {
   const content = blogContent[blogId] || [];
@@ -26,19 +21,36 @@ const index = ({ blogId = 1 }) => {
             </p>
           );
         } else if (item.type === "link") {
-          return (
-            <a
-              key={index}
-              href={item.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                color: "var(--primary-color)",
-              }}
-            >
-              {item.text}
-            </a>
-          );
+          // Check if it's an internal link (starts with /) or external link
+          const isInternalLink = item.href.startsWith("/");
+
+          if (isInternalLink) {
+            return (
+              <Link
+                key={index}
+                href={item.href}
+                style={{
+                  color: "var(--primary-color)",
+                }}
+              >
+                {item.text}
+              </Link>
+            );
+          } else {
+            return (
+              <a
+                key={index}
+                href={item.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  color: "var(--primary-color)",
+                }}
+              >
+                {item.text}
+              </a>
+            );
+          }
         }
         return null;
       })}

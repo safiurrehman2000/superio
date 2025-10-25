@@ -36,7 +36,7 @@ const index = () => {
         </section>
       )}
 
-      <section className="job-section">
+      {/* <section className="job-section">
         <div className="auto-container">
           <div className="sec-title text-center">
             <h2>Featured Jobs</h2>
@@ -49,7 +49,7 @@ const index = () => {
             <JobFeatured1 />
           </div>
         </div>
-      </section>
+      </section> */}
       {/* End Job Featured Section */}
       <CallToAction2 />
 
@@ -68,7 +68,7 @@ const index = () => {
         </div>
       </section>
 
-      <section className="job-categories style-two">
+      {/* <section className="job-categories style-two">
         <div className="auto-container">
           <div className="sec-title text-center">
             <h2>Popular Job Categories</h2>
@@ -80,11 +80,10 @@ const index = () => {
             data-aos="fade-up"
             data-aos-anchor-placement="top-bottom"
           >
-            {/* <!-- Category Block --> */}
             <JobCategorie1 />
           </div>
         </div>
-      </section>
+      </section> */}
 
       <FooterDefault />
       {/* <!-- End Main Footer --> */}

@@ -132,7 +132,11 @@ const RouteGuard = ({ children }) => {
             dispatch(addJobId(searchParams.get("id")));
           }
           if (userData.isFirstTime) {
-            if (pathname !== "/create-profile-candidate") {
+            if (
+              pathname !== "/create-profile-candidate" &&
+              pathname !== "/contact" &&
+              !pathname.startsWith("/blog-details")
+            ) {
               push("/create-profile-candidate");
             }
           } else {
@@ -159,7 +163,11 @@ const RouteGuard = ({ children }) => {
               (page) => pathname === page
             );
 
-            if (!lastValidPage) {
+            if (
+              !lastValidPage &&
+              pathname !== "/contact" &&
+              !pathname.startsWith("/blog-details")
+            ) {
               // If current page is not a valid onboarding page, redirect to the last valid page or default to pricing
               const lastPage =
                 localStorage.getItem(`lastOnboardingPage_${uid}`) ||
@@ -170,7 +178,11 @@ const RouteGuard = ({ children }) => {
               localStorage.setItem(`lastOnboardingPage_${uid}`, pathname);
             }
           } else if (!userData.hasPostedJob) {
-            if (pathname !== "/create-profile-employer") {
+            if (
+              pathname !== "/create-profile-employer" &&
+              pathname !== "/contact" &&
+              !pathname.startsWith("/blog-details")
+            ) {
               push("/create-profile-employer");
             }
           } else {
