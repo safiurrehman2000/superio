@@ -4,40 +4,55 @@ import Form from "./Form";
 import Pagination from "./Pagination";
 import SocialShare from "./SocialShare";
 import Tag from "./Tag";
+import { blogContent } from "@/data/blogs";
 
-const index = () => {
+const index = ({ blogId = 1 }) => {
+  const content = blogContent[blogId] || [];
+
   return (
     <div className="auto-container">
-      <h4>Course Description</h4>
+      {content.map((item, index) => {
+        if (item.type === "heading") {
+          return <h4 key={index}>{item.content}</h4>;
+        } else if (item.type === "paragraph") {
+          return (
+            <p key={index}>
+              {item.content.split("\n").map((line, lineIndex) => (
+                <div key={lineIndex}>
+                  {line}
+                  {lineIndex < item.content.split("\n").length - 1 && <br />}
+                </div>
+              ))}
+            </p>
+          );
+        } else if (item.type === "link") {
+          return (
+            <a
+              key={index}
+              href={item.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                color: "var(--primary-color)",
+              }}
+            >
+              {item.text}
+            </a>
+          );
+        }
+        return null;
+      })}
 
-      <p>
-        Aliquam hendrerit sollicitudin purus, quis rutrum mi accumsan nec.
-        Quisque bibendum orci ac nibh facilisis, at malesuada orci congue.
-        Nullam tempus sollicitudin cursus. Ut et adipiscing erat. Curabitur this
-        is a text link libero tempus congue.
-      </p>
-
-      <p>
-        Duis mattis laoreet neque, et ornare neque sollicitudin at. Proin
-        sagittis dolor sed mi elementum pretium. Donec et justo ante. Vivamus
-        egestas sodales est, eu rhoncus urna semper eu. Cum sociis natoque
-        penatibus et magnis dis parturient montes, nascetur ridiculus mus.
-        Integer tristique elit lobortis purus bibendum, quis dictum metus
-        mattis. Phasellus posuere felis sed eros porttitor mattis. Curabitur
-        massa magna, tempor in blandit id, porta in ligula. Aliquam laoreet nisl
-        massa, at interdum mauris sollicitudin et.
-      </p>
-
-      <blockquote className="blockquote-style-one mb-5 mt-5">
+      {/* <blockquote className="blockquote-style-one mb-5 mt-5">
         <p>
           Aliquam hendrerit sollicitudin purus, quis rutrum mi accumsan nec.
           Quisque bibendum orci ac nibh facilisis, at malesuada orci congue.{" "}
         </p>
         <cite>Luis Pickford</cite>
-      </blockquote>
+      </blockquote> */}
       {/* End BlogQuote */}
 
-      <h4>What you&apos;ll learn</h4>
+      {/* <h4>What you&apos;ll learn</h4>
       <ul className="list-style-four">
         <li>Become a UI/UX designer.</li>
         <li>Build a UI project from beginning to end.</li>
@@ -49,19 +64,19 @@ const index = () => {
         <li>You will be able to start earning money Figma skills.</li>
         <li>Work with colors & fonts.</li>
         <li>You will create your own UI Kit.</li>
-      </ul>
+      </ul> */}
       {/* List */}
 
-      <figure className="image">
+      {/* <figure className="image">
         <Image
           width={770}
           height={450}
           src="/images/resource/post-img.jpg"
           alt="resource"
         />
-      </figure>
+      </figure> */}
 
-      <h4>Requirements</h4>
+      {/* <h4>Requirements</h4>
       <ul className="list-style-three">
         <li>
           We do not require any previous experience or pre-defined skills to
@@ -70,36 +85,36 @@ const index = () => {
         </li>
         <li>A computer with a good internet connection.</li>
         <li>Adobe Photoshop (OPTIONAL)</li>
-      </ul>
+      </ul> */}
       {/* <!-- list --> */}
 
-      <div className="other-options">
-        <div className="social-share">
+      <div>
+        {/* <div className="social-share">
           <h5>Share this post</h5>
           <SocialShare />
-        </div>
+        </div> */}
         {/* End social-share */}
 
-        <Tag />
+        {/* <Tag /> */}
       </div>
       {/* End other share */}
 
-      <div className="post-control">
+      {/* <div className="post-control">
         <Pagination />
-      </div>
+      </div> */}
       {/* <!-- Post Control --> */}
 
-      <div className="comments-area">
+      {/* <div className="comments-area">
         <CommentBox />
-      </div>
+      </div> */}
 
       {/* <!-- Comments area --> */}
 
       {/* <!-- Comment Form --> */}
-      <div className="comment-form default-form">
+      {/* <div className="comment-form default-form">
         <h4>Leave your thought here</h4>
         <Form />
-      </div>
+      </div> */}
       {/* <!--End Comment Form --> */}
     </div>
   );

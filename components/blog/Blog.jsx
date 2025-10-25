@@ -5,7 +5,7 @@ import Image from "next/image";
 const Blog = () => {
   return (
     <>
-      {blogContent.slice(0, 3).map((item) => (
+      {blogContent.slice(0, 4).map((item) => (
         <div className="news-block col-lg-4 col-md-6 col-sm-12" key={item.id}>
           <div className="inner-box">
             <div className="image-box">
@@ -22,11 +22,11 @@ const Blog = () => {
             <div className="lower-content">
               <ul className="post-meta">
                 <li>
-                  <a href="#">August 31, 2021</a>
+                  <a href="#">{item?.date}</a>
                 </li>
-                <li>
+                {/* <li>
                   <a href="#">12 Comment</a>
-                </li>
+                </li> */}
               </ul>
               <h3>
                 <Link href={`/blog-details/${item.id}`}>{item.title}</Link>

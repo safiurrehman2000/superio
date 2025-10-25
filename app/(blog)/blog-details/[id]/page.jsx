@@ -60,7 +60,7 @@ const BlogDetailsDynamic = ({ params }) => {
           <Image width={1903} height={595} src={blog?.img} alt="resource" />
         </figure>
 
-        <DetailsContent />
+        <DetailsContent blogId={blog?.id} />
       </section>
       {/* <!-- End Blog Single --> */}
 
