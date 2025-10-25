@@ -2,7 +2,6 @@ import LoginPopup from "../../common/form/login/LoginPopup";
 import FooterDefault from "../../footer/common-footer";
 import DefaulHeader from "../../header/DefaulHeader";
 import MobileMenu from "../../header/MobileMenu";
-import Address from "./Address";
 import ContactForm from "./ContactForm";
 
 const index = () => {
@@ -19,16 +18,11 @@ const index = () => {
       <MobileMenu />
       {/* End MobileMenu */}
 
-      <section className="contact-section">
+      <section
+        className="contact-section"
+        style={{ marginTop: "80px", paddingTop: "40px" }}
+      >
         <div className="auto-container">
-          <div className="upper-box">
-            <div className="row">
-              <Address />
-            </div>
-            {/* End .row */}
-          </div>
-          {/* End upperbox */}
-
           {/* <!-- Contact Form --> */}
           <div className="contact-form default-form">
             <h3>Leave A Message</h3>
