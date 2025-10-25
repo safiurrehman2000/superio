@@ -4,7 +4,6 @@ import DefaulHeader from "../../header/DefaulHeader";
 import MobileMenu from "../../header/MobileMenu";
 import Address from "./Address";
 import ContactForm from "./ContactForm";
-import MapBox from "./MapBox";
 
 const index = () => {
   return (
@@ -19,13 +18,6 @@ const index = () => {
 
       <MobileMenu />
       {/* End MobileMenu */}
-
-      <section className="map-section">
-        <div className="map-outer">
-          <MapBox />
-        </div>
-      </section>
-      {/* <!-- End Map Section --> */}
 
       <section className="contact-section">
         <div className="auto-container">

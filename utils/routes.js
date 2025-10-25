@@ -6,6 +6,7 @@ export const publicRoutes = [
   "/",
   "/forgot-password",
   "/job-list",
+  "/contact",
 ];
 export const privateRoutes = ["/candidates-dashboard", "/employers-dashboard"];
 
