@@ -158,6 +158,13 @@ export const adminMenuData = [
   },
   {
     id: 8,
+    name: "Contact Queries",
+    icon: "la-envelope",
+    routePath: "/admin-dashboard/contact-queries",
+    active: "",
+  },
+  {
+    id: 9,
     name: "Uitloggen",
     icon: "la-sign-out",
     routePath: "/login",
