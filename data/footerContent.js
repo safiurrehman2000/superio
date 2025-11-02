@@ -1,35 +1,38 @@
 module.exports = [
   {
     id: 1,
-    title: "For Candidates",
+    title: "Voor Kandidaten",
     menuList: [
-      { name: "Browse Jobs", route: "/job-list" },
+      { name: "Zoek Vacatures", route: "/job-list" },
       {
-        name: "Candidate Dashboard",
+        name: "Kandidaat Dashboard",
         route: "/candidates-dashboard/my-profile",
       },
-      { name: "Job Alerts", route: "/candidates-dashboard/job-alerts" },
       {
-        name: "My Bookmarks",
+        name: "Vacature Waarschuwingen",
+        route: "/candidates-dashboard/job-alerts",
+      },
+      {
+        name: "Mijn Favorieten",
         route: "/candidates-dashboard/short-listed-jobs",
       },
     ],
   },
   {
     id: 2,
-    title: "For Employers",
+    title: "Voor Werkgevers",
     menuList: [
-      { name: "Employer Dashboard", route: "/employers-dashboard/dashboard" },
-      { name: "Add Job", route: "/employers-dashboard/post-jobs" },
-      { name: "Job Packages", route: "/employers-dashboard/packages" },
-      { name: "Manage Jobs", route: "/employers-dashboard/manage-jobs" },
+      { name: "Werkgever Dashboard", route: "/employers-dashboard/dashboard" },
+      { name: "Vacature Toevoegen", route: "/employers-dashboard/post-jobs" },
+      { name: "Vacature Pakketten", route: "/employers-dashboard/packages" },
+      { name: "Beheer Vacatures", route: "/employers-dashboard/manage-jobs" },
     ],
   },
   {
     id: 3,
-    title: "About Us",
+    title: "Over Ons",
     menuList: [
-      { name: "About Us", route: "/about" },
+      { name: "Over Ons", route: "/about" },
       { name: "Blog", route: "/blog-list-v1" },
       { name: "Contact", route: "/contact" },
       { name: "FAQ", route: "/faq" },
@@ -37,11 +40,11 @@ module.exports = [
   },
   {
     id: 4,
-    title: "Resources",
+    title: "Hulpmiddelen",
     menuList: [
-      { name: "Pricing", route: "/pricing" },
-      { name: "Login", route: "/login" },
-      { name: "Register", route: "/register" },
+      { name: "Prijzen", route: "/pricing" },
+      { name: "Inloggen", route: "/login" },
+      { name: "Registreren", route: "/register" },
     ],
   },
 ];

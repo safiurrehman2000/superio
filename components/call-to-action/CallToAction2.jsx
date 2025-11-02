@@ -24,14 +24,14 @@ const CallToAction2 = () => {
 
         <div className="btn-box">
           <Link href="/job-list" className="theme-btn btn-style-one">
-            Search Job
+            Zoek Vacature
           </Link>
           <Link
             target="_blank"
             href="https://www.facebook.com/people/Flexi-jobber-Vlaanderen/61571515856408/"
             className="theme-btn btn-style-four"
           >
-            Follow us on Facebook
+            Volg ons op Facebook
           </Link>
         </div>
       </div>

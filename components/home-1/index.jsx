@@ -74,23 +74,34 @@ const index = () => {
         className="contact-hero-section"
         style={{
           background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-          padding: "80px 0",
+          padding: "clamp(40px, 8vw, 80px) 0",
           color: "white",
         }}
       >
         <div className="auto-container">
           <div className="row justify-content-center">
-            <div className="col-lg-8 text-center" data-aos="fade-up">
+            <div
+              className="col-lg-8 col-md-10 col-sm-12 text-center"
+              data-aos="fade-up"
+            >
               <div className="sec-title text-center">
-                <h2 style={{ color: "white", marginBottom: "20px" }}>
+                <h2
+                  style={{
+                    color: "white",
+                    marginBottom: "20px",
+                    fontSize: "clamp(24px, 5vw, 36px)",
+                    lineHeight: "1.3",
+                  }}
+                >
                   Heb je vragen? Neem contact met ons op!
                 </h2>
                 <div
                   className="text"
                   style={{
                     color: "rgba(255, 255, 255, 0.9)",
-                    fontSize: "18px",
+                    fontSize: "clamp(14px, 3vw, 18px)",
                     marginBottom: "30px",
+                    padding: "0 15px",
                   }}
                 >
                   Ons team staat klaar om je te helpen met al je vragen over
@@ -98,7 +109,10 @@ const index = () => {
                   je!
                 </div>
               </div>
-              <div className="btn-box" style={{ marginTop: "30px" }}>
+              <div
+                className="btn-box"
+                style={{ marginTop: "30px", padding: "0 15px" }}
+              >
                 <Link
                   href="/contact"
                   className="theme-btn btn-style-one"
@@ -106,13 +120,15 @@ const index = () => {
                     backgroundColor: "white",
                     color: "#667eea",
                     border: "2px solid white",
-                    padding: "15px 40px",
-                    fontSize: "16px",
+                    padding: "clamp(12px, 2vw, 15px) clamp(30px, 5vw, 40px)",
+                    fontSize: "clamp(14px, 2vw, 16px)",
                     fontWeight: "600",
                     borderRadius: "50px",
                     textDecoration: "none",
                     display: "inline-block",
                     transition: "all 0.3s ease",
+                    width: "100%",
+                    maxWidth: "300px",
                   }}
                   onMouseEnter={(e) => {
                     e.target.style.backgroundColor = "transparent";

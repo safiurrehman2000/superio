@@ -6,9 +6,9 @@ const RegBanner = () => {
     {
       id: 1,
       bgImage: `url("/images/index-13/banner/bg-1.png")`,
-      name: "Employers",
-      text: ` Sit amet, consectetur adipiscing elit, sed do eiusmod tempor
-            incididunt. Labore et dolore nostrud exercitation.`,
+      name: "Werkgevers",
+      text: ` Ontdek talent en rekruteer flexwerkers voor jouw bedrijf. 
+            Post vacatures en vind de juiste kandidaten die bij jouw team passen.`,
       avatar: "/images/resource/employ.png",
       bannerClass: "banner-style-one",
       width: "221",
@@ -17,9 +17,9 @@ const RegBanner = () => {
     {
       id: 2,
       bgImage: `url("/images/index-13/banner/bg-2.png")`,
-      name: "Candidate",
-      text: ` Sit amet, consectetur adipiscing elit, sed do eiusmod tempor
-            incididunt. Labore et dolore nostrud exercitation.`,
+      name: "Kandidaten",
+      text: ` Vind de perfecte flexibele job die bij jou past. 
+            Maak een profiel aan en solliciteer op interessante vacatures in Vlaanderen.`,
       avatar: "/images/resource/candidate.png",
       bannerClass: "banner-style-two dark",
       width: "207",
@@ -43,7 +43,7 @@ const RegBanner = () => {
               <h3>{item.name}</h3>
               <p>{item.text}</p>
               <Link href="/register" className="theme-btn btn-style-five">
-                Register Account
+                Account Aanmaken
               </Link>
             </div>
             <figure className="image">

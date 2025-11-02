@@ -278,27 +278,27 @@ const DefaulHeader2 = () => {
           <div className="modal-content">
             <div className="modal-header">
               <h5 className="modal-title" id="deleteProfileModalLabel">
-                Confirm Account Deletion
+                Account Verwijdering Bevestigen
               </h5>
               <button
                 type="button"
                 className="btn-close"
                 onClick={() => setShowModal(false)}
-                aria-label="Close"
+                aria-label="Sluiten"
               ></button>
             </div>
             <div className="modal-body">
-              Are you sure you want to delete your account? This action cannot
-              be undone.
+              Weet je zeker dat je je account wilt verwijderen? Deze actie kan
+              niet ongedaan worden gemaakt.
             </div>
             <FormProvider {...methods}>
               <form className="p-3" onSubmit={handleSubmit(onSubmit)}>
                 <InputField
                   name="password"
                   fieldType="Password"
-                  label="Enter your password to confirm"
+                  label="Voer je wachtwoord in om te bevestigen"
                   required
-                  placeholder={"Enter your password"}
+                  placeholder={"Voer je wachtwoord in"}
                 />
                 <div className="modal-footer">
                   <button
@@ -306,7 +306,7 @@ const DefaulHeader2 = () => {
                     className="btn btn-secondary"
                     onClick={() => setShowModal(false)}
                   >
-                    Cancel
+                    Annuleren
                   </button>
                   <button
                     type="submit"
@@ -325,10 +325,13 @@ const DefaulHeader2 = () => {
                       >
                         {" "}
                         <CircularLoader />{" "}
-                        <p style={{ margin: 0, padding: 0 }}> Deleting.... </p>
+                        <p style={{ margin: 0, padding: 0 }}>
+                          {" "}
+                          Verwijderen....{" "}
+                        </p>
                       </div>
                     ) : (
-                      "Delete Account"
+                      "Account Verwijderen"
                     )}
                   </button>
                 </div>

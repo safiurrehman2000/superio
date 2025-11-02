@@ -35,7 +35,7 @@ const Index = () => {
 
   const onSubmit = async (data) => {
     if (!user) {
-      errorToast("Please login to delete your account");
+      errorToast("Log in om uw account te verwijderen");
       return;
     }
     try {
@@ -73,18 +73,18 @@ const Index = () => {
 
       // For other sections, apply the existing filtering logic
       if (!user) {
-        return item.label !== "Employer Dashboard" &&
-          item.label !== "Candidate Dashboard"
+        return item.label !== "Werkgever Dashboard" &&
+          item.label !== "Kandidaat Dashboard"
           ? item
           : null;
       }
 
       if (userType === "Candidate") {
-        return item.label !== "Employer Dashboard" ? item : null;
+        return item.label !== "Werkgever Dashboard" ? item : null;
       }
 
       if (userType === "Employer") {
-        return item.label !== "Candidate Dashboard" ? item : null;
+        return item.label !== "Kandidaat Dashboard" ? item : null;
       }
 
       return item;
@@ -96,7 +96,7 @@ const Index = () => {
       event?.preventDefault();
       event?.stopPropagation();
       setShowModal(true);
-    } else if (menuItem.isAction && menuItem.name === "Logout") {
+    } else if (menuItem.isAction && menuItem.name === "Uitloggen") {
       event?.preventDefault();
       event?.stopPropagation();
       useSignOut();
@@ -158,27 +158,27 @@ const Index = () => {
           <div className="modal-content">
             <div className="modal-header">
               <h5 className="modal-title" id="deleteProfileModalLabel">
-                Confirm Account Deletion
+                Account Verwijdering Bevestigen
               </h5>
               <button
                 type="button"
                 className="btn-close"
                 onClick={() => setShowModal(false)}
-                aria-label="Close"
+                aria-label="Sluiten"
               ></button>
             </div>
             <div className="modal-body">
-              Are you sure you want to delete your account? This action cannot
-              be undone.
+              Weet je zeker dat je je account wilt verwijderen? Deze actie kan
+              niet ongedaan worden gemaakt.
             </div>
             <FormProvider {...methods}>
               <form className="p-3" onSubmit={handleSubmit(onSubmit)}>
                 <InputField
                   name="password"
                   fieldType="Password"
-                  label="Enter your password to confirm"
+                  label="Voer je wachtwoord in om te bevestigen"
                   required
-                  placeholder={"Enter your password"}
+                  placeholder={"Voer je wachtwoord in"}
                 />
                 <div className="modal-footer">
                   <button
@@ -186,7 +186,7 @@ const Index = () => {
                     className="btn btn-secondary"
                     onClick={() => setShowModal(false)}
                   >
-                    Cancel
+                    Annuleren
                   </button>
                   <button
                     type="submit"
@@ -205,10 +205,13 @@ const Index = () => {
                       >
                         {" "}
                         <CircularLoader />{" "}
-                        <p style={{ margin: 0, padding: 0 }}> Deleting.... </p>
+                        <p style={{ margin: 0, padding: 0 }}>
+                          {" "}
+                          Verwijderen....{" "}
+                        </p>
                       </div>
                     ) : (
-                      "Delete Account"
+                      "Account Verwijderen"
                     )}
                   </button>
                 </div>

@@ -33,7 +33,7 @@ const Blog = () => {
               </h3>
               <p className="text">{item.blogText}</p>
               <Link href={`/blog-details/${item.id}`} className="read-more">
-                Read More <i className="fa fa-angle-right"></i>
+                Lees Meer <i className="fa fa-angle-right"></i>
               </Link>
             </div>
           </div>

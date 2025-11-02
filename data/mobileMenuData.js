@@ -1,20 +1,20 @@
 module.exports = [
   {
     id: 1,
-    label: "Home",
+    label: "Startpagina",
     items: [
       {
-        name: "Home Page",
+        name: "Startpagina",
         routePath: "/",
       },
     ],
   },
   {
     id: 2,
-    label: "Job Listing",
+    label: "Vacatures",
     items: [
       {
-        name: "Browse Jobs",
+        name: "Zoek Vacatures",
         routePath: "/job-list",
       },
     ],
@@ -22,18 +22,18 @@ module.exports = [
 
   {
     id: 5,
-    label: "Pages",
+    label: "Pagina's",
     items: [
       {
-        name: "About",
+        name: "Over Ons",
         routePath: "/about",
       },
       {
-        name: "Pricing",
+        name: "Prijzen",
         routePath: "/pricing",
       },
       {
-        name: "FAQ's",
+        name: "Veelgestelde Vragen",
         routePath: "/faq",
       },
       {
@@ -47,17 +47,17 @@ module.exports = [
     label: "Account",
     items: [
       {
-        name: "Login",
+        name: "Inloggen",
         routePath: "/login",
         showWhenLoggedOut: true,
       },
       {
-        name: "Register",
+        name: "Registreren",
         routePath: "/register",
         showWhenLoggedOut: true,
       },
       {
-        name: "Logout",
+        name: "Uitloggen",
         routePath: "/login",
         showWhenLoggedIn: true,
         isAction: true,
@@ -66,38 +66,38 @@ module.exports = [
   },
   {
     id: 7,
-    label: "Employer Dashboard",
+    label: "Werkgever Dashboard",
     items: [
       {
         name: "Dashboard",
         routePath: "/employers-dashboard/dashboard",
       },
       {
-        name: "Company Profile",
+        name: "Bedrijfsprofiel",
         routePath: "/employers-dashboard/company-profile",
       },
       {
-        name: "Post a New Job",
+        name: "Nieuwe Vacature Plaatsen",
         routePath: "/employers-dashboard/post-jobs",
       },
       {
-        name: "Manage Jobs",
+        name: "Beheer Vacatures",
         routePath: "/employers-dashboard/manage-jobs",
       },
       {
-        name: "All Applicants",
+        name: "Alle Sollicitanten",
         routePath: "/employers-dashboard/all-applicants",
       },
       {
-        name: "Packages",
+        name: "Pakketten",
         routePath: "/employers-dashboard/packages",
       },
       {
-        name: "Change Password",
+        name: "Wachtwoord Wijzigen",
         routePath: "/employers-dashboard/change-password",
       },
       {
-        name: "Delete Account",
+        name: "Account Verwijderen",
         routePath: "delete-account",
         isAction: true,
       },
@@ -105,30 +105,30 @@ module.exports = [
   },
   {
     id: 8,
-    label: "Candidate Dashboard",
+    label: "Kandidaat Dashboard",
     items: [
       {
-        name: "My Profile",
+        name: "Mijn Profiel",
         routePath: "/candidates-dashboard/my-profile",
       },
       {
-        name: "Applied Jobs",
+        name: "Sollicitaties",
         routePath: "/candidates-dashboard/applied-jobs",
       },
       {
-        name: "Shortlisted Jobs",
+        name: "Favoriete Vacatures",
         routePath: "/candidates-dashboard/short-listed-jobs",
       },
       {
-        name: "CV Manager",
+        name: "CV Beheer",
         routePath: "/candidates-dashboard/cv-manager",
       },
       {
-        name: "Change Password",
+        name: "Wachtwoord Wijzigen",
         routePath: "/candidates-dashboard/change-password",
       },
       {
-        name: "Delete Account",
+        name: "Account Verwijderen",
         routePath: "delete-account",
         isAction: true,
       },
