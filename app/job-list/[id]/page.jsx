@@ -17,6 +17,7 @@ import CompnayInfo from "@/components/job-single-pages/shared-components/Company
 import JobDetailsDescriptions from "@/components/job-single-pages/shared-components/JobDetailsDescriptions";
 import JobSingleSkeleton from "@/components/job-single-pages/shared-components/JobSingleSkeleton";
 import SocialTwo from "@/components/job-single-pages/social/SocialTwo";
+import JobStructuredData from "@/components/job-single-pages/JobStructuredData";
 import { formatString } from "@/utils/constants";
 import { errorToast } from "@/utils/toast";
 import dynamic from "next/dynamic";
@@ -116,7 +117,7 @@ const JobSingleDynamicV3 = ({ params }) => {
   return (
     <>
       {/* <!-- Header Span --> */}
-
+      <JobStructuredData job={job} />
       <LoginPopup />
       <DefaulHeader2 />
       <MobileMenu />
