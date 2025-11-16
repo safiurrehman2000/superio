@@ -1,30 +1,12 @@
 const siteUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://flexijobber.be";
 
-function generateSitemap(routes) {
-  const urls = routes
-    .map(
-      (route) => `  <url>
-    <loc>${route.url}</loc>
-    <lastmod>${route.lastModified.toISOString()}</lastmod>
-    <changefreq>${route.changeFrequency}</changefreq>
-    <priority>${route.priority}</priority>
-  </url>`
-    )
-    .join("\n");
-
-  return `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${urls}
-</urlset>`;
-}
-
-export async function GET() {
+export default function sitemap() {
   const routes = [
     {
       url: siteUrl,
       lastModified: new Date(),
       changeFrequency: "daily",
-      priority: 1,
+      priority: 1.0,
     },
     {
       url: `${siteUrl}/job-list`,
@@ -76,13 +58,5 @@ export async function GET() {
     },
   ];
 
-  const sitemap = generateSitemap(routes);
-
-  return new Response(sitemap, {
-    status: 200,
-    headers: {
-      "Content-Type": "application/xml; charset=utf-8",
-      "Cache-Control": "public, s-maxage=3600, stale-while-revalidate",
-    },
-  });
+  return routes;
 }
