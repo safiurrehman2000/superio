@@ -36,6 +36,7 @@ module.exports = [
       { name: "Blog", route: "/blog-list-v1" },
       { name: "Contact", route: "/contact" },
       { name: "FAQ", route: "/faq" },
+      { name: "Wetgeving", route: "/term" },
     ],
   },
   {

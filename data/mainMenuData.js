@@ -216,6 +216,10 @@ export const pageItems = [
     routePath: "/terms",
   },
   {
+    name: "Wetgeving",
+    routePath: "/term",
+  },
+  {
     name: "Invoice",
     routePath: "/invoice",
   },

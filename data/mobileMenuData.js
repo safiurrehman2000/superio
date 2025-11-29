@@ -37,6 +37,10 @@ module.exports = [
         routePath: "/faq",
       },
       {
+        name: "Wetgeving",
+        routePath: "/term",
+      },
+      {
         name: "Contact",
         routePath: "/contact",
       },

@@ -83,6 +83,16 @@ const HeaderNavContent = () => {
               Veelgestelde vragen
             </Link>
           </li>
+          <li className={`${pathname === "/term" ? "current" : ""}`}>
+            <Link
+              className={`header-nav-list ${
+                pathname === "/term" ? "header-nav-border-b" : ""
+              }`}
+              href="/term"
+            >
+              Wetgeving
+            </Link>
+          </li>
         </ul>
       </nav>
     </>

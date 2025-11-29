@@ -6,9 +6,12 @@ const RegBanner = () => {
     {
       id: 1,
       bgImage: `url("/images/index-13/banner/bg-1.png")`,
-      name: "Werkgevers",
-      text: ` Ontdek talent en rekruteer flexwerkers voor jouw bedrijf. 
-            Post vacatures en vind de juiste kandidaten die bij jouw team passen.`,
+      name: "Nieuwe Flexijobbers inzetten daar hoort natuurlijk ook loonadministratie bij !",
+      text: ` Time is money ook bij loonadministratie.
+        Het kan altijd beter, efficiënter, vlotter, eenvoudiger maar vooral goedkoper.
+        Ga jij flexi's in dienst nemen ?
+
+      Wil jij graag een vrijblijvende vergelijking ?`,
       avatar: "/images/resource/employ.png",
       bannerClass: "banner-style-one",
       width: "221",
@@ -17,9 +20,9 @@ const RegBanner = () => {
     {
       id: 2,
       bgImage: `url("/images/index-13/banner/bg-2.png")`,
-      name: "Kandidaten",
-      text: ` Vind de perfecte flexibele job die bij jou past. 
-            Maak een profiel aan en solliciteer op interessante vacatures in Vlaanderen.`,
+      name: "Waarom kiezen voor ons platform De flexiJobber als werkgever ?",
+      text: ` Wist je dat 70 procent van alle sollicitanten een vacature zoekt en vindt via de zoekfunctie van Google?
+Via de Flexijobber vergroot je jouw bereik!`,
       avatar: "/images/resource/candidate.png",
       bannerClass: "banner-style-two dark",
       width: "207",
