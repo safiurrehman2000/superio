@@ -19,13 +19,14 @@ const SidebarFooter = () => {
       <div className="mm-listitem__text">
         <div className="contact-info">
           <span className="phone-num">
-            <span>Bel ons</span>
-            <a href="tel:+32123456789">+32 123 456 789</a>
+            <span>Bel Ons</span>
+            <a href="tel:+32491100143">+32 491 10 01 43</a>
           </span>
-          <span className="address">Vlaanderen, België</span>
-          <a href="mailto:support@deflexijobber.be" className="email">
-            support@deflexijobber.be
+          <span className="address">Belgiëlei 129, 2018 Antwerpen</span>
+          <a href="mailto:info@de-flexi-jobber.be" className="email">
+            info@de-flexi-jobber.be
           </a>
+          <span className="vat">BTW: BE 0655.845.308</span>
         </div>
         {/* End .contact-info */}
 

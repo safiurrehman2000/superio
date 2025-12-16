@@ -2,6 +2,7 @@ import Image from "next/image";
 import CopyrightFooter from "./CopyrightFooter";
 import FooterContent from "./FooterContent";
 import { LOGO } from "@/utils/constants";
+import horecaBenelux from "../../../public/images/horeca-benelux.webp";
 
 const index = ({ footerStyle = "" }) => {
   return (
@@ -23,14 +24,16 @@ const index = ({ footerStyle = "" }) => {
                   </a>
                 </div>
                 <p className="phone-num">
-                  <span>Bel ons </span>
-                  <a href="tel:+32123456789">+32 123 456 789</a>
+                  <span>Bel Ons</span>
+                  <a href="tel:+32491100143">+32 491 10 01 43</a>
                 </p>
                 <p className="address">
-                  Vlaanderen, België <br />
-                  <a href="mailto:support@deflexijobber.be" className="email">
-                    support@deflexijobber.be
+                  Belgiëlei 129, 2018 Antwerpen <br />
+                  <a href="mailto:info@de-flexi-jobber.be" className="email">
+                    info@de-flexi-jobber.be
                   </a>
+                  <br />
+                  BTW: BE 0655.845.308
                 </p>
               </div>
             </div>
@@ -39,6 +42,22 @@ const index = ({ footerStyle = "" }) => {
             <div className="big-column col-xl-8 col-lg-9 col-md-12">
               <div className="row">
                 <FooterContent />
+                <div className="footer-column col-lg-3 col-md-6 col-sm-12">
+                  <div className="footer-widget links-widget">
+                    <h4 className="widget-title">
+                      In samenwerking met Horeca Benelux
+                    </h4>
+                    <div className="widget-content">
+                      <Image
+                        width={200}
+                        height={100}
+                        src={horecaBenelux}
+                        alt="Horeca Benelux"
+                        style={{ maxWidth: "100%", height: "auto" }}
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
             {/* End col-xl-8 */}
