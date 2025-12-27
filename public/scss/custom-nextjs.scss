@@ -71,6 +71,46 @@
   }
 }
 
+.banner-section-nine {
+  position: relative;
+  display: flex;
+  align-items: flex-start;   
+  justify-content: center;
+
+  min-height: auto;        
+  padding: 140px 0 75px;     
+
+  background-image: url("/images/background/13.jpg");
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+
+  color: #fff;
+  overflow: hidden;
+}
+
+/* Overlay */
+.banner-section-nine::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+
+  background: linear-gradient(
+    45deg,
+    rgba(16, 231, 220, 0.45) 0%, 
+    rgba(0, 116, 225, 0.7) 70%
+  );
+
+  z-index: 1;
+}
+
+/* Content boven overlay */
+.banner-section-nine .auto-container {
+  position: relative;
+  z-index: 2;
+}
+
+
 .image-1 {
   background-image: url(../images/background/10.jpg);
 }

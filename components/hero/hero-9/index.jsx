@@ -5,7 +5,7 @@ const index = () => {
   return (
     <section
       className="banner-section-nine"
-      style={{ backgroundImage: "url(/images/background/7.jpg)" }}
+      style={{ backgroundImage: "url(/images/background/13.jpg)" }}
     >
       <div className="auto-container">
         <div className="cotnent-box">
@@ -29,7 +29,7 @@ const index = () => {
 
         <div className="fun-fact-section">
           <div className="row">
-            <Funfact2 />
+            {/* <!-- <Funfact2 /> --> */}
           </div>
         </div>
         {/* <!-- Fun Fact Section --> */}

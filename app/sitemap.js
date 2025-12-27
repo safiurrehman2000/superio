@@ -1,4 +1,4 @@
-const siteUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://flexijobber.be";
+const siteUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://de-flexi-jobber.be";
 
 export default function sitemap() {
   const routes = [
