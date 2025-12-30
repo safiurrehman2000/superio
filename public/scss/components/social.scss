@@ -1,27 +1,72 @@
-.social-btn {
-  position: relative;
-  text-align: center;
-  white-space: nowrap;
-  color: inherit;
-  font-size: 16px;
-  border-radius: 5px;
+/* ================================
+   Social icons – footer 
+================================ */
+
+.footer-bottom .social-links {
+  display: flex;
+  justify-content: center;   /* 🔑 */
+  width: 100%;
+}
+
+.social-links-list {
+  display: flex;
+  justify-content: center;   /* 🔑 */
+  align-items: center;
+  gap: 14px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* Icons wit forceren */
+.social-links-list li a i {
+  color: #ffffff !important;
+}
+
+/* Basis cirkel */
+.social-links-list li a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  text-decoration: none;
+}
+
+/* Hover UIT */
+.social-links-list li a:hover {
   background-color: inherit;
-  font-weight: 700;
-  padding: 10px 30px;
-  color: #ffffff;
-  line-height: 25px;
+  transform: none;
 }
 
-.social-btn span {
-  margin-right: 3px;
+/* ================================
+   Platform kleuren
+================================ */
+
+.social-links-list li.facebook a {
+  background-color: #1877f2;
 }
 
-.social-btn.facebook-btn {
-  background-color: #3b5998;
-  color: #ffffff;
+.social-links-list li.instagram a {
+  background: radial-gradient(
+    circle at 30% 107%,
+    #fdf497 0%,
+    #fdf497 5%,
+    #fd5949 45%,
+    #d6249f 60%,
+    #285aeb 90%
+  );
 }
 
-.social-btn.google-btn {
-  background-color: #dc4d28;
-  color: #ffffff;
+.social-links-list li.linkedin a {
+  background-color: #0a66c2;
+}
+
+.social-links-list li.youtube a {
+  background-color: #ff0000;
+}
+
+.social-links-list li a i {
+  line-height: 1;
 }
