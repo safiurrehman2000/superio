@@ -9,7 +9,7 @@ module.exports = [
         route: "/candidates-dashboard/my-profile",
       },
       {
-        name: "Vacature Waarschuwingen",
+        name: "Vacature Alerts",
         route: "/candidates-dashboard/job-alerts",
       },
       {
