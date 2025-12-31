@@ -56,7 +56,7 @@ Main Footer
 
 .main-footer .phone-num {
   position: relative;
-  font-size: 18px;
+  font-size: 20px;
   line-height: 28px;
   color: #202124;
   font-weight: 500;
@@ -97,7 +97,7 @@ Main Footer
 .main-footer .list li {
   position: relative;
   display: block;
-  font-size: 14px;
+  font-size: 16px;
   line-height: 20px;
   font-weight: 400;
   color: #696969;
@@ -741,4 +741,15 @@ Main Footer / Style Six
   font-size: 14px;
   line-height: 24px;
   color: #696969;
+}
+
+.footer-logo {
+  margin-left: -7px;
+}
+
+@media (max-width: 991px) {
+  .footer-logo {
+    margin-left: -2;
+    text-align: center;
+  }
 }
