@@ -34,11 +34,28 @@ export const generateJobPostingSchema = (job) => {
   if (!job) return null;
 
   const jobUrl = `${siteUrl}/job-list/${job.id}`;
+
+  const descriptionParts = [];
+  if (job.description) descriptionParts.push(job.description);
+  if (job.functionDescription) {
+    descriptionParts.push(`Functieomschrijving: ${job.functionDescription}`);
+  }
+  if (job.profileSkills) {
+    descriptionParts.push(`Profiel/vaardigheden: ${job.profileSkills}`);
+  }
+  if (job.offer) {
+    descriptionParts.push(`Aanbod: ${job.offer}`);
+  }
+  if (job.schedule) {
+    descriptionParts.push(`Uurrooster: ${job.schedule}`);
+  }
+  const fullDescription = descriptionParts.join("\n\n");
+
   const baseSchema = {
     "@context": "https://schema.org",
     "@type": "JobPosting",
     title: job.title || "Flexibele Job",
-    description: job.description || "",
+    description: fullDescription || job.description || "",
     identifier: {
       "@type": "PropertyValue",
       name: "De Flexijobber",

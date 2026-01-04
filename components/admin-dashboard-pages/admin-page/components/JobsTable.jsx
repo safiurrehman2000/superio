@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import { db } from "@/utils/firebase";
 import {
   collection,
@@ -17,6 +17,7 @@ const PAGE_SIZE = 10;
 
 export default function JobsTable() {
   const [jobs, setJobs] = useState([]);
+  const [allJobs, setAllJobs] = useState([]); // Store all fetched jobs for filtering
   const [jobsLoading, setJobsLoading] = useState(false);
   const [employersMap, setEmployersMap] = useState({});
   const [jobSearch, setJobSearch] = useState("");
@@ -29,6 +30,7 @@ export default function JobsTable() {
   const debounceRef = useRef();
   const [sortBy, setSortBy] = useState("createdAt");
   const [sortDir, setSortDir] = useState("desc");
+  const [statusFilter, setStatusFilter] = useState("all"); // all, active, expired, archived
 
   useEffect(() => {
     debounceRef.current = debounce((val) => setJobSearch(val), 500);
@@ -83,6 +85,7 @@ export default function JobsTable() {
         );
       }
 
+      setAllJobs(jobsList);
       setJobs(jobsList);
       setJobFirstDoc(docs[0]);
       setJobLastDoc(docs[docs.length - 1]);
@@ -131,6 +134,45 @@ export default function JobsTable() {
     // eslint-disable-next-line
   }, [jobSearch, sortBy, sortDir]);
 
+  // Helper function to get job status
+  const getJobStatus = (job) => {
+    if (job.status === "archived") {
+      return "archived";
+    } else if (job?.isOpen === "False") {
+      return "expired";
+    } else {
+      return "active";
+    }
+  };
+
+  // Filter jobs based on status filter
+  const filteredJobs = useMemo(() => {
+    return allJobs.filter((job) => {
+      if (statusFilter === "all") return true;
+      return getJobStatus(job) === statusFilter;
+    });
+  }, [statusFilter, allJobs]);
+
+  // Update displayed jobs when filter changes
+  useEffect(() => {
+    setJobs(filteredJobs);
+  }, [filteredJobs]);
+
+  // Count jobs by status (from allJobs)
+  const statusCounts = useMemo(() => {
+    const counts = {
+      all: allJobs.length,
+      active: 0,
+      expired: 0,
+      archived: 0,
+    };
+    allJobs.forEach((job) => {
+      const status = getJobStatus(job);
+      counts[status]++;
+    });
+    return counts;
+  }, [allJobs]);
+
   const handleJobNext = () => {
     setJobPageStack((prev) => [...prev, jobFirstDoc]);
     fetchJobsAndEmployers("next", jobLastDoc);
@@ -160,14 +202,65 @@ export default function JobsTable() {
   return (
     <div className={styles["admin-table-container"]} style={{ marginTop: 48 }}>
       <h2 className={styles["admin-table-title"]}>Jobs</h2>
-      <div style={{ marginBottom: 16, display: "flex", gap: 8 }}>
+      <div
+        style={{ marginBottom: 16, display: "flex", gap: 8, flexWrap: "wrap" }}
+      >
         <input
           type="text"
           placeholder="Search by job title or employer..."
           value={jobSearchInput}
           onChange={handleJobSearchChange}
           className={styles["admin-table-input"]}
+          style={{ flex: "1", minWidth: "200px" }}
         />
+        <button
+          onClick={() => setStatusFilter("all")}
+          className={`${styles["admin-table-btn"]} ${
+            statusFilter === "all" ? styles["active"] : ""
+          }`}
+          style={{
+            backgroundColor: statusFilter === "all" ? "#1967d2" : "#f5f5f5",
+            color: statusFilter === "all" ? "white" : "#666",
+          }}
+        >
+          All ({statusCounts.all})
+        </button>
+        <button
+          onClick={() => setStatusFilter("active")}
+          className={`${styles["admin-table-btn"]} ${
+            statusFilter === "active" ? styles["active"] : ""
+          }`}
+          style={{
+            backgroundColor: statusFilter === "active" ? "#fa5508" : "#f5f5f5",
+            color: statusFilter === "active" ? "white" : "#666",
+          }}
+        >
+          Active ({statusCounts.active})
+        </button>
+        <button
+          onClick={() => setStatusFilter("expired")}
+          className={`${styles["admin-table-btn"]} ${
+            statusFilter === "expired" ? styles["active"] : ""
+          }`}
+          style={{
+            backgroundColor: statusFilter === "expired" ? "#ef4444" : "#f5f5f5",
+            color: statusFilter === "expired" ? "white" : "#666",
+          }}
+        >
+          Expired ({statusCounts.expired})
+        </button>
+        <button
+          onClick={() => setStatusFilter("archived")}
+          className={`${styles["admin-table-btn"]} ${
+            statusFilter === "archived" ? styles["active"] : ""
+          }`}
+          style={{
+            backgroundColor: statusFilter === "archived" ? "#888" : "#f5f5f5",
+            color: statusFilter === "archived" ? "white" : "#666",
+          }}
+        >
+          Archived ({statusCounts.archived})
+        </button>
       </div>
       <table className={styles["admin-table"]}>
         <thead>
@@ -199,24 +292,45 @@ export default function JobsTable() {
               Job Views{" "}
               {sortBy === "viewCount" && (sortDir === "asc" ? "▲" : "▼")}
             </th>
+            <th>Status</th>
           </tr>
         </thead>
         <tbody>
           {jobsLoading ? (
             <tr>
-              <td colSpan={4} className={styles["admin-table-loading"]}>
+              <td colSpan={5} className={styles["admin-table-loading"]}>
                 Loading...
               </td>
             </tr>
           ) : jobs.length === 0 ? (
             <tr>
-              <td colSpan={4} className={styles["admin-table-empty"]}>
+              <td colSpan={5} className={styles["admin-table-empty"]}>
                 No jobs found.
               </td>
             </tr>
           ) : (
             jobs.map((job) => {
               const employer = employersMap[job.employerId];
+              const getJobStatusDisplay = () => {
+                const status = getJobStatus(job);
+                if (status === "archived") {
+                  return <span className={styles.chip}>Archived</span>;
+                } else if (status === "expired") {
+                  return (
+                    <span
+                      className={`${styles.chip} ${styles["chip-rejected"]}`}
+                    >
+                      Expired
+                    </span>
+                  );
+                } else {
+                  return (
+                    <span className={`${styles.chip} ${styles["chip-active"]}`}>
+                      Active
+                    </span>
+                  );
+                }
+              };
               return (
                 <tr key={job.id}>
                   <td>{job.title || "-"}</td>
@@ -233,6 +347,7 @@ export default function JobsTable() {
                   <td>
                     {typeof job.viewCount === "number" ? job.viewCount : 0}
                   </td>
+                  <td>{getJobStatusDisplay()}</td>
                 </tr>
               );
             })

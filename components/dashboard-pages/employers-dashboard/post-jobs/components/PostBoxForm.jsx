@@ -39,6 +39,10 @@ const PostBoxForm = () => {
     defaultValues: {
       name: "",
       description: "",
+      functionDescription: "",
+      profileSkills: "",
+      offer: "",
+      schedule: "",
       email: "",
       "job-type": "",
       state: "",
@@ -89,6 +93,10 @@ const PostBoxForm = () => {
       const payload = {
         title: data.name,
         description: data.description,
+        functionDescription: data.functionDescription,
+        profileSkills: data.profileSkills,
+        offer: data.offer,
+        schedule: data.schedule,
         email: data.email,
         location: data.state,
         jobType: data["job-type"],
@@ -179,6 +187,50 @@ const PostBoxForm = () => {
               label="Beschrijving"
               name="description"
               placeholder="Beschrijf het type job"
+              required
+              disabled={isFormDisabled}
+            />
+          </div>
+
+          {/* <!-- Functieomschrijving --> */}
+          <div className="form-group col-lg-12 col-md-12">
+            <TextAreaField
+              label="Functieomschrijving"
+              name="functionDescription"
+              placeholder="Beschrijf de functie in detail"
+              required
+              disabled={isFormDisabled}
+            />
+          </div>
+
+          {/* <!-- Profiel/vaardigheden --> */}
+          <div className="form-group col-lg-12 col-md-12">
+            <TextAreaField
+              label="Profiel/vaardigheden"
+              name="profileSkills"
+              placeholder="Beschrijf het gewenste profiel en vaardigheden"
+              required
+              disabled={isFormDisabled}
+            />
+          </div>
+
+          {/* <!-- Aanbod --> */}
+          <div className="form-group col-lg-12 col-md-12">
+            <TextAreaField
+              label="Aanbod"
+              name="offer"
+              placeholder="Beschrijf wat je aanbiedt (salaris, voordelen, etc.)"
+              required
+              disabled={isFormDisabled}
+            />
+          </div>
+
+          {/* <!-- Uurrooster --> */}
+          <div className="form-group col-lg-12 col-md-12">
+            <TextAreaField
+              label="Uurrooster"
+              name="schedule"
+              placeholder="Beschrijf het uurrooster en werktijden"
               required
               disabled={isFormDisabled}
             />

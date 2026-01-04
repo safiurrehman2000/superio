@@ -55,6 +55,10 @@ const EditJobPost = () => {
     defaultValues: {
       name: "",
       description: "",
+      functionDescription: "",
+      profileSkills: "",
+      offer: "",
+      schedule: "",
       email: "",
       "job-type": "",
       state: "",
@@ -81,6 +85,10 @@ const EditJobPost = () => {
       if (selectedJob) {
         setValue("name", selectedJob.title || "");
         setValue("description", selectedJob.description || "");
+        setValue("functionDescription", selectedJob.functionDescription || "");
+        setValue("profileSkills", selectedJob.profileSkills || "");
+        setValue("offer", selectedJob.offer || "");
+        setValue("schedule", selectedJob.schedule || "");
         setValue("email", selectedJob.email || "");
         setValue("job-type", selectedJob.jobType || "");
         setValue("state", selectedJob.location || "");
@@ -113,6 +121,10 @@ const EditJobPost = () => {
       const payload = {
         title: data.name,
         description: data.description,
+        functionDescription: data.functionDescription,
+        profileSkills: data.profileSkills,
+        offer: data.offer,
+        schedule: data.schedule,
         email: data.email,
         location: data.state,
         jobType: data["job-type"],
@@ -282,6 +294,50 @@ const EditJobPost = () => {
                       label="Description"
                       name="description"
                       placeholder="Describe what type of job it is"
+                      required
+                      minLength={10}
+                      maxLength={1000}
+                    />
+                  </div>
+
+                  <div className="form-group col-lg-12 col-md-12">
+                    <TextAreaField
+                      label="Functieomschrijving"
+                      name="functionDescription"
+                      placeholder="Beschrijf de functie in detail"
+                      required
+                      minLength={10}
+                      maxLength={1000}
+                    />
+                  </div>
+
+                  <div className="form-group col-lg-12 col-md-12">
+                    <TextAreaField
+                      label="Profiel/vaardigheden"
+                      name="profileSkills"
+                      placeholder="Beschrijf het gewenste profiel en vaardigheden"
+                      required
+                      minLength={10}
+                      maxLength={1000}
+                    />
+                  </div>
+
+                  <div className="form-group col-lg-12 col-md-12">
+                    <TextAreaField
+                      label="Aanbod"
+                      name="offer"
+                      placeholder="Beschrijf wat je aanbiedt (salaris, voordelen, etc.)"
+                      required
+                      minLength={10}
+                      maxLength={1000}
+                    />
+                  </div>
+
+                  <div className="form-group col-lg-12 col-md-12">
+                    <TextAreaField
+                      label="Uurrooster"
+                      name="schedule"
+                      placeholder="Beschrijf het uurrooster en werktijden"
                       required
                       minLength={10}
                       maxLength={1000}

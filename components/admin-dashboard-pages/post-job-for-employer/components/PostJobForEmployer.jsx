@@ -49,6 +49,10 @@ const PostJobForEmployer = () => {
       employerId: "",
       name: "",
       description: "",
+      functionDescription: "",
+      profileSkills: "",
+      offer: "",
+      schedule: "",
       email: "",
       "job-type": "",
       state: "",
@@ -59,8 +63,12 @@ const PostJobForEmployer = () => {
     handleSubmit,
     reset,
     setValue,
+    watch,
     formState: { isValid },
   } = methods;
+
+  const selectedEmployerId = watch("employerId");
+  const selectedEmployer = employers.find((emp) => emp.id === selectedEmployerId);
 
   const onSubmit = async (data) => {
     setError(null);
@@ -69,17 +77,33 @@ const PostJobForEmployer = () => {
       setError("Please select an employer.");
       return;
     }
+
+    // Verify the selected employer
+    const employer = employers.find((emp) => emp.id === data.employerId);
+    if (!employer) {
+      setError("Selected employer not found. Please refresh and try again.");
+      return;
+    }
+
+    console.log(
+      `Creating job for employer: ${employer.email} (${employer.company_name || employer.name || "No name"})`
+    );
     setLoading(true);
     try {
       const payload = {
         title: data.name,
         description: data.description,
+        functionDescription: data.functionDescription,
+        profileSkills: data.profileSkills,
+        offer: data.offer,
+        schedule: data.schedule,
         email: data.email,
         location: data.state,
         jobType: data["job-type"],
         tags: data.tags.map((tag) => tag.value),
         employerId: data.employerId,
-        isOpen: false,
+        isOpen: true, // Set to true so job appears on listing page
+        status: "active", // Explicitly set status to active
         createdAt: Date.now(),
         viewCount: 0,
       };
@@ -88,6 +112,10 @@ const PostJobForEmployer = () => {
       const fieldTypes = {
         title: "title",
         description: "description",
+        functionDescription: "description",
+        profileSkills: "description",
+        offer: "description",
+        schedule: "description",
         email: "email",
         location: "text",
         jobType: "text",
@@ -131,10 +159,26 @@ const PostJobForEmployer = () => {
                     <option value="">Select an employer...</option>
                     {employers.map((emp) => (
                       <option key={emp.id} value={emp.id}>
-                        {emp.company_name || emp.email} ({emp.email})
+                        {emp.company_name || emp.name || emp.email} ({emp.email})
                       </option>
                     ))}
                   </select>
+                  {selectedEmployer && (
+                    <div
+                      style={{
+                        marginTop: "8px",
+                        padding: "8px",
+                        backgroundColor: "#f0f0f0",
+                        borderRadius: "4px",
+                        fontSize: "14px",
+                      }}
+                    >
+                      <strong>Selected:</strong> {selectedEmployer.email}
+                      {selectedEmployer.company_name && (
+                        <span> - {selectedEmployer.company_name}</span>
+                      )}
+                    </div>
+                  )}
                 </div>
                 <div className="form-group col-lg-12 col-md-12">
                   <InputField
@@ -150,6 +194,38 @@ const PostJobForEmployer = () => {
                     label="Description"
                     name="description"
                     placeholder="Describe what type of job it is"
+                    required
+                  />
+                </div>
+                <div className="form-group col-lg-12 col-md-12">
+                  <TextAreaField
+                    label="Functieomschrijving"
+                    name="functionDescription"
+                    placeholder="Beschrijf de functie in detail"
+                    required
+                  />
+                </div>
+                <div className="form-group col-lg-12 col-md-12">
+                  <TextAreaField
+                    label="Profiel/vaardigheden"
+                    name="profileSkills"
+                    placeholder="Beschrijf het gewenste profiel en vaardigheden"
+                    required
+                  />
+                </div>
+                <div className="form-group col-lg-12 col-md-12">
+                  <TextAreaField
+                    label="Aanbod"
+                    name="offer"
+                    placeholder="Beschrijf wat je aanbiedt (salaris, voordelen, etc.)"
+                    required
+                  />
+                </div>
+                <div className="form-group col-lg-12 col-md-12">
+                  <TextAreaField
+                    label="Uurrooster"
+                    name="schedule"
+                    placeholder="Beschrijf het uurrooster en werktijden"
                     required
                   />
                 </div>
@@ -209,10 +285,25 @@ const PostJobForEmployer = () => {
                   <button
                     className="theme-btn btn-style-one"
                     type="submit"
-                    disabled={loading}
+                    disabled={loading || !selectedEmployerId}
+                    style={{
+                      opacity: !selectedEmployerId ? 0.6 : 1,
+                      cursor: !selectedEmployerId ? "not-allowed" : "pointer",
+                    }}
                   >
                     {loading ? "Posting..." : "Post Job"}
                   </button>
+                  {!selectedEmployerId && (
+                    <p
+                      style={{
+                        color: "#dc3545",
+                        fontSize: "14px",
+                        marginTop: "8px",
+                      }}
+                    >
+                      Please select an employer to post a job
+                    </p>
+                  )}
                 </div>
               </div>
             </form>

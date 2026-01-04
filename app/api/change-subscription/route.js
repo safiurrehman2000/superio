@@ -62,16 +62,28 @@ export async function POST(request) {
 
       return NextResponse.json({ success: true });
     } else if (action === "set") {
-      if (!stripeCustomerId) {
-        return NextResponse.json(
-          { error: "User has no Stripe customer ID" },
-          { status: 400 }
-        );
+      // If user doesn't have a Stripe customer ID, create one
+      let customerId = stripeCustomerId;
+      if (!customerId) {
+        // Create a Stripe customer for the user
+        const customer = await stripe.customers.create({
+          email: userData.email || undefined,
+          name: userData.name || undefined,
+          metadata: {
+            userId: userId,
+          },
+        });
+        customerId = customer.id;
+
+        // Save the customer ID to the user document
+        await adminDb.collection("users").doc(userId).update({
+          stripeCustomerId: customerId,
+        });
       }
 
       // Create a new subscription for the user
       const subscription = await stripe.subscriptions.create({
-        customer: stripeCustomerId,
+        customer: customerId,
         items: [{ price: newPlanId }],
         payment_behavior: "default_incomplete",
         payment_settings: { save_default_payment_method: "on_subscription" },

@@ -37,15 +37,31 @@ export default function ActiveSubscriptionsTable() {
   const [cancellingUserId, setCancellingUserId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
-  const debounceRef = useRef();
+  const debounceRef = useRef(null);
 
-  useEffect(() => {
-    debounceRef.current = (val) => setSearch(val);
-  }, []);
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearchInput(value);
+
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+
+    debounceRef.current = setTimeout(() => {
+      setSearch(value);
+    }, 300);
+  };
 
   useEffect(() => {
     fetchPlanMap();
-    // eslint-disable-next-line
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -87,19 +103,30 @@ export default function ActiveSubscriptionsTable() {
     setLoading(true);
     try {
       let q = collection(db, "users");
-      let constraints = [orderBy("email"), limit(PAGE_SIZE + 1)];
+      let constraints = [where("userType", "==", "Employer"), orderBy("email")];
 
-      if (startDoc) {
-        constraints.push(startAfter(startDoc));
+      // Fetch all records when searching or filtering by plan type
+      const hasFilters = search || selectedPlans.length > 0;
+      if (hasFilters) {
+        constraints.push(limit(1000));
+      } else {
+        constraints.push(limit(PAGE_SIZE + 1));
+        if (startDoc) {
+          constraints.push(startAfter(startDoc));
+        }
       }
 
       const usersQuery = query(q, ...constraints);
       const snapshot = await getDocs(usersQuery);
       let docs = snapshot.docs;
 
-      setHasNext(docs.length > PAGE_SIZE);
-      if (docs.length > PAGE_SIZE) {
-        docs = docs.slice(0, PAGE_SIZE);
+      if (!hasFilters) {
+        setHasNext(docs.length > PAGE_SIZE);
+        if (docs.length > PAGE_SIZE) {
+          docs = docs.slice(0, PAGE_SIZE);
+        }
+      } else {
+        setHasNext(false);
       }
 
       let usersList = docs.map((doc) => ({ id: doc.id, ...doc.data() }));
@@ -177,8 +204,10 @@ export default function ActiveSubscriptionsTable() {
       });
 
       setUsers(filtered);
-      setFirstDoc(docs[0]);
-      setLastDoc(docs[docs.length - 1]);
+      if (!hasFilters) {
+        setFirstDoc(docs[0]);
+        setLastDoc(docs[docs.length - 1]);
+      }
 
       // Update pagination info only when navigating
       if (direction === "next") {
@@ -214,11 +243,6 @@ export default function ActiveSubscriptionsTable() {
       setSortBy(col);
       setSortDir("asc");
     }
-  };
-
-  const handleSearchChange = (e) => {
-    setSearchInput(e.target.value);
-    debounceRef.current(e.target.value);
   };
 
   const handlePlanTypeChange = (plan) => {
@@ -518,34 +542,51 @@ export default function ActiveSubscriptionsTable() {
       </table>
 
       {/* Pagination Controls */}
-      <div className={styles["admin-table-actions"]}>
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <button
-            onClick={handlePrev}
-            disabled={pageStack.length === 0 || loading}
-            className={styles["admin-table-btn"]}
-          >
-            Previous
-          </button>
+      {!search && selectedPlans.length === 0 && (
+        <div className={styles["admin-table-actions"]}>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <button
+              onClick={handlePrev}
+              disabled={pageStack.length === 0 || loading}
+              className={styles["admin-table-btn"]}
+            >
+              Previous
+            </button>
 
+            <span style={{ fontSize: "14px", color: "#666" }}>
+              Page {currentPage}
+              {users.length > 0 && (
+                <span style={{ marginLeft: "8px" }}>
+                  (Showing {users.length} results)
+                </span>
+              )}
+            </span>
+
+            <button
+              onClick={handleNext}
+              disabled={!hasNext || loading}
+              className={styles["admin-table-btn"]}
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
+      {(search || selectedPlans.length > 0) && users.length > 0 && (
+        <div className={styles["admin-table-actions"]}>
           <span style={{ fontSize: "14px", color: "#666" }}>
-            Page {currentPage}
-            {users.length > 0 && (
-              <span style={{ marginLeft: "8px" }}>
-                (Showing {users.length} results)
+            Showing {users.length} result{users.length !== 1 ? "s" : ""}
+            {search && ` for "${search}"`}
+            {selectedPlans.length > 0 && (
+              <span>
+                {" "}
+                with plan{selectedPlans.length > 1 ? "s" : ""}:{" "}
+                {selectedPlans.join(", ")}
               </span>
             )}
           </span>
-
-          <button
-            onClick={handleNext}
-            disabled={!hasNext || loading}
-            className={styles["admin-table-btn"]}
-          >
-            Next
-          </button>
         </div>
-      </div>
+      )}
 
       {/* Change Subscription Modal */}
       {showChangeModal && selectedUser && (

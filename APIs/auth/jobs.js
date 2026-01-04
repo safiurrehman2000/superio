@@ -28,6 +28,10 @@ export const useCreateJobPost = async (payload) => {
     const fieldTypes = {
       title: "title",
       description: "description",
+      functionDescription: "description",
+      profileSkills: "description",
+      offer: "description",
+      schedule: "description",
       email: "email",
       location: "text",
       jobType: "text",

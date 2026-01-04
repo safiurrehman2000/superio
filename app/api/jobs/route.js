@@ -13,6 +13,10 @@ export async function POST(request) {
     const fieldTypes = {
       title: "title",
       description: "description",
+      functionDescription: "description",
+      profileSkills: "description",
+      offer: "description",
+      schedule: "description",
       requirements: "description",
       location: "text",
       salary: "text",

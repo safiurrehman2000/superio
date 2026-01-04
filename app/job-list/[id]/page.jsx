@@ -158,7 +158,13 @@ const JobSingleDynamicV3 = ({ params }) => {
                   </div>
                 </div>
 
-                <JobDetailsDescriptions description={job.description} />
+                <JobDetailsDescriptions
+                  description={job.description}
+                  functionDescription={job.functionDescription}
+                  profileSkills={job.profileSkills}
+                  offer={job.offer}
+                  schedule={job.schedule}
+                />
 
                 <div className="other-options">
                   <div className="social-share">
