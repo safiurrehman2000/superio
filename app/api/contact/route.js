@@ -13,7 +13,7 @@ export async function POST(request) {
     // Validate required fields
     if (!name || !email || !subject || !message) {
       return NextResponse.json(
-        { success: false, error: "All fields are required" },
+        { success: false, error: "Alle velden zijn verplicht" },
         { status: 400 }
       );
     }
@@ -22,7 +22,7 @@ export async function POST(request) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return NextResponse.json(
-        { success: false, error: "Invalid email format" },
+        { success: false, error: "Ongeldige e-mail" },
         { status: 400 }
       );
     }
@@ -52,19 +52,19 @@ export async function POST(request) {
     // Add to Firestore
     const docRef = await adminDb.collection("contactQueries").add(contactData);
 
-    console.log(`✅ Contact query created with ID: ${docRef.id}`);
+    console.log(`✅ Contactaanvraag aangemaakt met ID: ${docRef.id}`);
 
     return NextResponse.json({
       success: true,
-      message: "Contact query submitted successfully",
+      message: "Contactaanvraag succesvol verzonden",
       queryId: docRef.id,
     });
   } catch (error) {
-    console.error("Error submitting contact form:", error);
+    console.error("Fout bij het verzenden van het contactformulier:", error);
     return NextResponse.json(
       {
         success: false,
-        error: "Internal server error while submitting contact form",
+        error: "Interne serverfout tijdens het verzenden van het contactformulier",
       },
       { status: 500 }
     );
