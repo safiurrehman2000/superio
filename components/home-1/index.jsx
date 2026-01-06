@@ -9,6 +9,7 @@ import FooterDefault from "../footer/common-footer";
 import DefaulHeader2 from "../header/DefaulHeader2";
 import MobileMenu from "../header/MobileMenu";
 import Hero9 from "../hero/hero-9";
+import CookiePopup from "components/cookie-popup/CookiePopup"
 import JobCategorie1 from "../job-categories/JobCategorie1";
 import JobFeatured1 from "../job-featured/JobFeatured1";
 
@@ -16,6 +17,8 @@ const index = () => {
   const selector = useSelector((store) => store.user);
   return (
     <>
+      <CookiePopup />
+      
       <LoginPopup />
       {/* End Login Popup Modal */}
 
@@ -52,6 +55,7 @@ const index = () => {
         </div>
       </section> */}
       {/* End Job Featured Section */}
+      
       <CallToAction2 />
 
       <section className="news-section-two style-two">
@@ -147,6 +151,75 @@ const index = () => {
         </div>
       </section>
       {/* End Contact Us Hero Section */}
+
+      {/* Google Review Section */}
+      <section
+        className="google-review-section"
+        style={{
+          padding: "clamp(40px, 6vw, 70px) 0",
+          backgroundColor: "#f9fbfd",
+        }}
+      >
+        <div className="auto-container">
+          <div className="row justify-content-center">
+            <div
+              className="col-lg-6 col-md-8 col-sm-12 text-center"
+              data-aos="fade-up"
+            >
+              <div style={{ marginBottom: "25px" }}>
+                <img
+                  src="/images/google-review.png"
+                  alt="Google Reviews"
+                  style={{
+                    maxWidth: "280px",
+                    width: "100%",
+                    height: "auto",
+                  }}
+                />
+              </div>
+
+              <p
+                style={{
+                  fontSize: "clamp(15px, 3vw, 17px)",
+                  color: "#555",
+                  marginBottom: "25px",
+                  lineHeight: "1.6",
+                }}
+              >
+                <strong>Werkgever?</strong> We waarderen je feedback over onze
+                samenwerking!
+              </p>
+
+              <Link
+                href="https://www.google.com/search?sca_esv=b981c6def567073f&sxsrf=AHTn8zqCS8jcEuIf4eKVQpdFE-gkUBHHPA:1742816047528&q=reviews+voor+de+flexijobber&uds=ABqPDvztZD_Nu18FR6tNPw2cK_RR1Y2B-6v0nEZ_RNXr7jcQfLwW8Wc1J9mckm0JRLblsagLSD2iHa3O-jnkBr5uD-yXzEolHloIJXPb7-ZeLeldD49LmxblKOI_uzwwuv2w548izlxGEr_Ssz-CidRuvCbdeG_uAdDIwN0oFW88ft_JhBUcPhM&si=APYL9bs7Hg2KMLB-4tSoTdxuOx8BdRvHbByC_AuVpNyh0x2KzX635Ard0LmfaikNGk6gZ6MRUVfPD_mf5GSELWpVwmS-pG-S5qybqcgJVL0HIXMqEbTiKU_rUcT2H_74wJu_HROEG0VxeXsdw0CMYOG3_NZLJ1gZJA%3D%3D&sa=X&ved=2ahUKEwja16_bz6KMAxV2-wIHHRl0NHEQxKsJegQIGhAB&ictx=1&stq=1&cs=0&lei=L0PhZ5qEIPb2i-gPmejRiQc"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="google-review-btn"
+                style={{
+                  backgroundColor: "#00B7EA",
+                  color: "#ffffff",
+                  padding: "14px 36px",
+                  borderRadius: "50px",
+                  fontWeight: "600",
+                  fontSize: "15px",
+                  textDecoration: "none",
+                  display: "inline-block",
+                  transition: "all 0.3s ease",
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = "#009ac6";
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = "#00B7EA";
+                }}
+              >
+                Laat een Google review achter
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+      {/* End Google Review Section */}
 
       {/* <section className="job-categories style-two">
         <div className="auto-container">
