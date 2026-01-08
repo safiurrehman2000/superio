@@ -147,5 +147,8 @@ async function initializeFAQs() {
   }
 }
 
-// Run the initialization
-initializeFAQs();
+// Run the initialization only if this script is executed directly
+// This prevents auto-execution when the file is imported/required elsewhere
+if (require.main === module) {
+  initializeFAQs();
+}

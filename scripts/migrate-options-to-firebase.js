@@ -39,5 +39,8 @@ async function migrateOptionsToFirebase() {
   }
 }
 
-// Run the migration
-migrateOptionsToFirebase();
+// Run the migration only if this script is executed directly
+// This prevents auto-execution when the file is imported/required elsewhere
+if (require.main === module) {
+  migrateOptionsToFirebase();
+}

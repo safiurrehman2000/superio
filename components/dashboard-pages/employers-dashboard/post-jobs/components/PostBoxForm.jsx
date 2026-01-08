@@ -54,7 +54,14 @@ const PostBoxForm = () => {
     handleSubmit,
     formState: { isValid },
     setError: setFormError,
+    setValue,
   } = methods;
+
+  React.useEffect(() => {
+    if (selector?.user?.email) {
+      setValue("email", selector.user.email);
+    }
+  }, [selector?.user?.email, setValue]);
 
   // Check subscription status and job posting permission on component mount
   React.useEffect(() => {
@@ -244,7 +251,7 @@ const PostBoxForm = () => {
               placeholder="kandidaat@email.be"
               required
               fieldType="Email"
-              disabled={isFormDisabled}
+              disabled={true}
             />
           </div>
 

@@ -9,7 +9,7 @@ const JobDetailsDescriptions = ({
     <>
       {description && (
         <div className="job-detail">
-          <h4>Beschrijving</h4>
+          <h3>Beschrijving</h3>
           <p>{description}</p>
         </div>
       )}
