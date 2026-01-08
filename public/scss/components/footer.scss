@@ -753,3 +753,14 @@ Main Footer / Style Six
     text-align: center;
   }
 }
+
+.horeca-partner {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.horeca-partner img {
+  max-width: 100%;
+  height: auto;
+}

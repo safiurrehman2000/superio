@@ -26,14 +26,15 @@ const index = () => {
       <MobileMenu />
       {/* End MobileMenu */}
 
-      <Breadcrumb title="About Us" meta="About Us" />
+      <Breadcrumb title="Over Ons" meta="Over Ons" />
       {/* <!--End Page Title--> */}
 
       <section className="about-section-three">
         <div className="auto-container">
+          <IntroDescriptions />
           <ImgBox />
 
-          {/* <!-- Fun Fact Section --> */}
+          {/* <!-- Fun Fact Section 
           <div className="fun-fact-section">
             <div className="row">
               <Funfact />
@@ -41,7 +42,6 @@ const index = () => {
           </div>
           {/* <!-- Fun Fact Section --> */}
 
-          <IntroDescriptions />
         </div>
       </section>
       {/* <!-- End About Section Three --> */}
@@ -49,7 +49,8 @@ const index = () => {
       <CallToAction2 />
       {/* <!-- End CallToAction2 --> */}
 
-      <section className="testimonial-section-two">
+
+      {/* <!-- <section className="testimonial-section-two">
         <div className="container-fluid">
           <div className="testimonial-left">
             <Image
@@ -59,7 +60,7 @@ const index = () => {
               alt="testimonial"
             />
           </div>
-          {/* End left img group */}
+          {/* End left img group 
 
           <div className="testimonial-right">
             <Image
@@ -69,7 +70,7 @@ const index = () => {
               alt="testimonial"
             />
           </div>
-          {/* End right img group */}
+          {/* End right img group 
 
           <div className="sec-title text-center">
             <h2>Testimonials From Our Customers</h2>
@@ -77,36 +78,21 @@ const index = () => {
               Lorem ipsum dolor sit amet elit, sed do eiusmod tempor
             </div>
           </div>
-          {/* <!-- Sec Title --> */}
+          {/* <!-- Sec Title 
 
           <div className="carousel-outer" data-aos="fade-up">
             <div className="testimonial-carousel">
               <Testimonial2 />
             </div>
-            {/* <!-- Testimonial Carousel --> */}
+            {/* <!-- Testimonial Carousel 
           </div>
         </div>
       </section>
-      {/* <!-- End Testimonial Section --> */}
-
-      <section className="work-section style-two">
-        <div className="auto-container">
-          <div className="sec-title text-center">
-            <h2>How It Works?</h2>
-            <div className="text">Job for anyone, anywhere</div>
-          </div>
-          {/* End sec-title */}
-
-          <div className="row" data-aos="fade-up">
-            <Block1 />
-          </div>
-        </div>
-      </section>
-      {/* <!-- End Work Section --> */}
+      {/* <!-- End Testimonial Section 
 
       <section className="clients-section">
         <div className="sponsors-outer" data-aos="fade">
-          {/* <!--Sponsors Carousel--> */}
+          {/* <!--Sponsors Carousel--> 
           <ul className="sponsors-carousel">
             <Partner />
           </ul>

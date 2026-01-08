@@ -25,7 +25,7 @@ const index = () => {
         <div className="auto-container">
           {/* <!-- Contact Form --> */}
           <div className="contact-form default-form">
-            <h3>Leave A Message</h3>
+            <h3>Neem contact op</h3>
             <ContactForm />
             {/* <!--Contact Form--> */}
           </div>

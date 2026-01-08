@@ -5,58 +5,52 @@ const RegBanner = () => {
   const regBannerContent = [
     {
       id: 1,
-      bgImage: `url("/images/index-13/banner/bg-1.png")`,
-      name: "Nieuwe Flexijobbers inzetten daar hoort natuurlijk ook loonadministratie bij !",
-      text: ` Time is money ook bij loonadministratie.
-        Het kan altijd beter, efficiënter, vlotter, eenvoudiger maar vooral goedkoper.
-        Ga jij flexi's in dienst nemen ?
+      name: "Nieuwe Flexijobbers inzetten? Daar hoort loonadministratie bij!",
+      text: `Time is money, ook bij loonadministratie.
+Het kan altijd beter, efficiënter, vlotter en vooral goedkoper.
 
-      Wil jij graag een vrijblijvende vergelijking ?`,
+Ga jij flexi’s in dienst nemen?
+Wil je een vrijblijvende vergelijking?`,
       avatar: "/images/resource/employ.png",
-      bannerClass: "banner-style-one",
-      width: "221",
-      height: "281",
+      link: "/contact",
+      buttonText: "Meer informatie",
     },
     {
       id: 2,
-      bgImage: `url("/images/index-13/banner/bg-2.png")`,
-      name: "Waarom kiezen voor ons platform De flexiJobber als werkgever ?",
-      text: ` Wist je dat 70 procent van alle sollicitanten een vacature zoekt en vindt via de zoekfunctie van Google?
-Via de Flexijobber vergroot je jouw bereik!`,
+      name: "Waarom kiezen voor De Flexijobber als werkgever?",
+      text: `Wist je dat 70% van alle sollicitanten vacatures vindt via Google?
+
+Via De Flexijobber vergroot je jouw bereik aanzienlijk.`,
       avatar: "/images/resource/candidate.png",
-      bannerClass: "banner-style-two dark",
-      width: "207",
-      height: "283",
+      link: "/platform",
+      buttonText: "Ontdek het platform",
     },
   ];
+
   return (
     <>
       {regBannerContent.map((item) => (
-        <div
-          className={`${item.bannerClass} -type-2 col-lg-6 col-md-12 col-sm-12`}
-          key={item.id}
-        >
-          <div
-            className="inner-box"
-            style={{
-              backgroundImage: item.bgImage,
-            }}
-          >
-            <div className="content">
+        <div className="col-lg-6 col-md-12 col-sm-12" key={item.id}>
+          <div className="reg-banner-card">
+            {/* Image */}
+            <div className="reg-banner-image">
+              <Image
+                src={item.avatar}
+                alt={item.name}
+                fill
+                style={{ objectFit: "contain" }}
+              />
+            </div>
+
+            {/* Content */}
+            <div className="reg-banner-content">
               <h3>{item.name}</h3>
               <p>{item.text}</p>
-              <Link href="/register" className="theme-btn btn-style-five">
-                Account Aanmaken
+
+              <Link href={item.link} className="theme-btn btn-style-five">
+                {item.buttonText}
               </Link>
             </div>
-            <figure className="image">
-              <Image
-                width={item.width}
-                height={item.height}
-                src={item.avatar}
-                alt="resource"
-              />
-            </figure>
           </div>
         </div>
       ))}
@@ -65,3 +59,5 @@ Via de Flexijobber vergroot je jouw bereik!`,
 };
 
 export default RegBanner;
+
+

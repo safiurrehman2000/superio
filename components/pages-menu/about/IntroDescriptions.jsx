@@ -1,24 +1,25 @@
 const IntroDescriptions = () => {
   return (
     <div className="text-box">
-      <h4>About Superio</h4>
+      <h4>De Flexijobber</h4>
       <p>
-        Far much that one rank beheld bluebird after outside ignobly allegedly
-        more when oh arrogantly vehement irresistibly fussy penguin insect
-        additionally wow absolutely crud meretriciously hastily dalmatian a
-        glowered inset one echidna cassowary some parrot and much as goodness
-        some froze the sullen much connected bat wonderfully on instantaneously
-        eel valiantly petted this along across highhandedly much.
+        Bij De Flexi-Jobber bieden wij een platform voor werkgevers en flexi-jobbers 
+        die op zoek zijn naar flexibele werkmogelijkheden in diverse sectoren. Flexi-jobs 
+        zijn een aantrekkelijke oplossing voor zowel werknemers als werkgevers, waarbij 
+        werknemers extra kunnen bijverdienen zonder belastingen of sociale bijdragen te 
+        betalen. Het brutoloon is gelijk aan het nettoloon, en werknemers bouwen sociale 
+        rechten op, zoals pensioen en vakantie.
       </p>
       <p>
-        Repeatedly dreamed alas opossum but dramatically despite expeditiously
-        that jeepers loosely yikes that as or eel underneath kept and slept
-        compactly far purred sure abidingly up above fitting to strident wiped
-        set waywardly far the and pangolin horse approving paid chuckled
-        cassowary oh above a much opposite far much hypnotically more therefore
-        wasp less that hey apart well like while superbly orca and far hence
-        one.Far much that one rank beheld bluebird after outside ignobly
-        allegedly more when oh arrogantly vehement irresistibly fussy.
+        Onze focus ligt op het aanbieden van flexi-jobs in de horeca en detailhandel, 
+        waaronder supermarkten, bakkers, slagers en kappers. We richten ons op gepensioneerden 
+        en werknemers die al minstens 4/5 werken bij een andere werkgever. Flexi-jobbers werken 
+        onder gunstige voorwaarden en profiteren van een verlaagd werkgeversbijdragen tarief van 28%.
+      </p>
+      <p>
+        Of je nu een werkgever bent die extra personeel zoekt tijdens piekmomenten of een werknemer 
+        die een flexibele bijverdienste wil, bij De Flexi-Jobber zorgen we voor de juiste match, zodat 
+        beide partijen optimaal kunnen profiteren van deze voordelige regeling.
       </p>
     </div>
   );

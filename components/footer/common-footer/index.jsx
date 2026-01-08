@@ -47,7 +47,7 @@ const index = ({ footerStyle = "" }) => {
               <div className="row">
                 <FooterContent />
 
-                <div className="footer-column col-lg-3 col-md-6 col-sm-12">
+                <div className="footer-column col-lg-5 col-md-6 col-sm-12">
                   <div className="footer-widget links-widget">
                     <h4 className="widget-title">
                       In samenwerking met Horeca Benelux
@@ -65,6 +65,20 @@ const index = ({ footerStyle = "" }) => {
                           height={75}
                           src={horecaBenelux}
                           alt="Horeca Benelux"
+                        />
+                      </a>
+
+                      <a
+                        href="https://www.horecabenelux.com"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="Horeca Benelux partner"
+                      >
+                        <Image
+                          width={240}
+                          height={120}
+                          src="/images/horeca-flexi.jpg"
+                          alt="Horeca netwerk Benelux"
                         />
                       </a>
                     </div>

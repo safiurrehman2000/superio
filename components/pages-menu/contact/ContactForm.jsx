@@ -34,14 +34,14 @@ const ContactForm = () => {
       const result = await response.json();
 
       if (response.ok && result.success) {
-        successToast("Thank you! Your message has been sent successfully.");
+        successToast("Dank u wel! Uw bericht is succesvol verzonden.");
         reset();
       } else {
-        errorToast(result.error || "Failed to send message. Please try again.");
+        errorToast(result.error || "Het verzenden van het bericht is mislukt. Probeer het opnieuw.");
       }
     } catch (error) {
-      console.error("Error submitting contact form:", error);
-      errorToast("An error occurred. Please try again later.");
+      console.error("Fout bij het verzenden van het contactformulier:", error);
+      errorToast("Er is een fout opgetreden. Probeer het later opnieuw.");
     } finally {
       setIsLoading(false);
     }
@@ -53,10 +53,10 @@ const ContactForm = () => {
         <div className="row">
           <div className="col-lg-6 col-md-12 col-sm-12 form-group">
             <InputField
-              label="Your Name"
+              label="Jouw naam"
               name="name"
               type="text"
-              placeholder="Your Name*"
+              placeholder="Jouw naam*"
               required={true}
               fieldType="name"
             />
@@ -65,10 +65,10 @@ const ContactForm = () => {
 
           <div className="col-lg-6 col-md-12 col-sm-12 form-group">
             <InputField
-              label="Your Email"
+              label="Jouw e-mail"
               name="email"
               type="email"
-              placeholder="Your Email*"
+              placeholder="Jouw e-mail*"
               required={true}
               fieldType="email"
             />
@@ -77,10 +77,10 @@ const ContactForm = () => {
 
           <div className="col-lg-12 col-md-12 col-sm-12 form-group">
             <InputField
-              label="Subject"
+              label="Onderwerp"
               name="subject"
               type="text"
-              placeholder="Subject*"
+              placeholder="Onderwerp*"
               required={true}
               fieldType="text"
             />
@@ -89,9 +89,9 @@ const ContactForm = () => {
 
           <div className="col-lg-12 col-md-12 col-sm-12 form-group">
             <TextAreaField
-              label="Your Message"
+              label="Jouw bericht"
               name="message"
-              placeholder="Write your message..."
+              placeholder="Schrijf je bericht..."
               required={true}
               minLength={10}
               maxLength={2000}
@@ -105,7 +105,7 @@ const ContactForm = () => {
               type="submit"
               disabled={isLoading}
             >
-              {isLoading ? <CircularLoader /> : "Send Message"}
+              {isLoading ? <CircularLoader /> : "Stuur bericht"}
             </button>
           </div>
           {/* End .col */}
