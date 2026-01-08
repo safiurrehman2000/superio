@@ -141,6 +141,26 @@ const FormContentModal = ({ onLoginSuccess }) => {
           <div
             style={{ cursor: "pointer" }}
             onClick={() => {
+              if (typeof window !== "undefined") {
+                const modalEl = document.getElementById("loginPopupModal");
+
+                const backdrop = document.querySelector(".modal-backdrop");
+                if (backdrop) {
+                  backdrop.remove();
+                }
+
+                document.body.classList.remove("modal-open");
+                document.body.style.overflow = "";
+                document.body.style.paddingRight = "";
+
+                if (window.bootstrap && modalEl) {
+                  const modal = window.bootstrap.Modal.getInstance(modalEl);
+                  if (modal) {
+                    modal.hide();
+                  }
+                }
+              }
+
               push("/register");
             }}
           >

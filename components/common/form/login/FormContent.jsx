@@ -7,6 +7,7 @@ import { FormProvider, useForm } from "react-hook-form";
 import { InputField } from "@/components/inputfield/InputField";
 import { LOGO } from "@/utils/constants";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 
 const FormContent = () => {
@@ -66,6 +67,20 @@ const FormContent = () => {
     <div className="form-inner">
       <div className="text-center mb-5">
         <Image width={154} height={50} src={LOGO} alt="De Flexijobber Logo" />
+      </div>
+      <div className="text-center mb-3">
+        <Link
+          href="/"
+          className="theme-btn btn-style-one btn"
+          style={{
+            textDecoration: "none",
+            display: "inline-block",
+            padding: "10px 20px",
+            fontSize: "14px",
+          }}
+        >
+          <i className="la la-home"></i> Terug naar home
+        </Link>
       </div>
       <h3 className="text-center">Login bij De Flexijobber</h3>
 
