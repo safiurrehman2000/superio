@@ -366,3 +366,118 @@
   color: #cf3838 !important;
   margin-top: 10px;
 }
+
+/* =========================
+   Reg Banner Layout
+========================= */
+
+.reg-banner-row {
+  margin-top: 30px;
+}
+
+/* Bootstrap kolom spacing */
+.reg-banner-col {
+  display: flex;
+}
+
+/* =========================
+   Reg Banner Card
+========================= */
+
+.reg-banner-card {
+  width: 100%;
+  height: 100%;
+  border-radius: 20px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #10e7dc 0%, #0074e1 100%);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+}
+
+/* =========================
+   Image block
+========================= */
+
+.reg-banner-image {
+  position: relative;
+  height: 220px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 20px 20px 0 0;
+  padding: 20px;
+}
+
+/* =========================
+   Content
+========================= */
+
+.reg-banner-content {
+  padding: 26px;
+  color: #ffffff;
+  flex: 1;
+}
+
+.reg-banner-content h3 {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  line-height: 1.3;
+}
+
+.reg-banner-content p {
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 22px;
+  white-space: pre-line;
+}
+
+/* =========================
+   Button
+========================= */
+
+.reg-banner-content .theme-btn {
+  display: inline-block;
+  background-color: #fa5508;
+  color: #ffffff;
+  border-radius: 30px;
+  padding: 11px 28px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  text-decoration: none;
+}
+
+.reg-banner-content .theme-btn:hover {
+  background-color: #fa5508; /* blijft hetzelfde */
+  color: #ffffff;
+  opacity: 0.9;
+}
+
+/* =========================
+   Responsive fixes
+========================= */
+
+/* Mobile & tablet spacing */
+@media (max-width: 991px) {
+  .reg-banner-col {
+    margin-bottom: 32px;
+  }
+}
+
+/* Desktop: cards iets smaller */
+@media (min-width: 992px) {
+  .reg-banner-card {
+    max-width: 88%;
+    margin: 0 auto;
+  }
+}
+
+/* =========================
+   FORCE text color (Superio override)
+========================= */
+
+.reg-banner-card .reg-banner-content p {
+  color: #ffffff !important;
+  opacity: 1 !important;
+}
+

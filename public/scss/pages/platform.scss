@@ -1,0 +1,99 @@
+/* =========================
+   Platform Page
+========================= */
+
+.platform-page {
+  padding: 90px 0;
+  background-color: #f8f9fb;
+}
+
+/* Header */
+.platform-header {
+  margin-bottom: 50px;
+}
+
+.platform-header h1 {
+  font-size: 36px;
+  font-weight: 800;
+  color: #0b0b0b;
+  margin-bottom: 10px;
+}
+
+.platform-header p {
+  font-size: 16px;
+  color: #666;
+}
+
+/* Content box */
+.platform-content {
+  max-width: 900px;
+  margin: 0 auto;
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 40px 48px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+}
+
+/* List */
+.platform-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 40px;
+}
+
+.platform-list li {
+  position: relative;
+  padding-left: 34px;
+  margin-bottom: 14px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #333;
+}
+
+.platform-list li::before {
+  content: "✔";
+  position: absolute;
+  left: 0;
+  top: 2px;
+  color: #00b7ea;
+  font-weight: 700;
+}
+
+/* CTA */
+.platform-cta {
+  text-align: center;
+}
+
+.platform-cta .theme-btn {
+  background-color: #fa5508;
+  color: #ffffff;
+  padding: 12px 34px;
+  border-radius: 30px;
+  font-weight: 600;
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.platform-cta .theme-btn:hover {
+  background-color: transparent;
+  color: #fa5508;
+  border-color: #fa5508;
+}
+
+/* =========================
+   Responsive
+========================= */
+
+@media (max-width: 991px) {
+  .platform-page {
+    padding: 60px 0;
+  }
+
+  .platform-content {
+    padding: 28px;
+  }
+
+  .platform-header h1 {
+    font-size: 28px;
+  }
+}
