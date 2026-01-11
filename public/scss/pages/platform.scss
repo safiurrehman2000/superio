@@ -1,99 +1,100 @@
 /* =========================
-   Platform Page
+   Platform Page Styling
 ========================= */
 
 .platform-page {
-  padding: 90px 0;
-  background-color: #f8f9fb;
+  position: relative;
+  padding: 80px 0;
+  background: linear-gradient(135deg, #10e7dc 0%, #0074e1 100%);
 }
 
-/* Header */
-.platform-header {
-  margin-bottom: 50px;
+/* Titel */
+.platform-page .sec-title h2 {
+  color: #ffffff;
+  font-weight: 700;
 }
 
-.platform-header h1 {
-  font-size: 36px;
-  font-weight: 800;
-  color: #0b0b0b;
-  margin-bottom: 10px;
+.platform-page .sec-title .text {
+  color: #ffffff;
+  font-size: 20px;
+  margin-top: 10px;
 }
 
-.platform-header p {
-  font-size: 16px;
-  color: #666;
-}
+/* =========================
+   Platform list
+========================= */
 
-/* Content box */
-.platform-content {
-  max-width: 900px;
-  margin: 0 auto;
-  background: #ffffff;
-  border-radius: 18px;
-  padding: 40px 48px;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
-}
-
-/* List */
 .platform-list {
   list-style: none;
-  padding: 0;
-  margin: 0 0 40px;
+  padding-left: 0;
+  margin-top: 40px;
 }
 
 .platform-list li {
   position: relative;
-  padding-left: 34px;
-  margin-bottom: 14px;
-  font-size: 15px;
-  line-height: 1.6;
-  color: #333;
+  padding-left: 50px;
+  margin-bottom: 20px;
+  font-size: 16px;
+  line-height: 1.7;
+  color: #ffffff;
 }
 
+/* Oranje cirkel met wit vinkje */
 .platform-list li::before {
-  content: "✔";
+  content: "✓";
   position: absolute;
   left: 0;
-  top: 2px;
-  color: #00b7ea;
+  top: 4px;
+  width: 28px;
+  height: 28px;
+  background-color: #fa5508; /* Flexijobber oranje */
+  color: #ffffff;
+  border-radius: 50%;
+  font-size: 14px;
   font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* CTA */
-.platform-cta {
-  text-align: center;
+/* Mail link */
+.platform-list a {
+  color: #ffffff;
+  font-weight: 600;
+  text-decoration: underline;
 }
 
-.platform-cta .theme-btn {
+.platform-list a:hover {
+  color: #fa5508;
+}
+
+/* =========================
+   CTA
+========================= */
+
+.platform-page .theme-btn {
   background-color: #fa5508;
   color: #ffffff;
-  padding: 12px 34px;
+  padding: 14px 34px;
   border-radius: 30px;
   font-weight: 600;
-  border: 2px solid transparent;
-  transition: all 0.3s ease;
 }
 
-.platform-cta .theme-btn:hover {
-  background-color: transparent;
-  color: #fa5508;
-  border-color: #fa5508;
+.platform-page .theme-btn:hover {
+  opacity: 0.9;
 }
 
 /* =========================
    Responsive
 ========================= */
 
-@media (max-width: 991px) {
+@media (max-width: 768px) {
   .platform-page {
     padding: 60px 0;
   }
 
-  .platform-content {
-    padding: 28px;
-  }
-
-  .platform-header h1 {
-    font-size: 28px;
+  .platform-list li {
+    font-size: 15px;
+    padding-left: 44px;
   }
 }

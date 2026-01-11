@@ -17,9 +17,9 @@ const index = ({ footerStyle = "" }) => {
                 <div className="logo footer-logo">
                   <a href="/">
                     <Image
-                      width={175}
-                      height={75}
-                      src={LOGO}
+                      width={180}
+                      height={90}
+                      src="/images/de-flexi-jobber-logo-white.png"
                       alt="De Flexijobber Logo"
                       priority
                     />
@@ -45,8 +45,10 @@ const index = ({ footerStyle = "" }) => {
             {/* ================= RIGHT COLUMN ================= */}
             <div className="big-column col-xl-8 col-lg-9 col-md-12">
               <div className="row">
+
                 <FooterContent />
 
+                {/* Horeca Benelux */}
                 <div className="footer-column col-lg-5 col-md-6 col-sm-12">
                   <div className="footer-widget links-widget">
                     <h4 className="widget-title">
@@ -55,7 +57,7 @@ const index = ({ footerStyle = "" }) => {
 
                     <div className="widget-content horeca-partner">
                       <a
-                        href="https://www.horecabenelux.com"
+                        href="https://www.facebook.com/Partyeventsaruba"
                         target="_blank"
                         rel="noopener noreferrer"
                         aria-label="Horeca Benelux"
@@ -69,7 +71,7 @@ const index = ({ footerStyle = "" }) => {
                       </a>
 
                       <a
-                        href="https://www.horecabenelux.com"
+                        href="https://www.facebook.com/Partyeventsaruba"
                         target="_blank"
                         rel="noopener noreferrer"
                         aria-label="Horeca Benelux partner"
@@ -82,6 +84,30 @@ const index = ({ footerStyle = "" }) => {
                         />
                       </a>
                     </div>
+                  </div>
+                </div>
+
+                {/* Facebook groep */}
+                <div className="footer-column col-lg-4 col-md-6 col-sm-12">
+                  <div className="footer-widget links-widget facebook-group-widget">
+                    <h4 className="widget-title">
+                      Volg onze Facebook groep
+                    </h4>
+
+                    <a
+                      href="https://www.facebook.com/groups/1386674879413028/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label="Facebook groep Flexi-jobs in Vlaanderen"
+                      className="facebook-group-logo"
+                    >
+                      <Image
+                        width={130}
+                        height={130}
+                        src="/images/flexijobber-logo.jpg"
+                        alt="Flexi-jobs in Vlaanderen Facebook groep"
+                      />
+                    </a>
                   </div>
                 </div>
 
