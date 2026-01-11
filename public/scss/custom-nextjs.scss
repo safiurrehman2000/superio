@@ -110,6 +110,11 @@
   z-index: 2;
 }
 
+.banner-section-nine .text {
+  font-size: 18px;
+  line-height: 26px;
+}
+
 
 .image-1 {
   background-image: url(../images/background/10.jpg);
@@ -381,6 +386,32 @@
 }
 
 /* =========================
+   Reg Banner Layout
+========================= */
+
+.reg-banner-row {
+  margin-top: 30px;
+}
+
+/* Bootstrap kolom spacing */
+.reg-banner-col {
+  display: flex;
+}
+
+/* =========================
+   Reg Banner Layout
+========================= */
+
+.reg-banner-row {
+  margin-top: 30px;
+}
+
+/* Bootstrap kolom spacing */
+.reg-banner-col {
+  display: flex;
+}
+
+/* =========================
    Reg Banner Card
 ========================= */
 
@@ -396,15 +427,25 @@
 }
 
 /* =========================
-   Image block
+   Image block (FULL WIDTH / FULL HEIGHT)
 ========================= */
 
 .reg-banner-image {
   position: relative;
-  height: 220px;
-  background: rgba(255, 255, 255, 0.15);
+  height: 300px;
+  background: linear-gradient(135deg, #10e7dc 0%, #0074e1 100%);
   border-radius: 20px 20px 0 0;
-  padding: 20px;
+  padding: 6px; /* blauwe rand zichtbaar */
+}
+
+/* Inner image wrapper */
+.reg-banner-image-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 14px 14px 0 0;
+  overflow: hidden;
 }
 
 /* =========================
@@ -418,17 +459,20 @@
 }
 
 .reg-banner-content h3 {
-  font-size: 20px;
+  font-size: 24px;
   font-weight: 700;
   margin-bottom: 12px;
   line-height: 1.3;
+  color: #ffffff;
 }
 
 .reg-banner-content p {
-  font-size: 14px;
+  font-size: 18px;
   line-height: 1.6;
   margin-bottom: 22px;
   white-space: pre-line;
+  color: #ffffff !important;
+  opacity: 1 !important;
 }
 
 /* =========================
@@ -448,19 +492,22 @@
 }
 
 .reg-banner-content .theme-btn:hover {
-  background-color: #fa5508; /* blijft hetzelfde */
+  background-color: #fa5508;
   color: #ffffff;
   opacity: 0.9;
 }
 
 /* =========================
-   Responsive fixes
+   Responsive spacing
 ========================= */
 
-/* Mobile & tablet spacing */
 @media (max-width: 991px) {
   .reg-banner-col {
     margin-bottom: 32px;
+  }
+
+  .reg-banner-image {
+    height: 240px;
   }
 }
 
@@ -480,4 +527,5 @@
   color: #ffffff !important;
   opacity: 1 !important;
 }
+
 
