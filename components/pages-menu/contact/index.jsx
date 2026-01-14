@@ -3,6 +3,8 @@ import FooterDefault from "../../footer/common-footer";
 import DefaulHeader from "../../header/DefaulHeader";
 import MobileMenu from "../../header/MobileMenu";
 import ContactForm from "./ContactForm";
+import Address from "./Address";
+import Breadcrumb from "../../common/Breadcrumb";
 
 const index = () => {
   return (
@@ -17,19 +19,23 @@ const index = () => {
 
       <MobileMenu />
       {/* End MobileMenu */}
-
-      <section
-        className="contact-section"
-        style={{ marginTop: "80px", paddingTop: "40px" }}
-      >
+      
+      <Breadcrumb title="Contact" meta="Contact" />
+      {/* <!--End Page Title--> */}
+      <section className="contact-section">
         <div className="auto-container">
-          {/* <!-- Contact Form --> */}
+
+          {/* Address blok */}
+          <div className="row justify-content-center contact-address">
+            <Address />
+          </div>
+
+          {/* Contact Form */}
           <div className="contact-form default-form">
             <h3>Neem contact op</h3>
             <ContactForm />
-            {/* <!--Contact Form--> */}
           </div>
-          {/* <!--End Contact Form --> */}
+
         </div>
       </section>
       {/* <!-- Contact Section --> */}

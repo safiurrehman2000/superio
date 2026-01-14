@@ -1,58 +1,64 @@
-import Image from "next/image";
+import { FaWhatsapp, FaPhoneAlt, FaEnvelope } from "react-icons/fa";
 
 const Address = () => {
   const addressContent = [
     {
       id: 1,
-      iconName: "placeholder",
-      title: "Address",
+      icon: <FaWhatsapp />,
+      title: "WhatsApp",
       text: (
         <>
-          329 Queensberry Street, North
-          <br /> Melbourne VIC 3051, Australia.
+          Plaats vacature via WhatsApp (werkgever)
+          <br />
+          <a href="https://wa.me/32479294276">+32 479 29 42 76</a>
         </>
       ),
     },
     {
       id: 2,
-      iconName: "smartphone",
-      title: "Call Us",
+      icon: <FaWhatsapp />,
+      title: "WhatsApp",
       text: (
         <>
-          <a href="tel:+4733378901" className="phone">
-            123 456 7890
-          </a>
+          WhatsApp bij vragen
+          <br />
+          <a href="https://wa.me/32491100143">+32 491 10 01 43</a>
         </>
       ),
     },
     {
       id: 3,
-      iconName: "letter",
-      title: "Email",
+      icon: <FaPhoneAlt />,
+      title: "Bel ons",
       text: (
         <>
-          {" "}
-          <a href="#">contact.london@example.com</a>
+          <a href="tel:+32491100143">+32 491 10 01 43</a>
+        </>
+      ),
+    },
+    {
+      id: 4,
+      icon: <FaEnvelope />,
+      title: "E-mail",
+      text: (
+        <>
+          <a href="mailto:info@de-flexi-jobber.be">
+            info@de-flexi-jobber.be
+          </a>
         </>
       ),
     },
   ];
+
   return (
     <>
       {addressContent.map((item) => (
         <div
-          className="contact-block col-lg-4 col-md-6 col-sm-12"
           key={item.id}
+          className="contact-block col-xl-3 col-lg-3 col-md-6 col-sm-12"
         >
-          <div className="inner-box">
-            <span className="icon">
-              <Image
-                width={51}
-                height={51}
-                src={`/images/icons/${item.iconName}.svg`}
-                alt="icon"
-              />
-            </span>
+          <div className="inner-box text-center">
+            <span className="icon-badge">{item.icon}</span>
             <h4>{item.title}</h4>
             <p>{item.text}</p>
           </div>
@@ -63,3 +69,6 @@ const Address = () => {
 };
 
 export default Address;
+
+
+
