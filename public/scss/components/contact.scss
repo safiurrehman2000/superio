@@ -76,3 +76,26 @@ Contact Section
 .contact-section .contact-form .theme-btn {
   width: 100%;
 }
+
+.icon-badge {
+  width: 64px;
+  height: 64px;
+  background-color: #FA5508;
+  color: #fff;
+
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 30px;
+  margin: 0 auto 18px;
+
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.contact-block .inner-box:hover .icon-badge {
+  transform: translateY(-4px) scale(1.05);
+  box-shadow: 0 10px 30px rgba(217, 48, 37, 0.35);
+}
+
