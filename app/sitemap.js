@@ -1,7 +1,24 @@
-const siteUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://de-flexi-jobber.be";
+import { adminDb } from "@/utils/firebase-admin";
+import { MetadataRoute } from "next";
 
-export default function sitemap() {
-  const routes = [
+const siteUrl = process.env.NEXT_PUBLIC_BASE_URL;
+
+async function getVacancies() {
+  const snapshot = await adminDb
+    .collection("jobs")
+    .where("status", "==", "active")
+    .get();
+
+  return snapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data(),
+  }));
+}
+
+export default async function sitemap() {
+  const jobs = await getVacancies();
+
+  const staticRoutes = [
     {
       url: siteUrl,
       lastModified: new Date(),
@@ -10,53 +27,32 @@ export default function sitemap() {
     },
     {
       url: `${siteUrl}/job-list`,
-      lastModified: new Date(),
       changeFrequency: "hourly",
       priority: 0.9,
     },
     {
       url: `${siteUrl}/about`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.8,
     },
     {
       url: `${siteUrl}/contact`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.7,
     },
     {
       url: `${siteUrl}/faq`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.7,
     },
     {
       url: `${siteUrl}/pricing`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.8,
     },
     {
-      url: `${siteUrl}/login`,
-      lastModified: new Date(),
-      changeFrequency: "yearly",
-      priority: 0.5,
-    },
-    {
-      url: `${siteUrl}/register`,
-      lastModified: new Date(),
-      changeFrequency: "yearly",
-      priority: 0.5,
-    },
-    {
-      url: `${siteUrl}/blog-list-v1`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.6,
+      url: `${siteUrl}/blog`,
     },
   ];
 
-  return routes;
+  const jobRoutes = jobs.map(job => ({
+    url: `${siteUrl}/jobs/${job.slug}`,
+    lastModified: new Date(job.updatedAt || job.createdAt),
+    changeFrequency: "daily",
+    priority: 0.95,
+  }));
+
+  return [...staticRoutes, ...jobRoutes];
 }
