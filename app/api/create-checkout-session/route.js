@@ -92,6 +92,7 @@ export async function POST(request) {
           quantity: 1,
         },
       ],
+      allow_promotion_codes: true,
       subscription_data: {
         metadata: {
           userId,
