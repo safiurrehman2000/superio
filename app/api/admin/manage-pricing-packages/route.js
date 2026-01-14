@@ -213,40 +213,89 @@ export async function PUT(request) {
     }
     if (isActive !== undefined) updateData.isActive = isActive;
 
-    // Update Stripe if price or interval changed
-    if (
+    const newName =
+      name !== undefined
+        ? name
+        : existingPackage.name || existingPackage.packageType;
+    const newJobLimit =
+      jobLimit !== undefined
+        ? jobLimit
+        : existingPackage.jobLimit || existingPackage.jobPosts;
+
+    const needsStripePriceUpdate =
       price !== undefined ||
       currency !== undefined ||
-      interval !== undefined
-    ) {
-      const newPrice = price || existingPackage.price;
-      const newCurrency = currency || existingPackage.currency;
-      const newInterval = interval || existingPackage.interval;
+      interval !== undefined ||
+      !existingPackage.stripeProductId;
 
-      // Create new Stripe price
-      const stripePrice = await stripe.prices.create({
-        product: existingPackage.stripeProductId,
-        unit_amount: Math.round(newPrice * 100),
-        currency: newCurrency,
-        recurring: {
-          interval: newInterval,
-        },
-      });
+    const needsStripeProductUpdate =
+      (name !== undefined || jobLimit !== undefined) &&
+      existingPackage.stripeProductId;
 
-      // Update Stripe product
+    if (needsStripePriceUpdate) {
+      const newPrice = price !== undefined ? price : existingPackage.price;
+      const newCurrency = currency || existingPackage.currency || "eur";
+      const newInterval = interval || existingPackage.interval || "month";
+
+      if (!existingPackage.stripeProductId) {
+        const stripeProduct = await stripe.products.create({
+          name: newName,
+          description: "Pricing package for job postings",
+          metadata: {
+            jobLimit: newJobLimit.toString(),
+            interval: newInterval,
+          },
+        });
+
+        const stripePrice = await stripe.prices.create({
+          product: stripeProduct.id,
+          unit_amount: Math.round(newPrice * 100),
+          currency: newCurrency,
+          recurring: {
+            interval: newInterval,
+          },
+        });
+
+        updateData.stripeProductId = stripeProduct.id;
+        updateData.stripePriceId = stripePrice.id;
+        updateData.price = newPrice;
+        updateData.currency = newCurrency;
+        updateData.interval = newInterval;
+      } else {
+        const stripePrice = await stripe.prices.create({
+          product: existingPackage.stripeProductId,
+          unit_amount: Math.round(newPrice * 100),
+          currency: newCurrency,
+          recurring: {
+            interval: newInterval,
+          },
+        });
+
+        // Update Stripe product
+        await stripe.products.update(existingPackage.stripeProductId, {
+          name: newName,
+          description: "Pricing package for job postings",
+          metadata: {
+            jobLimit: newJobLimit.toString(),
+            interval: newInterval,
+          },
+        });
+
+        updateData.price = newPrice;
+        updateData.currency = newCurrency;
+        updateData.interval = newInterval;
+        updateData.stripePriceId = stripePrice.id;
+      }
+    } else if (needsStripeProductUpdate) {
+      // Only update product metadata (name, jobLimit) without creating new price
       await stripe.products.update(existingPackage.stripeProductId, {
-        name: name || existingPackage.name,
+        name: newName,
         description: "Pricing package for job postings",
         metadata: {
-          jobLimit: (jobLimit || existingPackage.jobLimit).toString(),
-          interval: newInterval,
+          jobLimit: newJobLimit.toString(),
+          interval: existingPackage.interval || "month",
         },
       });
-
-      updateData.price = newPrice;
-      updateData.currency = newCurrency;
-      updateData.interval = newInterval;
-      updateData.stripePriceId = stripePrice.id;
     }
 
     await packageRef.update(updateData);
