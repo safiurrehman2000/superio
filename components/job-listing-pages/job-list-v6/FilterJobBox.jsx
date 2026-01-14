@@ -206,9 +206,41 @@ const FilterJobBox = () => {
                     }}
                   >
                     <p style={{ color: "white" }}>
-                      {item?.email?.charAt(0).toUpperCase() +
-                        " " +
-                        item?.email?.charAt(1).toUpperCase()}
+                      {(() => {
+                        if (item?.companyName && item.companyName.length >= 2) {
+                          const words = item.companyName.trim().split(/\s+/);
+                          if (words.length >= 2) {
+                            return (
+                              words[0].charAt(0).toUpperCase() +
+                              " " +
+                              words[1].charAt(0).toUpperCase()
+                            );
+                          }
+                          return (
+                            words[0].charAt(0).toUpperCase() +
+                            " " +
+                            words[0].charAt(1).toUpperCase()
+                          );
+                        }
+
+                        if (item?.title && item.title.length >= 2) {
+                          return (
+                            item.title.charAt(0).toUpperCase() +
+                            " " +
+                            item.title.charAt(1).toUpperCase()
+                          );
+                        }
+
+                        if (item?.email && item.email.length >= 2) {
+                          return (
+                            item.email.charAt(0).toUpperCase() +
+                            " " +
+                            item.email.charAt(1).toUpperCase()
+                          );
+                        }
+
+                        return "? ?";
+                      })()}
                     </p>
                   </div>
                 )}
