@@ -110,7 +110,7 @@ export default function page() {
       <section className="order-confirmation">
         <div className="auto-container">
           <div style={{ textAlign: "center", padding: "50px 20px" }}>
-            <p>Verifying your order...</p>
+            <p>Uw bestelling wordt geverifieerd...</p>
           </div>
         </div>
       </section>
@@ -122,7 +122,7 @@ export default function page() {
       <section className="order-confirmation">
         <div className="auto-container">
           <div style={{ textAlign: "center", padding: "50px 20px" }}>
-            <p>Access denied. Please complete your order first.</p>
+            <p>Toegang geweigerd. Voltooi eerst uw bestelling.</p>
           </div>
         </div>
       </section>

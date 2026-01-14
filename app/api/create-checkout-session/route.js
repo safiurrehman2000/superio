@@ -30,7 +30,7 @@ export async function POST(request) {
       );
     }
 
-    // Fetch user from Firestore to get existing stripeCustomerId and hasUsedTrial
+    // Fetch user from Firestore to get existing stripeCustomerId
     let userDoc;
     try {
       userDoc = await adminDb.collection("users").doc(userId).get();
@@ -45,7 +45,6 @@ export async function POST(request) {
     const stripeCustomerId = userDoc.exists
       ? userDoc.data().stripeCustomerId
       : null;
-    const hasUsedTrial = userDoc.exists ? userDoc.data().hasUsedTrial : false;
     const origin = request.headers.get("origin");
     const isOnboarding = source === "onboarding";
     const successUrl = isOnboarding
@@ -94,7 +93,6 @@ export async function POST(request) {
         },
       ],
       subscription_data: {
-        ...(hasUsedTrial ? {} : { trial_period_days: 30 }),
         metadata: {
           userId,
           planId,

@@ -237,7 +237,6 @@ export async function POST(request) {
     console.log("subscription.customer", subscription.customer);
     const subscriptionId = subscription.id; // Stripe subscription ID
     const customerId = subscription.customer;
-    const trialEnd = subscription.trial_end;
     const status = subscription.status;
 
     // Find the user by stripeCustomerId
@@ -275,14 +274,6 @@ export async function POST(request) {
         subscriptionId,
         planId
       );
-
-      // If this subscription has a trial, mark the user as having used their trial
-      if (trialEnd) {
-        await adminDb.collection("users").doc(userId).update({
-          hasUsedTrial: true,
-        });
-        console.log("hasUsedTrial set to true for user", userId);
-      }
 
       // Reactivate archived jobs on new subscription
       if (!["canceled", "incomplete_expired"].includes(status)) {
