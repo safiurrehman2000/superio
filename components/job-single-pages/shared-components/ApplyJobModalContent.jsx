@@ -19,7 +19,6 @@ const ApplyJobModalContent = ({ onApplicationSuccess }) => {
   const selector = useSelector((store) => store.user);
   const { id: jobId } = useParams();
 
-  // Check if job is applied on component mount
   useEffect(() => {
     const checkAppliedStatus = async () => {
       if (selector?.user?.uid && jobId) {
@@ -88,10 +87,12 @@ const ApplyJobModalContent = ({ onApplicationSuccess }) => {
     // Validate files
     if (!checkFileTypes(files)) {
       errorToast("Only .doc, .docx, or .pdf files are allowed");
+      e.target.value = ""; // Reset input value
       return;
     }
     if (!checkFileSize(files)) {
       errorToast("File size must be less than 500 KB");
+      e.target.value = ""; // Reset input value
       return;
     }
 
@@ -101,10 +102,11 @@ const ApplyJobModalContent = ({ onApplicationSuccess }) => {
     );
     if (isExist) {
       errorToast("File already exists");
+      e.target.value = ""; // Reset input value
       return;
     }
 
-    const { success } = await useUploadResume(
+    const { success, resumes } = await useUploadResume(
       selector.user,
       data,
       dispatch,
@@ -112,11 +114,12 @@ const ApplyJobModalContent = ({ onApplicationSuccess }) => {
       setLoading
     );
 
-    if (success) {
-      // Auto-select the newly uploaded resume
-      const newResume = selector?.resumes?.find(
-        (resume) => resume.fileName === data[0].name
-      );
+    // Reset input value to allow selecting the same file again
+    e.target.value = "";
+
+    if (success && resumes && resumes.length > 0) {
+      // Auto-select the newly uploaded resume using the returned resume data
+      const newResume = resumes[0];
       if (newResume) setSelected(newResume.id);
     }
   };

@@ -172,105 +172,107 @@ const FilterJobBox = () => {
       : "/images/resource/company-6.png";
     return (
       <div className="job-block col-lg-6 col-md-12 col-sm-12" key={item.id}>
-        <div className="inner-box hover-effect">
-          <div className="content">
-            <span className="company-logo">
-              {item?.logo ? (
-                <Image
-                  width={50}
-                  height={49}
-                  src={logoSrc}
-                  alt="company logo"
-                  style={{
-                    borderRadius: "50%",
-                    objectFit: "cover",
-                    height: "50px",
-                    width: "50px",
-                  }}
-                />
-              ) : (
-                <div
-                  style={{
-                    borderRadius: "50%",
-                    height: "50px",
-                    width: "50px",
-                    backgroundColor:
-                      index % 3 === 0
-                        ? "#FA5508"
-                        : index % 3 === 1
-                        ? "#10E7DC"
-                        : "#0074E1",
-                    textAlign: "center",
-                    alignContent: "center",
-                  }}
-                >
-                  <p style={{ color: "white" }}>
-                    {item?.email?.charAt(0).toUpperCase() +
-                      " " +
-                      item?.email?.charAt(1).toUpperCase()}
-                  </p>
-                </div>
-              )}
-            </span>
-            <h4>
-              <Link href={`/job-list/${item.id}`}>
-                {formatString(item?.title)}
-              </Link>
-            </h4>
+        <Link href={`/job-list/${item.id}`} style={{ textDecoration: "none" }}>
+          <div className="inner-box hover-effect">
+            <div className="content">
+              <span className="company-logo">
+                {item?.logo ? (
+                  <Image
+                    width={50}
+                    height={49}
+                    src={logoSrc}
+                    alt="company logo"
+                    style={{
+                      borderRadius: "50%",
+                      objectFit: "cover",
+                      height: "50px",
+                      width: "50px",
+                    }}
+                  />
+                ) : (
+                  <div
+                    style={{
+                      borderRadius: "50%",
+                      height: "50px",
+                      width: "50px",
+                      backgroundColor:
+                        index % 3 === 0
+                          ? "#FA5508"
+                          : index % 3 === 1
+                          ? "#10E7DC"
+                          : "#0074E1",
+                      textAlign: "center",
+                      alignContent: "center",
+                    }}
+                  >
+                    <p style={{ color: "white" }}>
+                      {item?.email?.charAt(0).toUpperCase() +
+                        " " +
+                        item?.email?.charAt(1).toUpperCase()}
+                    </p>
+                  </div>
+                )}
+              </span>
+              <h4>{formatString(item?.title)}</h4>
 
-            <ul className="job-info">
-              <li>
-                <span className="icon flaticon-briefcase"></span>
-                {formatString(item?.jobType) || "Not specified"}
-              </li>
-              {/* compnay info */}
-              <li>
-                <span className="icon flaticon-map-locator"></span>
-                {formatString(item?.location)}
-              </li>
-              {/* location info */}
-              <li>
-                <span className="icon flaticon-clock-3"></span>{" "}
-                {new Date(item?.createdAt)?.toLocaleDateString()}
-              </li>
-              {/* time info */}
-            </ul>
-            {/* End .job-info */}
+              <ul className="job-info">
+                <li>
+                  <span className="icon flaticon-briefcase"></span>
+                  {formatString(item?.jobType) || "Not specified"}
+                </li>
+                {/* compnay info */}
+                <li>
+                  <span className="icon flaticon-map-locator"></span>
+                  {formatString(item?.location)}
+                </li>
+                {/* location info */}
+                <li>
+                  <span className="icon flaticon-clock-3"></span>{" "}
+                  {new Date(item?.createdAt)?.toLocaleDateString()}
+                </li>
+                {/* time info */}
+              </ul>
+              {/* End .job-info */}
 
-            <ul className="job-other-info">
-              {item?.tags?.map((val, i) => {
-                let styleClass = "";
-                if (i % 3 === 0) {
-                  styleClass = "time";
-                } else if (i % 3 === 1) {
-                  styleClass = "privacy";
-                } else {
-                  styleClass = "required";
-                }
+              <ul className="job-other-info">
+                {item?.tags?.map((val, i) => {
+                  let styleClass = "";
+                  if (i % 3 === 0) {
+                    styleClass = "time";
+                  } else if (i % 3 === 1) {
+                    styleClass = "privacy";
+                  } else {
+                    styleClass = "required";
+                  }
 
-                return (
-                  <li key={i} className={styleClass}>
-                    {formatString(val)}
-                  </li>
-                );
-              })}
-            </ul>
-            {/* End .job-other-info */}
-            <button
-              className="bookmark-btn"
-              onClick={() => handleBookmark(item?.id)}
-              disabled={bookmarkLoading === item.id}
-            >
-              {bookmarkLoading === item.id ? (
-                <CircularLoader strokeColor="#000000" />
-              ) : savedJobIds.has(item.id) ? (
-                <TbBookmarkFilled color="#FA5508" />
-              ) : (
-                <TbBookmark />
-              )}
-            </button>
+                  return (
+                    <li key={i} className={styleClass}>
+                      {formatString(val)}
+                    </li>
+                  );
+                })}
+              </ul>
+              {/* End .job-other-info */}
+              <button
+                className="bookmark-btn"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleBookmark(item?.id);
+                }}
+                disabled={bookmarkLoading === item.id}
+              >
+                {bookmarkLoading === item.id ? (
+                  <CircularLoader strokeColor="#000000" />
+                ) : savedJobIds.has(item.id) ? (
+                  <TbBookmarkFilled color="#FA5508" />
+                ) : (
+                  <TbBookmark />
+                )}
+              </button>
+            </div>
           </div>
-        </div>
+        </Link>
       </div>
     );
   });
