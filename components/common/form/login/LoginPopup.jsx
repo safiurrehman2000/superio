@@ -2,16 +2,52 @@
 import Register from "../register/Register";
 import FormContentModal from "./FormContentModal";
 
-
 const LoginPopup = () => {
   // Function to close the modal after successful login
   const handleLoginSuccess = () => {
     console.log("Login success, attempting to close modal");
-    if (typeof window !== "undefined" && window.bootstrap) {
+    if (typeof window !== "undefined") {
       const modalEl = document.getElementById("loginPopupModal");
       if (modalEl) {
-        const modal = window.bootstrap.Modal.getInstance(modalEl) || new window.bootstrap.Modal(modalEl);
-        modal.hide();
+        // Find and click the close button - Bootstrap will handle all cleanup
+        const closeButton = modalEl.querySelector(
+          'button[data-bs-dismiss="modal"]'
+        );
+        if (closeButton) {
+          closeButton.click();
+        } else {
+          // Fallback: use Bootstrap modal API
+          if (window.bootstrap) {
+            const modal = window.bootstrap.Modal.getInstance(modalEl);
+            if (modal) {
+              modal.hide();
+            }
+          }
+        }
+      }
+    }
+  };
+
+  const handleRegisterSuccess = () => {
+    console.log("Registration success, attempting to close modal");
+    if (typeof window !== "undefined") {
+      const modalEl = document.getElementById("registerModal");
+      if (modalEl) {
+        // Find and click the close button - Bootstrap will handle all cleanup
+        const closeButton = modalEl.querySelector(
+          'button[data-bs-dismiss="modal"]'
+        );
+        if (closeButton) {
+          closeButton.click();
+        } else {
+          // Fallback: use Bootstrap modal API
+          if (window.bootstrap) {
+            const modal = window.bootstrap.Modal.getInstance(modalEl);
+            if (modal) {
+              modal.hide();
+            }
+          }
+        }
       }
     }
   };
@@ -61,7 +97,7 @@ const LoginPopup = () => {
               <div id="login-modal">
                 {/* <!-- Login Form --> */}
                 <div className="login-form default-form">
-                  <Register />
+                  <Register onRegisterSuccess={handleRegisterSuccess} />
                 </div>
                 {/* <!--End Login Form --> */}
               </div>

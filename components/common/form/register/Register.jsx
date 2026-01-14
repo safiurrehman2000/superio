@@ -8,7 +8,7 @@ import { Tab, TabList, TabPanel, Tabs } from "react-tabs";
 import Form from "./FormContent";
 import LoginWithSocial from "./LoginWithSocial";
 
-const Register = () => {
+const Register = ({ onRegisterSuccess }) => {
   const { push } = useRouter();
   const searchParams = useSearchParams();
 
@@ -52,12 +52,12 @@ const Register = () => {
         {/* End .form-group */}
 
         <TabPanel>
-          <Form userType="Candidate" />
+          <Form userType="Candidate" onRegisterSuccess={onRegisterSuccess} />
         </TabPanel>
         {/* End cadidates Form */}
 
         <TabPanel>
-          <Form userType="Employer" />
+          <Form userType="Employer" onRegisterSuccess={onRegisterSuccess} />
         </TabPanel>
         {/* End Employer Form */}
       </Tabs>

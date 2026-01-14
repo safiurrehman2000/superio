@@ -7,7 +7,7 @@ import { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
 
-const FormContent = ({ userType }) => {
+const FormContent = ({ userType, onRegisterSuccess }) => {
   const methods = useForm({
     defaultValues: {
       email: "",
@@ -42,6 +42,7 @@ const FormContent = ({ userType }) => {
     }
 
     setIsLoading(false);
+    if (onRegisterSuccess) onRegisterSuccess();
   };
 
   return (
