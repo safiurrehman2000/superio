@@ -1,66 +1,67 @@
-import { adminDb } from "@/utils/firebase-admin";
+export const dynamic = "force-dynamic";
+
 import { MetadataRoute } from "next";
-import { Timestamp } from "firebase-admin/firestore";
+import { initializeApp, getApps, getApp } from "firebase/app";
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  Timestamp,
+} from "firebase/firestore";
 
-const siteUrl =
-  process.env.NEXT_PUBLIC_BASE_URL || "https://deflexijobber.be";
-
-/* ✅ Type voor je vacatures */
-type Job = {
-  id: string;
-  slug?: string;
-  createdAt?: Timestamp | Date;
-  updatedAt?: Timestamp | Date;
+// ✅ Firebase init (server-safe)
+const firebaseConfig = {
+  apiKey: process.env.FIREBASE_API_KEY,
+  authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.FIREBASE_PROJECT_ID,
 };
 
-async function getVacancies(): Promise<Job[]> {
-  const snapshot = await adminDb
-    .collection("jobs")
-    .where("status", "==", "active")
-    .get();
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-  return snapshot.docs.map(doc => ({
-    id: doc.id,
-    ...(doc.data() as Omit<Job, "id">),
-  }));
-}
-
-/* ✅ Timestamp → Date helper */
-function toDate(value?: Timestamp | Date): Date {
-  if (!value) return new Date();
-  return value instanceof Timestamp ? value.toDate() : value;
-}
+const SITE_URL = "https://deflexijobber.be";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const jobs = await getVacancies();
-
-  const staticRoutes: MetadataRoute.Sitemap = [
+  // 🔹 Statische pagina’s
+  const staticPages: MetadataRoute.Sitemap = [
     {
-      url: siteUrl,
+      url: SITE_URL,
       lastModified: new Date(),
       changeFrequency: "daily",
       priority: 1,
     },
     {
-      url: `${siteUrl}/job-list`,
+      url: `${SITE_URL}/job-list`,
       changeFrequency: "hourly",
       priority: 0.9,
     },
-    { url: `${siteUrl}/about` },
-    { url: `${siteUrl}/contact` },
-    { url: `${siteUrl}/faq` },
-    { url: `${siteUrl}/pricing` },
-    { url: `${siteUrl}/blog` },
+    { url: `${SITE_URL}/about` },
+    { url: `${SITE_URL}/contact` },
+    { url: `${SITE_URL}/faq` },
+    { url: `${SITE_URL}/pricing` },
+    { url: `${SITE_URL}/blog` },
   ];
 
-  const jobRoutes: MetadataRoute.Sitemap = jobs
-  .filter(job => typeof job.slug === "string" && job.slug.length > 0)
-  .map(job => ({
-    url: `${siteUrl}/jobs/${job.slug}`,
-    lastModified: toDate(job.updatedAt ?? job.createdAt),
-    changeFrequency: "daily",
-    priority: 0.95,
-  }));
+  // 🔹 Jobs uit Firestore
+  const jobsSnapshot = await getDocs(collection(db, "jobs"));
 
-  return [...staticRoutes, ...jobRoutes];
+  const jobPages: MetadataRoute.Sitemap = jobsSnapshot.docs.map((doc) => {
+    const data = doc.data();
+
+    const lastModified =
+      data.updatedAt instanceof Timestamp
+        ? data.updatedAt.toDate()
+        : data.createdAt instanceof Timestamp
+        ? data.createdAt.toDate()
+        : new Date();
+
+    return {
+      url: `${SITE_URL}/job-list/${doc.id}`,
+      lastModified,
+      changeFrequency: "daily",
+      priority: 0.8,
+    };
+  });
+
+  return [...staticPages, ...jobPages];
 }
