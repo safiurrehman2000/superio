@@ -9,6 +9,7 @@ import ScrollToTop from "../components/common/ScrollTop";
 import SubscriptionBanner from "@/components/common/SubscriptionBanner";
 import { store } from "../store/store";
 import "../styles/index.scss";
+import WhatsAppWidget from "@/components/common/WhatsAppWidget";
 
 import RouteGuard from "./RouteGuard";
 
@@ -89,8 +90,9 @@ export default function RootLayout({ children }) {
               <div className="page-wrapper">
                 {children}
                 {/* <!-- Scroll To Top --> */}
-                <ScrollToTop />
               </div>
+                <ScrollToTop />
+                <WhatsAppWidget />
               <Toaster />
             </RouteGuard>
           </Suspense>

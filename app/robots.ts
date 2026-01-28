@@ -5,21 +5,12 @@ export default function robots() {
     rules: [
       {
         userAgent: "*",
-        allow: "/",
+        allow: ["/", "/jobs/"],
         disallow: [
           "/api/",
           "/admin-dashboard/",
           "/candidates-dashboard/",
           "/employers-dashboard/",
-          "/create-profile-candidate/",
-          "/create-profile-employer/",
-          "/onboard-",
-          "/shop/",
-          "/test-",
-          "/error/",
-          "/success/",
-          "/not-found",
-          "/404/",
         ],
       },
     ],

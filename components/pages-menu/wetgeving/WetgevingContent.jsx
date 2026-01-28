@@ -11,44 +11,51 @@ const WetgevingContent = () => {
     {
       id: 1,
       heading:
-        "Uw loopbaan binnen handbereik Mycareer.be is een online app die u een duidelijk overzicht geeft van uw Belgische loopbaan.",
-      description: "http://www.mycareer.be/",
+        "Uw loopbaan binnen handbereik",
+      description:
+        "Mycareer.be is een online app die u een duidelijk overzicht geeft van uw Belgische loopbaan.",
       image: image1,
+      url: "https://www.mycareer.be/fr/",
     },
     {
       id: 2,
       heading: "VOOR GEPENSIONEERDEN",
       description:
-        "Voor al uw vragen rond uw pensioen raadpleeg uw online pensioendossier",
+        "Voor al uw vragen rond uw pensioen raadpleeg uw online pensioendossier.",
       image: image2,
+      url: "https://www.mypension.be/nl",
     },
     {
       id: 3,
       heading: "VOOR STUDENTEN",
       description:
-        "Voor al uw vragen mbt tot het uitoefenen van uw studentenjob raadpleeg uw online dossier",
+        "Voor al uw vragen met betrekking tot het uitoefenen van uw studentenjob raadpleeg uw online dossier.",
       image: image3,
+      url: "https://www.studentatwork.be/nl/",
     },
     {
       id: 4,
       heading: "VOOR WERGEVERS",
       description:
-        "Voor al uw vragen mbt het uitoefenen van uw flexi-job kan u ook surfen naar de website vlaanderen.be:",
+        "Voor al uw vragen en het ingeven van een DIMONA-aangifte raadpleeg de website van de sociale zekerheid.",
       image: image4,
+      url: "https://www.socialsecurity.be/site_nl/employer/applics/dimona/general/how.htm",
     },
     {
       id: 5,
       heading: "VRAGEN",
       description:
-        "Voor al uw vragen en het ingeven van een dimona aangifte raadpleeg de website van de sociale zekerheid",
+        "Voor al uw vragen met betrekking tot het uitoefenen van uw flexi-job kan u terecht op Vlaanderen.be.",
       image: image5,
+      url: "https://www.vlaanderen.be",
     },
     {
-      id: 5,
-      heading: "",
+      id: 6,
+      heading: "BELASTINGEN",
       description:
-        "Voor al uw vragen rond belastingen en aangiften voor de belastingen",
+        "Voor al uw vragen rond belastingen en belastingaangiften.",
       image: image6,
+      url: "https://financien.belgium.be",
     },
   ];
 
@@ -60,20 +67,32 @@ const WetgevingContent = () => {
           className="text-box"
           style={{ marginBottom: "40px" }}
         >
-          <div className="row">
-            <div className="col-lg-6 col-md-12 col-sm-12">
+          <div className="row align-items-center">
+            <div className="col-lg-6 col-md-12">
               <h3>{section.heading}</h3>
               <p>{section.description}</p>
             </div>
-            <div className="col-lg-6 col-md-12 col-sm-12">
+
+            <div className="col-lg-6 col-md-12">
               <figure className="image" style={{ marginTop: "20px" }}>
-                <Image
-                  width={600}
-                  height={400}
-                  src={section.image}
-                  alt={section.heading}
-                  style={{ width: "100%", height: "auto", borderRadius: "8px" }}
-                />
+                <a
+                  href={section.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Image
+                    width={600}
+                    height={400}
+                    src={section.image}
+                    alt={section.heading}
+                    style={{
+                      width: "100%",
+                      height: "auto",
+                      borderRadius: "8px",
+                      cursor: "pointer",
+                    }}
+                  />
+                </a>
               </figure>
             </div>
           </div>
