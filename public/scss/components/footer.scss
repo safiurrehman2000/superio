@@ -764,3 +764,17 @@ Main Footer / Style Six
   max-width: 100%;
   height: auto;
 }
+
+.footer-legal-links {
+  margin-top: 6px;
+  font-size: 14px;
+}
+
+.footer-legal-links a {
+  color: #888;
+  text-decoration: none;
+}
+
+.footer-legal-links a:hover {
+  text-decoration: underline;
+}

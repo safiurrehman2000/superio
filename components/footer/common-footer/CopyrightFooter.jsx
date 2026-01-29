@@ -1,3 +1,4 @@
+import Link from "next/link";
 import Social from "./Social";
 
 const CopyrightFooter = () => {
@@ -7,8 +8,19 @@ const CopyrightFooter = () => {
         <div className="outer-box">
           <div className="copyright-text">
             © {new Date().getFullYear()} De Flexijobber. Alle rechten
-            voorbehouden.
+            voorbehouden.{" "}
+            <span className="footer-legal-links">
+              |{" "}
+              <Link href="/algemene-voorwaarden">
+                Algemene voorwaarden
+              </Link>{" "}
+              |{" "}
+              <Link href="/cookie-beleid">
+                Cookiebeleid
+              </Link>
+            </span>
           </div>
+
           <div className="social-links">
             <Social />
           </div>
