@@ -5,48 +5,34 @@ const Address = () => {
     {
       id: 1,
       icon: <FaWhatsapp />,
-      title: "WhatsApp",
-      text: (
-        <>
-          Plaats vacature via WhatsApp (werkgever)
-          <br />
-          <a href="https://wa.me/32479294276">+32 479 29 42 76</a>
-        </>
-      ),
+      title: "WhatsApp (Werkgevers)",
+      text: "+32 479 29 42 76",
+      href: "https://wa.me/32479294276",
+      color: "whatsapp",
     },
     {
       id: 2,
       icon: <FaWhatsapp />,
-      title: "WhatsApp",
-      text: (
-        <>
-          WhatsApp bij vragen
-          <br />
-          <a href="https://wa.me/32491100143">+32 491 10 01 43</a>
-        </>
-      ),
+      title: "WhatsApp (Vragen)",
+      text: "+32 491 10 01 43",
+      href: "https://wa.me/32491100143",
+      color: "whatsapp",
     },
     {
       id: 3,
       icon: <FaPhoneAlt />,
       title: "Bel ons",
-      text: (
-        <>
-          <a href="tel:+32491100143">+32 491 10 01 43</a>
-        </>
-      ),
+      text: "+32 491 10 01 43",
+      href: "tel:+32491100143",
+      color: "phone",
     },
     {
       id: 4,
       icon: <FaEnvelope />,
       title: "E-mail",
-      text: (
-        <>
-          <a href="mailto:info@de-flexi-jobber.be">
-            info@de-flexi-jobber.be
-          </a>
-        </>
-      ),
+      text: "info@de-flexi-jobber.be",
+      href: "mailto:info@de-flexi-jobber.be",
+      color: "email",
     },
   ];
 
@@ -57,18 +43,23 @@ const Address = () => {
           key={item.id}
           className="contact-block col-xl-3 col-lg-3 col-md-6 col-sm-12"
         >
-          <div className="inner-box text-center">
-            <span className="icon-badge">{item.icon}</span>
+          <a
+            href={item.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inner-box text-center contact-link"
+          >
+            <span className={`icon-badge ${item.color}`}>
+              {item.icon}
+            </span>
+
             <h4>{item.title}</h4>
             <p>{item.text}</p>
-          </div>
+          </a>
         </div>
       ))}
     </>
   );
 };
 
-export default Address;
-
-
-
+export default Address
