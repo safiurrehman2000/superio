@@ -109,146 +109,80 @@ const IntroDescriptions = () => {
         <h5>Artikel 4 – Diensten</h5>
 
         <p>
-        4.1 De Dienstverlener verleent de Klant een niet-exclusief, niet-overdraagbaar recht op toegang tot en gebruik
-        van de digitale omgeving, alwaar de Klant-Werkgever Vacatures kan plaatsen en beheren en waar de
-        Klant-Sollicitant – ressorterende onder het flexijob-statuut, dan wel studentenstatuut actief op zoek kunnen
-        naar een voor hen passende Vacature en hierop kunnen solliciteren.
+          4.1 De Dienstverlener verleent de Klant een niet-exclusief, niet-overdraagbaar
+          recht op toegang tot en gebruik van de digitale omgeving, alwaar de
+          Klant-Werkgever Vacatures kan plaatsen en beheren en waar de Klant-Sollicitant –
+          ressorterende onder het flexijob-statuut, dan wel studentenstatuut actief op
+          zoek kan naar een voor hem passende Vacature en hierop kan solliciteren.
         </p>
 
         <p>
-        4.2 De Dienstverlener geeft aan de Klanten het recht om zich als gebruiker toegang te verschaffen tot het door
-        de Website ter beschikking gesteld platform teneinde er Vacatures op te plaatsen, dan wel te solliciteren op
-        de geplaatste Vacatures.
+          4.2 De Dienstverlener geeft aan de Klanten het recht om zich als gebruiker
+          toegang te verschaffen tot het door de Website ter beschikking gestelde
+          platform teneinde er Vacatures op te plaatsen, dan wel te solliciteren op de
+          geplaatste Vacatures.
         </p>
 
         <p>
-        4.3 Vacatures dewelke rechtstreeks, dan wel onrechtstreeks betrekking hebben op de Telecom-sector kunnen niet
-        gepubliceerd worden op de Website. Voor zover de Klant dergelijke Vacature alsnog overmaakt, zullen deze voor
-        niet bestaande worden gehouden.
-        </p>
-
-        <p>4.4 De Klant-Werkgever heeft de keuze inzake volgende prijsformules:</p>
-
-        <p><strong>XS Pakket</strong></p>
-        <p>
-        € 25,00 (excl BTW)<br />
-        1 Flexi-Credit<br />
-        Advertentie van de Vacature gedurende 21 dagen<br />
-        Account Dashboard<br />
-        Email notificaties<br />
-        Facebook advertentie<br />
-        Instagram advertentie
-        </p>
-
-        <p><strong>S Pakket</strong></p>
-        <p>
-        € 50,00 (excl BTW)<br />
-        1 Flexi-Credit<br />
-        Advertentie van de Vacature gedurende 60 dagen<br />
-        Account Dashboard<br />
-        Email notificaties<br />
-        Facebook advertentie<br />
-        Instagram advertentie
-        </p>
-
-        <p><strong>M Pakket</strong></p>
-        <p>
-        € 60,00 (excl BTW)<br />
-        2 Flexi-Credits<br />
-        Advertentie van de Vacature gedurende 60 dagen<br />
-        Account Dashboard<br />
-        Email notificaties<br />
-        Facebook advertentie<br />
-        Instagram advertentie
-        </p>
-
-        <p><strong>L Pakket</strong></p>
-        <p>
-        € 70,00 (excl BTW)<br />
-        3 Flexi-Credits<br />
-        Advertentie van de Vacature gedurende 60 dagen<br />
-        Account Dashboard<br />
-        Email notificaties<br />
-        Facebook advertentie<br />
-        Instagram advertentie
-        </p>
-
-        <p><strong>XL Pakket</strong></p>
-        <p>
-        € 80,00 (excl BTW)<br />
-        4 Flexi-Credits<br />
-        Advertentie van de Vacature gedurende 60 dagen<br />
-        Account Dashboard<br />
-        Email notificaties<br />
-        Facebook advertentie<br />
-        Instagram advertentie
-        </p>
-
-        <p><strong>XXL Pakket</strong></p>
-        <p>
-        € 90,00 (excl BTW)<br />
-        5 Flexi-Credits<br />
-        Advertentie van de Vacature gedurende 60 dagen<br />
-        Account Dashboard<br />
-        Email notificaties<br />
-        Facebook advertentie<br />
-        Instagram advertentie
+          4.3 Vacatures die rechtstreeks, dan wel onrechtstreeks betrekking hebben op de
+          Telecom-sector kunnen niet gepubliceerd worden op de Website. Voor zover de
+          Klant dergelijke Vacature alsnog overmaakt, zullen deze als niet-bestaand
+          worden beschouwd.
         </p>
 
         <p>
-        4.5 Credits worden aan de Klant-Werkgever pas vrijgegeven nadat het door de Klant-Werkgever verschuldigde bedrag
-        door de Dienstverlener ontvangen werd. Door de Klant-Werkgever aangekochte flexi-credits in een bundel kunnen
-        geenszins worden gecrediteerd.
+          4.4 De Klant-Werkgever heeft de keuze inzake de door de Dienstverlener aangeboden
+          prijsformules. De concrete inhoud en prijs van deze formules worden afzonderlijk
+          op de Website vermeld en kunnen op een later tijdstip worden aangepast of
+          uitgebreid.
         </p>
 
         <p>
-        4.6 De termijn van adverteren gaat in vanaf goedkeuring van de advertentie. Behoudens anders vermeld, heeft de
-        Klant-Werkgever heeft gedurende 21 dagen de tijd om gratis te adverteren.
+          4.5 De Dienstverlener behoudt zich het recht voor eventuele prijsveranderingen
+          door te voeren zonder gehouden te zijn de Klant hiervan voorafgaandelijk op de
+          hoogte te brengen.
         </p>
 
         <p>
-        4.7 De Dienstverlener behoudt zich het recht voor eventuele prijsveranderingen door te voeren zonder dat zij
-        gehouden zal zijn de Klant hier voorafgaandelijk van op de hoogte te brengen.
+          4.6 Er kan maximaal één vacature per openstaande functie worden gepubliceerd,
+          behoudens andersluidend schriftelijk akkoord tussen partijen.
         </p>
 
         <p>
-        4.8 Bij twijfel van echtheid zal de Vacature geenszins worden geplaatst, dan wel worden verwijderd voor zover
-        deze al geplaatst werd.
+          4.7 Er kan maximaal één vacature per vestiging van de Klant-Werkgever worden
+          gepubliceerd, behoudens andersluidend schriftelijk akkoord tussen partijen.
         </p>
 
         <p>
-        4.9 Beheer van vacature : de klant heeft de mogelijkheid om via het dashboard de vacature nog aan te passen wat
-        betreft inhoud – sollicitanten op te volgen- CV’s te downloaden – het aantal bezoekers op te volgen alsook de
-        vacature te verwijderen voor vervaldatum.
+          4.8 Promo’s: de Klant kan unieke promoties ontvangen die toegepast kunnen worden
+          via een unieke vouchercode op de Website bij het afrekenen van bundels of
+          formules.
         </p>
 
         <p>
-        Er kan maximaal één vacature per openstaande functie worden gepubliceerd, behoudens andersluidend schriftelijk
-        akkoord tussen partijen.
+          4.9 Social media: De vacature kan tevens worden gepromoot op Facebook en
+          Instagram met vermelding van functietitel, gemeente, bedrijfsnaam en logo.
+          Indien de Klant geen publicatie op sociale media wenst, of indien de
+          bedrijfsnaam of het logo niet mag worden gebruikt, dient de Klant dit vooraf
+          schriftelijk te melden via info@de-flexi-jobber.be.
         </p>
 
         <p>
-        Er kan maximaal één vacature per vestiging van de Klant-Werkgever worden gepubliceerd, behoudens andersluidend
-        schriftelijk akkoord tussen partijen
+          4.10 De vacature van de Klant-Werkgever wordt na publicatie op de Website binnen
+          een termijn van maximaal vijf (5) werkdagen gepost op de Instagram- en
+          Facebookpagina van de Dienstverlener.
         </p>
 
         <p>
-        4.10 Promo’s: de klant kan unieke promo’s ontvangen die kunnen worden toegepast via unieke vouchercode op de
-        website bij het afrekenen van de bundel(s)
+          4.11 De algemene voorwaarden worden aan de Klant ter beschikking gesteld alvorens
+          een gebruikersprofiel kan worden aangemaakt. Het aanmaken van een
+          gebruikersprofiel impliceert de uitdrukkelijke aanvaarding van deze algemene
+          voorwaarden.
         </p>
 
         <p>
-        4.11 Social media : De vacature zal tevens worden gepromoot op facebook en instagram met vermelding van functie
-        vacature – gemeente vacature en bedrijfsnaam en logo. Indien u geen publicatie wenst op social media of
-        bedrijfsnaam wenst te publiceren of het logo gebruiken op social media gelieve een mailtje te sturen naar
-        info@de-flexi-jobber.be
-        </p>
-
-        <p>Artikel 9 van de algemene voorwaarden.</p>
-
-        <p>
-        4.12 De vacature van de Klant-Werkgever wordt na publicatie op de Website binnen de 5 werkdagen op de
-        Instagrampagina en Facebookpagina van de Dienstverlener gepost.
+          4.12 De Dienstverlening is van bepaalde duur en loopt af ingevolge de duurtijd
+          van de door de Klant gekozen formule.
         </p>
 
         <h5>Artikel 5 – Looptijd</h5>

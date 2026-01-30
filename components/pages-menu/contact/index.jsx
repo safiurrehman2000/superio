@@ -29,9 +29,7 @@ const index = () => {
             <div className="contact-cover-overlay">
               <h2>Neem contact met ons op</h2>
               <p>
-                Ben je werkgever en wil je meer informatie over adverteren?  
-                Heb je als flexi-jobber gewoon een vraag? Dat begrijpen we.
-                Neem contact met ons op om te zien wat we voor elkaar kunnen betekenen.
+                Vragen over adverteren of flexi-jobs? Neem contact met ons op.
               </p>
             </div>
           </div>
