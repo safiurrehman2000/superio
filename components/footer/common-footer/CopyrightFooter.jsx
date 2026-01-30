@@ -17,6 +17,10 @@ const CopyrightFooter = () => {
               |{" "}
               <Link href="/cookie-beleid">
                 Cookiebeleid
+              </Link>{" "}
+              |{" "}
+              <Link href="/privacyverklaring">
+                Privacyverklaring
               </Link>
             </span>
           </div>
