@@ -34,12 +34,6 @@ const CompanyInfo = ({ logoFn, companyId }) => {
         Primary industry: <span>{primaryIndustry}</span>
       </li>
       <li>
-        Phone: <span>{phone}</span>
-      </li>
-      <li>
-        Email: <span>{email}</span>
-      </li>
-      <li>
         Location: <span>{location}</span>
       </li>
       {/* <li>
