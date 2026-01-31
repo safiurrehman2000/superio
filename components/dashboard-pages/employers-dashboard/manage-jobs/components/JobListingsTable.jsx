@@ -41,7 +41,7 @@ const JobListingsTable = () => {
           selector.user?.uid,
           currentPage,
           jobsPerPage,
-          months
+          months,
         );
         setJobs(result.jobs || []);
         setTotalPages(result.totalPages);
@@ -80,7 +80,7 @@ const JobListingsTable = () => {
       if (result.success) {
         // Remove the job from the local state
         setJobs((prevJobs) =>
-          prevJobs.filter((job) => job.id !== jobToDelete.id)
+          prevJobs.filter((job) => job.id !== jobToDelete.id),
         );
         successToast(`Job deleted successfully`);
         setShowDeleteModal(false);
@@ -160,10 +160,11 @@ const JobListingsTable = () => {
                   </tr>
                 ) : (
                   jobs?.map((item, index) => {
-                    const logoSrc = item?.logo
-                      ? item.logo.startsWith("data:image")
-                        ? item.logo
-                        : `data:image/jpeg;base64,${item.logo}`
+                    const logo = selector.user?.logo ?? item?.logo;
+                    const logoSrc = logo
+                      ? logo.startsWith("data:image")
+                        ? logo
+                        : `data:image/jpeg;base64,${logo}`
                       : "/images/resource/company-6.png";
                     return (
                       <tr key={item?.id}>
@@ -172,7 +173,7 @@ const JobListingsTable = () => {
                             <div className="inner-box">
                               <div className="content">
                                 <span className="company-logo">
-                                  {item?.logo ? (
+                                  {logo ? (
                                     <Image
                                       width={50}
                                       height={49}
@@ -195,8 +196,8 @@ const JobListingsTable = () => {
                                           index % 3 === 0
                                             ? "#FA5508"
                                             : index % 3 === 1
-                                            ? "#10E7DC"
-                                            : "#0074E1",
+                                              ? "#10E7DC"
+                                              : "#0074E1",
                                         textAlign: "center",
                                         alignContent: "center",
                                       }}

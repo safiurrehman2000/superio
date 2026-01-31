@@ -56,7 +56,7 @@ export const useCreateJobPost = async (payload) => {
     if (!validationResponse.ok) {
       const errorData = await validationResponse.json();
       throw new Error(
-        errorData.error || "Failed to validate job posting permission"
+        errorData.error || "Failed to validate job posting permission",
       );
     }
 
@@ -64,7 +64,8 @@ export const useCreateJobPost = async (payload) => {
 
     if (!validationResult.canPost) {
       throw new Error(
-        validationResult.message || "Cannot post job due to subscription limits"
+        validationResult.message ||
+          "Cannot post job due to subscription limits",
       );
     }
 
@@ -158,7 +159,7 @@ export const useApplyForJob = async (
   selectedResume,
   jobId,
   message,
-  dispatch
+  dispatch,
 ) => {
   try {
     if (!candidateId) throw new Error("You must be logged in to apply.");
@@ -193,7 +194,7 @@ export const useGetAppliedJobs = async (candidateId, dispatch) => {
     // Fetch applied job IDs
     const applicationsQuery = query(
       collection(db, "applications"),
-      where("candidateId", "==", candidateId)
+      where("candidateId", "==", candidateId),
     );
     const querySnapshot = await getDocs(applicationsQuery);
     const applications = querySnapshot.docs.map((doc) => ({
@@ -211,11 +212,11 @@ export const useGetAppliedJobs = async (candidateId, dispatch) => {
           return { id: jobId, appliedAt, status, ...jobDocSnap.data() };
         }
         return null;
-      }
+      },
     );
 
     const jobDetails = (await Promise.all(jobDetailsPromises)).filter(
-      (job) => job !== null
+      (job) => job !== null,
     );
 
     dispatch(setAppliedJobs(jobDetails));
@@ -269,7 +270,7 @@ export const useSaveJob = async (userId, jobId) => {
     const q = query(
       collection(db, "saved_jobs"),
       where("userId", "==", userId),
-      where("jobId", "==", jobId)
+      where("jobId", "==", jobId),
     );
     const querySnapshot = await getDocs(q);
 
@@ -310,7 +311,7 @@ export const useUnsaveJob = async (userId, jobId) => {
     const q = query(
       collection(db, "saved_jobs"),
       where("userId", "==", userId),
-      where("jobId", "==", jobId)
+      where("jobId", "==", jobId),
     );
     const querySnapshot = await getDocs(q);
 
@@ -319,7 +320,7 @@ export const useUnsaveJob = async (userId, jobId) => {
     }
 
     const deletePromises = querySnapshot.docs.map((docSnapshot) =>
-      deleteDoc(doc(db, "saved_jobs", docSnapshot.id))
+      deleteDoc(doc(db, "saved_jobs", docSnapshot.id)),
     );
 
     await Promise.all(deletePromises);
@@ -338,7 +339,7 @@ export const useGetSavedJobs = async (userId) => {
 
     const q = query(
       collection(db, "saved_jobs"),
-      where("userId", "==", userId)
+      where("userId", "==", userId),
     );
     const querySnapshot = await getDocs(q);
 
@@ -357,7 +358,7 @@ export const useGetSavedJobs = async (userId) => {
               savedAt: savedJob.savedAt,
             });
           }
-        })
+        }),
       );
     }
 
@@ -436,13 +437,13 @@ export const useFetchEmployerJobsPaginated = async (
   employerId,
   page = 1,
   limit = 10,
-  filterMonths = 6
+  filterMonths = 6,
 ) => {
   try {
     // Validate employerId before making the query
     if (!employerId) {
       console.warn(
-        "useFetchEmployerJobsPaginated: employerId is undefined or null"
+        "useFetchEmployerJobsPaginated: employerId is undefined or null",
       );
       return { jobs: [], totalJobs: 0, totalPages: 0 };
     }
@@ -453,7 +454,7 @@ export const useFetchEmployerJobsPaginated = async (
     let q = query(
       jobsRef,
       where("employerId", "==", employerId),
-      orderBy("createdAt", "desc")
+      orderBy("createdAt", "desc"),
     );
 
     const querySnapshot = await getDocs(q);
@@ -463,7 +464,7 @@ export const useFetchEmployerJobsPaginated = async (
     const monthsAgo = new Date(
       now.getFullYear(),
       now.getMonth() - filterMonths,
-      now.getDate()
+      now.getDate(),
     );
 
     const filteredJobs = querySnapshot.docs
@@ -515,13 +516,13 @@ export const useFetchApplications = (employerId, selectedJobId, refreshKey) => {
           // Fetch applications for the selected job
           applicationsQuery = query(
             collection(db, "applications"),
-            where("jobId", "==", selectedJobId)
+            where("jobId", "==", selectedJobId),
           );
         } else {
           // First fetch all jobs for this employer
           const jobsQuery = query(
             collection(db, "jobs"),
-            where("employerId", "==", employerId)
+            where("employerId", "==", employerId),
           );
           const jobsSnapshot = await getDocs(jobsQuery);
           const jobIds = jobsSnapshot.docs.map((doc) => doc.id);
@@ -536,7 +537,7 @@ export const useFetchApplications = (employerId, selectedJobId, refreshKey) => {
           // Then fetch all applications for these job IDs
           applicationsQuery = query(
             collection(db, "applications"),
-            where("jobId", "in", jobIds)
+            where("jobId", "in", jobIds),
           );
         }
 
@@ -564,7 +565,7 @@ export const useFetchApplications = (employerId, selectedJobId, refreshKey) => {
                 "users",
                 app.candidateId,
                 "resumes",
-                app.resumeId
+                app.resumeId,
               );
               const resumeSnapshot = await getDoc(resumeDocRef);
               if (resumeSnapshot.exists()) {
@@ -584,7 +585,7 @@ export const useFetchApplications = (employerId, selectedJobId, refreshKey) => {
                   : {},
               resume: resumeData,
             };
-          })
+          }),
         );
 
         setApplications(applicationsWithDetails);
@@ -626,7 +627,7 @@ export const createJobAlert = async (
   userId,
   frequency,
   categories = [],
-  locations = []
+  locations = [],
 ) => {
   try {
     if (!userId) {
@@ -694,7 +695,7 @@ export const deleteJob = async (jobId, employerId) => {
     // 1. Delete all applications for this job
     const applicationsQuery = query(
       collection(db, "applications"),
-      where("jobId", "==", jobId)
+      where("jobId", "==", jobId),
     );
     const applicationsSnapshot = await getDocs(applicationsQuery);
     applicationsSnapshot.docs.forEach((doc) => {
@@ -704,7 +705,7 @@ export const deleteJob = async (jobId, employerId) => {
     // 2. Delete all saved job entries for this job
     const savedJobsQuery = query(
       collection(db, "saved_jobs"),
-      where("jobId", "==", jobId)
+      where("jobId", "==", jobId),
     );
     const savedJobsSnapshot = await getDocs(savedJobsQuery);
     savedJobsSnapshot.docs.forEach((doc) => {
@@ -866,13 +867,13 @@ export const useGetJobListingPaginated = (params = {}) => {
             (job) =>
               job.title?.toLowerCase().includes(search.toLowerCase()) ||
               job.description?.toLowerCase().includes(search.toLowerCase()) ||
-              job.companyName?.toLowerCase().includes(search.toLowerCase())
+              job.companyName?.toLowerCase().includes(search.toLowerCase()),
           );
         }
 
         if (location) {
           jobs = jobs.filter((job) =>
-            job.location?.toLowerCase().includes(location.toLowerCase())
+            job.location?.toLowerCase().includes(location.toLowerCase()),
           );
         }
 
@@ -893,7 +894,7 @@ export const useGetJobListingPaginated = (params = {}) => {
               filterDate = new Date(
                 now.getFullYear(),
                 now.getMonth(),
-                now.getDate()
+                now.getDate(),
               );
               break;
             case "week":
@@ -903,7 +904,7 @@ export const useGetJobListingPaginated = (params = {}) => {
               filterDate = new Date(
                 now.getFullYear(),
                 now.getMonth() - 1,
-                now.getDate()
+                now.getDate(),
               );
               break;
             default:
@@ -921,12 +922,41 @@ export const useGetJobListingPaginated = (params = {}) => {
         // Get total count for pagination
         const totalQuery = query(
           collection(db, "jobs"),
-          where("status", "!=", "archived")
+          where("status", "!=", "archived"),
         );
         const totalSnap = await getDocs(totalQuery);
         const totalCount = totalSnap.docs.length;
 
-        setData(jobs);
+        const employerIds = [
+          ...new Set(jobs.map((j) => j.employerId).filter(Boolean)),
+        ];
+        const employerMap = {};
+        await Promise.all(
+          employerIds.map(async (uid) => {
+            try {
+              const userSnap = await getDoc(doc(db, "users", uid));
+              if (userSnap.exists()) {
+                const d = userSnap.data();
+                employerMap[uid] = {
+                  logo: d.logo ?? null,
+                  company_name: d.company_name ?? null,
+                };
+              }
+            } catch {
+              // ignore per-employer fetch errors
+            }
+          }),
+        );
+        const enrichedJobs = jobs.map((job) => {
+          const employer = job.employerId ? employerMap[job.employerId] : null;
+          return {
+            ...job,
+            logo: employer?.logo != null ? employer.logo : job.logo,
+            companyName: employer?.company_name ?? job.companyName,
+          };
+        });
+
+        setData(enrichedJobs);
         setTotalItems(totalCount);
       } catch (err) {
         setError(err);
@@ -963,12 +993,12 @@ export const useGetAppliedJobsPaginated = async (
   candidateId,
   page = 1,
   limit = 10,
-  filterMonths = 6
+  filterMonths = 6,
 ) => {
   try {
     if (!candidateId) {
       console.warn(
-        "useGetAppliedJobsPaginated: candidateId is undefined or null"
+        "useGetAppliedJobsPaginated: candidateId is undefined or null",
       );
       return { jobs: [], totalJobs: 0, totalPages: 0 };
     }
@@ -978,7 +1008,7 @@ export const useGetAppliedJobsPaginated = async (
     const applicationsQuery = query(
       applicationsRef,
       where("candidateId", "==", candidateId),
-      orderBy("appliedAt", "desc")
+      orderBy("appliedAt", "desc"),
     );
 
     const querySnapshot = await getDocs(applicationsQuery);
@@ -993,7 +1023,7 @@ export const useGetAppliedJobsPaginated = async (
     const monthsAgo = new Date(
       now.getFullYear(),
       now.getMonth() - filterMonths,
-      now.getDate()
+      now.getDate(),
     );
 
     const filteredApplications = applications.filter((app) => {
@@ -1009,7 +1039,7 @@ export const useGetAppliedJobsPaginated = async (
     const endIndex = startIndex + limit;
     const paginatedApplications = filteredApplications.slice(
       startIndex,
-      endIndex
+      endIndex,
     );
 
     // Fetch job details for paginated applications
@@ -1027,11 +1057,11 @@ export const useGetAppliedJobsPaginated = async (
           };
         }
         return null;
-      }
+      },
     );
 
     const jobDetails = (await Promise.all(jobDetailsPromises)).filter(
-      (job) => job !== null
+      (job) => job !== null,
     );
 
     return {
@@ -1050,7 +1080,7 @@ export const useGetSavedJobsPaginated = async (
   userId,
   page = 1,
   limit = 10,
-  filterMonths = 6
+  filterMonths = 6,
 ) => {
   try {
     if (!userId) {
@@ -1063,7 +1093,7 @@ export const useGetSavedJobsPaginated = async (
     const savedJobsQuery = query(
       savedJobsRef,
       where("userId", "==", userId),
-      orderBy("savedAt", "desc")
+      orderBy("savedAt", "desc"),
     );
 
     const querySnapshot = await getDocs(savedJobsQuery);
@@ -1077,7 +1107,7 @@ export const useGetSavedJobsPaginated = async (
     const monthsAgo = new Date(
       now.getFullYear(),
       now.getMonth() - filterMonths,
-      now.getDate()
+      now.getDate(),
     );
 
     const filteredSavedJobs = savedJobs.filter((job) => {
@@ -1108,11 +1138,11 @@ export const useGetSavedJobsPaginated = async (
           };
         }
         return null;
-      }
+      },
     );
 
     const jobDetails = (await Promise.all(jobDetailsPromises)).filter(
-      (job) => job !== null
+      (job) => job !== null,
     );
 
     return {
@@ -1136,7 +1166,7 @@ export const checkIfJobApplied = async (candidateId, jobId) => {
     const applicationsQuery = query(
       collection(db, "applications"),
       where("candidateId", "==", candidateId),
-      where("jobId", "==", jobId)
+      where("jobId", "==", jobId),
     );
     const querySnapshot = await getDocs(applicationsQuery);
 
@@ -1156,7 +1186,7 @@ export const checkIfJobSaved = async (userId, jobId) => {
     const savedJobsQuery = query(
       collection(db, "saved_jobs"),
       where("userId", "==", userId),
-      where("jobId", "==", jobId)
+      where("jobId", "==", jobId),
     );
     const querySnapshot = await getDocs(savedJobsQuery);
 
