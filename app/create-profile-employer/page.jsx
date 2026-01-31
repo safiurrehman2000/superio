@@ -1,5 +1,6 @@
 import BreadCrumb from "@/components/dashboard-pages/BreadCrumb";
 import PostBoxForm from "@/components/dashboard-pages/employers-dashboard/post-jobs/components/PostBoxForm";
+import SkipOnboardingLink from "@/components/common/SkipOnboardingLink";
 import React from "react";
 
 const page = () => {
@@ -13,6 +14,7 @@ const page = () => {
       }}
     >
       <BreadCrumb title="Post a New Job!" />
+      <SkipOnboardingLink />
       <PostBoxForm />
     </div>
   );

@@ -74,7 +74,7 @@ const FormContent = () => {
           className="theme-btn btn-style-one btn"
           style={{
             textDecoration: "none",
-            display: "inline-block",
+            gap: "5px",
             padding: "10px 20px",
             fontSize: "14px",
           }}

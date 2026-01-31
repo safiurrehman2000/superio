@@ -153,11 +153,16 @@ const RouteGuard = ({ children }) => {
         }
         // Handle Employer flow
         else if (userData.userType === "Employer") {
-          if (userData.isFirstTime) {
+          // Treat as first-time only if Firestore says so and Redux hasn't been set to false (e.g. after skip)
+          const isOnboardingRequired =
+            (userData.isFirstTime ?? true) && selector.isFirstTime !== false;
+
+          if (isOnboardingRequired) {
             // Store the last valid onboarding page
             const validOnboardingPages = [
               "/onboard-pricing",
               "/onboard-order-completed",
+              "/escape-onboarding",
             ];
             const lastValidPage = validOnboardingPages.find(
               (page) => pathname === page
@@ -177,7 +182,10 @@ const RouteGuard = ({ children }) => {
               // If current page is valid, store it
               localStorage.setItem(`lastOnboardingPage_${uid}`, pathname);
             }
-          } else if (!userData.hasPostedJob) {
+          } else if (
+            !(userData.hasPostedJob ?? false) &&
+            selector.hasPostedJob !== true
+          ) {
             if (
               pathname !== "/create-profile-employer" &&
               pathname !== "/contact" &&
@@ -191,7 +199,7 @@ const RouteGuard = ({ children }) => {
               pathname === "/create-profile-candidate" ||
               pathname === "/create-profile-employer"
             ) {
-              push("/create-profile-employer");
+              push("/employers-dashboard/dashboard");
             }
           }
         }
@@ -205,8 +213,8 @@ const RouteGuard = ({ children }) => {
         dispatch(removeUser());
         dispatch(clearResumes());
 
-        if (selector.user) {
-          localStorage.removeItem(`lastOnboardingPage_${selector.user}`);
+        if (selector.user?.uid) {
+          localStorage.removeItem(`lastOnboardingPage_${selector.user.uid}`);
         }
 
         // Redirect unauthenticated users from private routes to login
@@ -231,7 +239,7 @@ const RouteGuard = ({ children }) => {
     });
 
     return () => unsubscribe();
-  }, [push, pathname, selector?.userType, selector.isFirstTime]);
+  }, [push, pathname, selector?.userType, selector.isFirstTime, selector.hasPostedJob]);
 
   if (loading) {
     return (
@@ -244,7 +252,7 @@ const RouteGuard = ({ children }) => {
     );
   }
 
-  return children;
+  return <div style={{ display: "contents" }}>{children}</div>;
 };
 
 export default RouteGuard;

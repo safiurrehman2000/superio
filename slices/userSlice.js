@@ -21,6 +21,12 @@ const userSlice = createSlice({
       state.appliedJobs = action.payload.appliedJobs || state.appliedJobs;
       state.savedJobs = action.payload.savedJobs || state.savedJobs;
       state.hasPostedJob = action.payload.hasPostedJob || state.hasPostedJob;
+      if (typeof action.payload.isFirstTime === "boolean") {
+        state.isFirstTime = action.payload.isFirstTime;
+      }
+      if (typeof action.payload.hasPostedJob === "boolean") {
+        state.hasPostedJob = action.payload.hasPostedJob;
+      }
     },
     removeUser: (state) => {
       state.user = null;
@@ -54,7 +60,7 @@ const userSlice = createSlice({
     },
     removeResumeById: (state, action) => {
       state.resumes = state.resumes.filter(
-        (resume) => resume.id !== action.payload
+        (resume) => resume.id !== action.payload,
       );
       if (state.user) {
         state.user.resumes = state.resumes;
@@ -98,7 +104,7 @@ const userSlice = createSlice({
     },
     removeSavedJob: (state, action) => {
       state.savedJobs = state.savedJobs.filter(
-        (job) => job.jobId !== action.payload
+        (job) => job.jobId !== action.payload,
       );
       if (state.user) {
         state.user.savedJobs = state.savedJobs;
@@ -113,7 +119,7 @@ const userSlice = createSlice({
     setEmployerJobs: (state, action) => {
       if (state.user && state.userType === "Employer") {
         state.employerJobs = action.payload;
-        state.user.employerJobs = action.payload; // Sync with user
+        state.user.employerJobs = action.payload;
       }
     },
     addEmployerJob: (state, action) => {
@@ -126,6 +132,12 @@ const userSlice = createSlice({
       state.isFirstTime = action.payload;
       if (state.user) {
         state.user.isFirstTime = action.payload;
+      }
+    },
+    updateHasPostedJob: (state, action) => {
+      state.hasPostedJob = action.payload;
+      if (state.user) {
+        state.user.hasPostedJob = action.payload;
       }
     },
   },
@@ -150,6 +162,7 @@ export const {
   setEmployerJobs,
   addEmployerJob,
   updateIsFirstTime,
+  updateHasPostedJob,
 } = userSlice.actions;
 
 export default userSlice.reducer;

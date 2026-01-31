@@ -2,10 +2,12 @@
 import { getPricingPackages } from "@/APIs/pricing/pricing";
 import BreadCrumb from "@/components/dashboard-pages/BreadCrumb";
 import { LOGO } from "@/utils/constants";
+import { updateIsFirstTime, updateHasPostedJob } from "@/slices/userSlice";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { loadStripe } from "@stripe/stripe-js";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
@@ -14,9 +16,42 @@ const Pricing = () => {
   const [pricingContent, setPricingContent] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [skipLoading, setSkipLoading] = useState(false);
   const selector = useSelector((store) => store.user);
+  const dispatch = useDispatch();
+  const router = useRouter();
+
+  const handleSkip = async () => {
+    const uid = selector.user?.uid;
+    if (!uid) {
+      alert("You must be logged in to continue.");
+      return;
+    }
+    setSkipLoading(true);
+    try {
+      const res = await fetch("/api/complete-onboarding-skip", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: uid }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.success) {
+        dispatch(updateIsFirstTime(false));
+        dispatch(updateHasPostedJob(true));
+        localStorage.removeItem(`lastOnboardingPage_${uid}`);
+        router.push("/employers-dashboard/dashboard");
+      } else {
+        alert(data.error || "Something went wrong. Please try again.");
+      }
+    } catch (err) {
+      console.error("Error skipping onboarding:", err);
+      alert("Something went wrong. Please try again.");
+    } finally {
+      setSkipLoading(false);
+    }
+  };
+
   const handleSubmit = async (priceId, planId) => {
-    console.log("selector.user.uid", selector?.user?.uid);
     const stripe = await stripePromise;
 
     try {
@@ -183,7 +218,7 @@ const Pricing = () => {
         </div>
       </header>
       <BreadCrumb title="Pricing Packages" />
-      <p>Please select a package to continue</p>
+      <p>Choose a package or skip for now—you can subscribe later from your dashboard.</p>
 
       {/* Button to initialize pricing */}
       {/* <div style={{ marginBottom: "20px" }}>
@@ -205,6 +240,18 @@ const Pricing = () => {
           </p>
         )}
       </div> */}
+
+      <div style={{ marginBottom: "24px" }}>
+        <button
+          type="button"
+          className="theme-btn btn-style-one"
+          onClick={handleSkip}
+          disabled={skipLoading}
+          style={{ opacity: skipLoading ? 0.7 : 1 }}
+        >
+          {skipLoading ? "Continuing…" : "Skip for now"}
+        </button>
+      </div>
 
       <div className="pricing-tabs tabs-box wow fadeInUp">
         <div className="row">

@@ -41,13 +41,13 @@ export const useUpdateIsFirstTime = async (id, additionalFields = {}) => {
     // Sanitize the additional fields
     const sanitizedAdditionalFields = sanitizeFormData(
       additionalFields,
-      fieldTypes
+      fieldTypes,
     );
 
     await setDoc(
       doc(db, "users", id),
       { isFirstTime: false, ...sanitizedAdditionalFields },
-      { merge: true }
+      { merge: true },
     );
     return { success: true };
   } catch (error) {
@@ -55,6 +55,20 @@ export const useUpdateIsFirstTime = async (id, additionalFields = {}) => {
     return {
       success: false,
     };
+  }
+};
+
+export const skipEmployerOnboarding = async (id) => {
+  try {
+    await setDoc(
+      doc(db, "users", id),
+      { isFirstTime: false, hasPostedJob: true },
+      { merge: true },
+    );
+    return { success: true };
+  } catch (error) {
+    console.error(error);
+    return { success: false };
   }
 };
 
@@ -119,7 +133,7 @@ export const useUpdateUserInfo = () => {
           userType,
           updatedAt: new Date(),
         },
-        { merge: true }
+        { merge: true },
       );
       successToast("User info updated successfully");
       return { success: true, message: "User info updated successfully" };
@@ -207,7 +221,7 @@ export const useDeleteUserAccount = async (userId) => {
 
     // Delete all documents in the resume subcollection
     const deleteResumePromises = resumeDocs.docs.map((doc) =>
-      deleteDoc(doc.ref)
+      deleteDoc(doc.ref),
     );
     await Promise.all(deleteResumePromises);
 
@@ -256,7 +270,7 @@ export const useGetRecentApplications = (employerId) => {
         const applicationsRef = collection(db, "applications");
         const applicationsQuery = query(
           applicationsRef,
-          where("jobId", "in", jobIds)
+          where("jobId", "in", jobIds),
         );
 
         // Set up real-time listener
@@ -277,7 +291,7 @@ export const useGetRecentApplications = (employerId) => {
           const candidatesRef = collection(db, "users");
           const candidatesQuery = query(
             candidatesRef,
-            where("__name__", "in", candidateIds)
+            where("__name__", "in", candidateIds),
           );
           const candidatesSnapshot = await getDocs(candidatesQuery);
           const candidatesMap = {};
@@ -307,7 +321,7 @@ export const useGetRecentApplications = (employerId) => {
 
           // Sort by appliedAt in descending order and take first 6
           setApplications(
-            applications.sort((a, b) => b.appliedAt - a.appliedAt).slice(0, 6)
+            applications.sort((a, b) => b.appliedAt - a.appliedAt).slice(0, 6),
           );
           setLoading(false);
         });
@@ -474,7 +488,7 @@ export const useGetAllUsers = () => {
         setError(err);
         console.error("Error fetching users:", err);
         setLoading(false);
-      }
+      },
     );
 
     // Cleanup subscription on unmount
@@ -611,7 +625,7 @@ export const deleteUserByAdmin = async (userId) => {
       const applicationsRef = collection(db, "applications");
       const appsQuery = query(
         applicationsRef,
-        where("candidateId", "==", userId)
+        where("candidateId", "==", userId),
       );
       const appsSnap = await getDocs(appsQuery);
       await Promise.all(appsSnap.docs.map((d) => deleteDoc(d.ref)));
@@ -631,7 +645,7 @@ export const deleteUserByAdmin = async (userId) => {
           const batchIds = jobIds.slice(i, i + 10);
           const appsQuery = query(
             applicationsRef,
-            where("jobId", "in", batchIds)
+            where("jobId", "in", batchIds),
           );
           const appsSnap = await getDocs(appsQuery);
           await Promise.all(appsSnap.docs.map((d) => deleteDoc(d.ref)));
@@ -647,7 +661,7 @@ export const deleteUserByAdmin = async (userId) => {
         const viewsColRef = collection(db, "jobViews", jobViewDoc.id, "views");
         const viewsSnap = await getDocs(viewsColRef);
         const toDelete = viewsSnap.docs.filter(
-          (v) => v.data().userId === userId
+          (v) => v.data().userId === userId,
         );
         await Promise.all(toDelete.map((v) => deleteDoc(v.ref)));
       }
