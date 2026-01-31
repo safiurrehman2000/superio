@@ -185,6 +185,7 @@ export default function UsersTable() {
             >
               Name {sortBy === "name" && (sortDir === "asc" ? "▲" : "▼")}
             </th>
+            <th>Mobile</th>
             <th
               onClick={() => handleSort("userType")}
               style={{ cursor: "pointer" }}
@@ -197,13 +198,13 @@ export default function UsersTable() {
         <tbody>
           {loading ? (
             <tr>
-              <td colSpan={3} className={styles["admin-table-loading"]}>
+              <td colSpan={4} className={styles["admin-table-loading"]}>
                 Loading...
               </td>
             </tr>
           ) : users.length === 0 ? (
             <tr>
-              <td colSpan={3} className={styles["admin-table-empty"]}>
+              <td colSpan={4} className={styles["admin-table-empty"]}>
                 No users found.
               </td>
             </tr>
@@ -212,6 +213,7 @@ export default function UsersTable() {
               <tr key={user.id}>
                 <td>{user.email}</td>
                 <td>{user.name || "-"}</td>
+                <td>{user.phone || user.phone_number || "-"}</td>
                 <td>
                   {user.userType === "Candidate" && (
                     <span
