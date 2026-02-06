@@ -2,7 +2,8 @@ import Wrapper from "@/layout/Wrapper";
 import Home from "@/components/home-1";
 import StructuredData from "@/components/common/StructuredData";
 
-const siteUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://flexijobber.be";
+const siteUrl =
+  process.env.NEXT_PUBLIC_BASE_URL || "https://www.deflexijobber.be";
 
 export const metadata = {
   title: "De Flexijobber - Online vacaturesite voor flexwerkers in Vlaanderen",
@@ -39,6 +40,9 @@ export const metadata = {
   },
 };
 
+/**
+ * Organization schema — correct voor homepage
+ */
 const organizationSchema = {
   "@context": "https://schema.org",
   "@type": "Organization",
@@ -47,23 +51,20 @@ const organizationSchema = {
   logo: `${siteUrl}/images/resource/logo.png`,
   description:
     "Het toonaangevende platform voor flexibele jobs in Vlaanderen. Verbindt werkgevers met flexwerkers in verschillende sectoren.",
-  sameAs: [
-    // Add social media links when available
-    // "https://www.facebook.com/flexijobber",
-    // "https://www.linkedin.com/company/flexijobber",
-    // "https://twitter.com/flexijobber",
-  ],
+  areaServed: {
+    "@type": "Country",
+    name: "Belgium",
+  },
   contactPoint: {
     "@type": "ContactPoint",
     contactType: "Customer Service",
     availableLanguage: ["Dutch", "French"],
   },
-  areaServed: {
-    "@type": "Country",
-    name: "Belgium",
-  },
 };
 
+/**
+ * WebSite schema — correct + SearchAction
+ */
 const websiteSchema = {
   "@context": "https://schema.org",
   "@type": "WebSite",
@@ -80,45 +81,12 @@ const websiteSchema = {
   },
 };
 
-const jobPostingSchema = {
-  "@context": "https://schema.org",
-  "@type": "JobPosting",
-  title: "Flexibele Jobs in Vlaanderen",
-  description:
-    "Zoek en vind flexibele jobs in verschillende sectoren in Vlaanderen. Perfect voor studenten, flexwerkers en mensen die bij willen verdienen.",
-  identifier: {
-    "@type": "PropertyValue",
-    name: "De Flexijobber",
-    value: "flexijobber-jobs",
-  },
-  datePosted: new Date().toISOString(),
-  validThrough: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
-  employmentType: ["PART_TIME", "TEMPORARY", "CONTRACTOR"],
-  hiringOrganization: {
-    "@type": "Organization",
-    name: "De Flexijobber",
-    sameAs: siteUrl,
-  },
-  jobLocation: {
-    "@type": "Place",
-    address: {
-      "@type": "PostalAddress",
-      addressRegion: "Vlaanderen",
-      addressCountry: "BE",
-    },
-  },
-  baseSalary: {
-    "@type": "MonetaryAmount",
-    currency: "EUR",
-  },
-};
-
-export default function page() {
+export default function Page() {
   return (
     <>
       <StructuredData data={organizationSchema} />
       <StructuredData data={websiteSchema} />
-      <StructuredData data={jobPostingSchema} />
+
       <Wrapper>
         <Home />
       </Wrapper>
