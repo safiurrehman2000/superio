@@ -19,6 +19,7 @@ import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
+import { Timestamp } from "firebase/firestore";
 
 const PostBoxForm = () => {
   const dispatch = useDispatch();
@@ -108,10 +109,16 @@ const PostBoxForm = () => {
         location: data.state,
         jobType: data["job-type"],
         tags: data.tags.map((tag) => tag.value),
-        status: "active", // Always post as active if permission is granted
+        status: "active",
         employerId: selector?.user?.uid,
         isOpen: false,
-        createdAt: Date.now(),
+
+        // 🔑 Important for Google Jobs
+        createdAt: Timestamp.now(),
+        validThrough: Timestamp.fromDate(
+          new Date(Date.now() + 90 * 24 * 60 * 60 * 1000)
+        ),
+
         viewCount: 0,
       };
 
