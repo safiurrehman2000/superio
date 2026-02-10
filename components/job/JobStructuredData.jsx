@@ -1,5 +1,3 @@
-// components/job/JobStructuredData.jsx
-
 export default function JobStructuredData({ job }) {
   const jsonLd = {
     "@context": "https://schema.org",
