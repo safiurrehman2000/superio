@@ -2,7 +2,7 @@ import dynamic from "next/dynamic";
 import JobList from "@/components/job-listing-pages/job-list-v6";
 import StructuredData from "@/components/common/StructuredData";
 
-const siteUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://flexijobber.be";
+const siteUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://www.de-flexi-jobber.be";
 
 export const metadata = {
   title:

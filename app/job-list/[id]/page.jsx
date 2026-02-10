@@ -112,7 +112,7 @@ const JobSingleDynamicV3 = ({ params }) => {
 
   if (loading) return <JobSingleSkeleton />;
   if (error) return <div>Error: {error}</div>;
-  if (!job) return <div>No job found</div>;
+  if (!job) return <div>Geen vacature gevonden</div>;
 
   return (
     <>
@@ -168,7 +168,7 @@ const JobSingleDynamicV3 = ({ params }) => {
 
                 <div className="other-options">
                   <div className="social-share">
-                    <h5>Share this job</h5>
+                    <h5>Deel deze vacature</h5>
                     <SocialTwo />
                   </div>
                 </div>
@@ -231,7 +231,7 @@ const JobSingleDynamicV3 = ({ params }) => {
                     <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable">
                       <div className="apply-modal-content modal-content">
                         <div className="text-center">
-                          <h3 className="title">Apply for this job</h3>
+                          <h3 className="title">Solliciteer op vacature</h3>
                           <button
                             type="button"
                             className="closed-modal"
@@ -268,7 +268,7 @@ const JobSingleDynamicV3 = ({ params }) => {
                           href={`/company-profile/${job?.employerId}`}
                           className="profile-link"
                         >
-                          View company profile
+                          Bekijk bedrijfsprofiel
                         </a>
                       </div>
 
@@ -284,7 +284,7 @@ const JobSingleDynamicV3 = ({ params }) => {
                           rel="noopener noreferrer"
                           className="theme-btn btn-style-three"
                         >
-                          Visit Website
+                          Bezoek Website
                         </a>
                       </div>
                     </div>

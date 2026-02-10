@@ -29,7 +29,7 @@ export default function JobStructuredData({ job }) {
       name: job.company,
       logo:
         job.companyLogo ||
-        "https://www.deflexijobber.be/images/resource/logo.png",
+        "https://www.de-flexi-jobber.be/images/resource/logo.png",
       sameAs: job.link,
     },
 
