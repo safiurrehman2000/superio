@@ -2,7 +2,11 @@ import JobClient from "@/components/job/JobClient";
 import JobStructuredData from "@/components/job/JobStructuredData";
 import { getJobByIdServer } from "@/lib/server/getJobByIdServer";
 
-export const revalidate = 300; // ISR – 5 minuten
+import DefaulHeader2 from "@/components/header/DefaulHeader2";
+import MobileMenu from "@/components/header/MobileMenu";
+import FooterDefault from "@/components/footer/common-footer";
+
+export const revalidate = 300;
 
 const siteUrl = "https://www.de-flexi-jobber.be";
 
@@ -41,16 +45,18 @@ export async function generateMetadata({ params }) {
 
 export default async function JobPage({ params }) {
   const job = await getJobByIdServer(params.id);
-
   if (!job) return <p>Vacature niet gevonden</p>;
 
   return (
     <>
-      {/* 🔥 SEO / GOOGLE JOBS */}
       <JobStructuredData job={job} />
 
-      {/* 🔥 INTERACTIE */}
+      <DefaulHeader2 />
+      <MobileMenu />
+
       <JobClient job={job} />
+
+      <FooterDefault footerStyle="alternate5" />
     </>
   );
 }
