@@ -9,7 +9,7 @@ export default function JobStructuredData({ job }) {
       ? new Date(job.validThrough).toISOString()
       : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
 
-    employmentType: [job.jobType || "PART_TIME"],
+    employmentType: job.jobType || "PART_TIME",
 
     identifier: {
       "@type": "PropertyValue",
@@ -19,8 +19,8 @@ export default function JobStructuredData({ job }) {
 
     hiringOrganization: {
       "@type": "Organization",
-      name: job.company,
-      sameAs: job.link,
+      name: job.company || "De Flexi Jobber",
+      sameAs: job.link || "https://www.de-flexi-jobber.be",
       logo:
         job.companyLogo ||
         "https://www.de-flexi-jobber.be/images/resource/logo.png",
