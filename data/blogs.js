@@ -1,6 +1,6 @@
 import image1 from "@/public/blog1.webp";
 import image2 from "@/public/blog2.webp";
-import image3 from "@/public/blog3.webp";
+import image3 from "@/public/blog3.png";
 import image4 from "@/public//blog4.webp";
 
 export const blogs = [
@@ -232,12 +232,17 @@ export const blogContent = {
     },
     {
       type: "heading",
-      content: "Betaalbare Webdesign- en Grafische Oplossingen",
+      content: "Transparante en Commissievrije Prijzen voor Horeca",
     },
     {
       type: "paragraph",
       content:
-        "Upxero biedt betaalbare digitale en grafische oplossingen met flexibele betalingsmogelijkheden:\n✅ \nWebsite + online bestelsysteem: Vanaf €9,95 per maand onderhoudskosten + een eenmalige opstartkost van €150.\n✅ \nEigen restaurant-app: Voor €69 per maand krijgt je restaurant een gepersonaliseerde app waarmee klanten direct kunnen bestellen zonder telkens hun gegevens opnieuw in te voeren.\n✅ \nGrafisch ontwerp: Op maat gemaakte menu's, flyers en logo's – prijzen op aanvraag.\n✅ \n35% korting op opstartkosten via De Flexijobber – Vraag hiernaar via De Flexijobber.\nFlexibele contractvoorwaarden: Maandelijks opzegbaar met een contract van 12 maanden, dat daarna stilzwijgend wordt verlengd.",
+        "Upxero werkt met transparante, vaste maandprijzen zonder commissies per bestelling. Geen verborgen kosten, geen verrassingen. Alle plannen zijn maandelijks opzegbaar en momenteel tijdelijk met gratis setup.",
+    },
+    {
+      type: "paragraph",
+      content:
+        "🔹 Start – €29/maand (nu gratis setup, normaal €99)\nVoor restaurants die al een website hebben.\n• Online bestelsysteem (afhaling & takeaway)\n• WhatsApp bestel-flow (vaste antwoorden, geen AI)\n• Menu setup & volledige integratie\n• Hosting, updates & beveiliging\n• Email support\n\n🔹 Grow – €49/maand (nu gratis setup, normaal €199) – Meest populair\nComplete professionele horeca website met slimme automatisatie.\n• Mobile-first horeca website\n• Online bestelsysteem\n• WhatsApp bestel-flow\n• Automatische doorverwijzing naar online bestellen\n• Menu setup & integratie\n• Hosting, updates & beveiliging\n• Email support\n\n🔹 Boost – €79/maand (nu gratis setup, normaal €249)\nVoor restaurants die méér bestellingen willen zonder extra personeel.\n• Alles uit Grow\n• AI Bestel- & Klantenassistent (24/7)\n• AI beantwoordt vrije vragen (menu, allergenen, openingstijden)\n• AI stuurt klanten actief naar online bestellen\n• Conversie-optimalisatie\n• Google Business integratie\n• Rapportage & continue optimalisatie\n• Prioriteit support & persoonlijk advies",
     },
     {
       type: "heading",
