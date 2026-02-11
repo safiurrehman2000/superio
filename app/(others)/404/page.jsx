@@ -23,8 +23,8 @@ const index = () => {
               <Image
                 width={154}
                 height={50}
-                src="/images/logo.svg"
-                alt="brand"
+                alt="De Flexijobber Logo"
+                src="/images/logo-deflexijobber.png"
               />
             </Link>
           </div>
