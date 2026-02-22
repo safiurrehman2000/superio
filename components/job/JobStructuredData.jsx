@@ -23,7 +23,7 @@ export default function JobStructuredData({ job }) {
       sameAs: job.link || "https://www.de-flexi-jobber.be",
       logo:
         job.companyLogo ||
-        "https://www.de-flexi-jobber.be/images/resource/logo.png",
+        "https://www.de-flexi-jobber.be/images/logo-deflexijobber.png",
     },
 
     jobLocation: {
