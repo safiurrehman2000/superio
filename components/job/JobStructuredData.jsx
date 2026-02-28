@@ -2,35 +2,28 @@ export default function JobStructuredData({ job }) {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "JobPosting",
-
     title: job.title,
-    description: job.description,
-
-    datePosted: job.createdAt?.toDate
-      ? job.createdAt.toDate().toISOString()
-      : new Date().toISOString(),
-
+    description: job.description?.replace(/<[^>]*>/g, ""),
+    datePosted: new Date(job.createdAt).toISOString(),
     validThrough: job.validThrough
       ? new Date(job.validThrough).toISOString()
       : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
 
-    employmentType: ["PART_TIME", "TEMPORARY"],
+    employmentType: job.jobType || "PART_TIME",
 
     identifier: {
       "@type": "PropertyValue",
-      name: "De Flexijobber",
+      name: "De Flexi Jobber",
       value: job.id,
     },
 
-    directApply: true,
-
     hiringOrganization: {
       "@type": "Organization",
-      name: job.company,
+      name: job.company || "De Flexi Jobber",
+      sameAs: job.link || "https://www.de-flexi-jobber.be",
       logo:
         job.companyLogo ||
-        "https://www.deflexijobber.be/images/resource/logo.png",
-      sameAs: job.link,
+        "https://www.de-flexi-jobber.be/images/logo-deflexijobber.png",
     },
 
     jobLocation: {
@@ -46,6 +39,8 @@ export default function JobStructuredData({ job }) {
       "@type": "Country",
       name: "Belgium",
     },
+
+    directApply: true,
   };
 
   return (

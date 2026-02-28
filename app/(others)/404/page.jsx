@@ -3,8 +3,8 @@ import Image from "next/image";
 import Link from "next/link";
 
 export const metadata = {
-  title: "Page Not Found || Superio - Job Borad React NextJS Template",
-  description: "Superio - Job Borad React NextJS Template",
+  title: "Pagina niet gevonden || De Flexijobber",
+  description: "De Flexijobber - Flexijobs",
 };
 
 const index = () => {
@@ -23,18 +23,18 @@ const index = () => {
               <Image
                 width={154}
                 height={50}
-                src="/images/logo.svg"
-                alt="brand"
+                alt="De Flexijobber Logo"
+                src="/images/logo-deflexijobber.png"
               />
             </Link>
           </div>
           {/* End logo */}
 
           <h1>404!</h1>
-          <p>The page you are looking for could not be found.</p>
+          <p>De pagina bestaat niet!</p>
 
           <Link className="theme-btn btn-style-three call-modal" href="/">
-            BACK TO HOME
+            TERUG NAAR HOME
           </Link>
         </div>
         {/* End .content */}

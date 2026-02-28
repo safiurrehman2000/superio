@@ -264,7 +264,7 @@ const PostBoxForm = () => {
 
           <div className="form-group col-lg-6 col-md-12">
             <SelectField
-              label="Job Type"
+              label="Type contract"
               name="job-type"
               options={JOB_TYPE_OPTIONS}
               placeholder="Selecteer een Job Type"
@@ -276,13 +276,13 @@ const PostBoxForm = () => {
           {/* <!-- Input --> */}
           <div className="form-group col-lg-6 col-md-12">
             <SelectField
-              label="Provincie"
+              label="Gemeente"
               name="state"
               options={states}
               placeholder={
                 statesLoading
-                  ? "Provincies laden..."
-                  : "Selecteer een provincie"
+                  ? "Gemeentes laden..."
+                  : "Selecteer een gemeente"
               }
               required
               disabled={isFormDisabled || statesLoading}

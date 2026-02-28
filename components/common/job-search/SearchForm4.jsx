@@ -57,7 +57,7 @@ const SearchForm4 = () => {
           <input
             type="text"
             name="province"
-            placeholder="Provincie"
+            placeholder="Gemeente"
             value={searchParams.province}
             onChange={handleInputChange}
           />

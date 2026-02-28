@@ -17,7 +17,7 @@ if (typeof window !== "undefined") {
   require("bootstrap/dist/js/bootstrap");
 }
 
-const siteUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://flexijobber.be";
+const siteUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://www.de-flexi-jobber.be";
 
 export default function RootLayout({ children }) {
   useEffect(() => {

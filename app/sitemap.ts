@@ -19,7 +19,7 @@ const firebaseConfig = {
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-const SITE_URL = "https://deflexijobber.be";
+const SITE_URL = "https://www.de-flexi-jobber.be";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // 🔹 Statische pagina’s
