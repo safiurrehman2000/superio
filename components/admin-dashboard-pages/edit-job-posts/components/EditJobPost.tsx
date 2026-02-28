@@ -1,28 +1,28 @@
-"use client";
+'use client';
 
-import { updateJob, deleteJob } from "@/APIs/auth/jobs";
-import { collection, getDocs } from "firebase/firestore";
-import { db } from "@/utils/firebase";
-import AutoSelect from "@/components/autoselect/AutoSelect";
-import CircularLoader from "@/components/circular-loading/CircularLoading";
-import { InputField } from "@/components/inputfield/InputField";
-import { SelectField } from "@/components/selectfield/SelectField";
-import { TextAreaField } from "@/components/textarea/TextArea";
+import { updateJob, deleteJob } from '@/APIs/auth/jobs';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '@/utils/firebase';
+import AutoSelect from '@/components/autoselect/AutoSelect';
+import CircularLoader from '@/components/circular-loading/CircularLoading';
+import { InputField } from '@/components/inputfield/InputField';
+import { SelectField } from '@/components/selectfield/SelectField';
+import { TextAreaField } from '@/components/textarea/TextArea';
 import {
   formatString,
   JOB_TYPE_OPTIONS,
   SECTORS,
   STATES,
-} from "@/utils/constants";
-import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
-import { FormProvider, useForm } from "react-hook-form";
-import { useSelector } from "react-redux";
-import { DeleteConfirmationModal } from "@/components/dashboard-pages/employers-dashboard/manage-jobs/components/DeleteModal";
-import Select from "react-select";
+} from '@/utils/constants';
+import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { FormProvider, useForm } from 'react-hook-form';
+import { useSelector } from 'react-redux';
+import { DeleteConfirmationModal } from '@/components/dashboard-pages/employers-dashboard/manage-jobs/components/DeleteModal';
+import Select from 'react-select';
 
 const EditJobPost = () => {
-  const [selectedJobId, setSelectedJobId] = useState("");
+  const [selectedJobId, setSelectedJobId] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const { push } = useRouter();
@@ -34,7 +34,7 @@ const EditJobPost = () => {
     setJobsLoading(true);
     setJobsError(null);
     try {
-      const jobsRef = collection(db, "jobs");
+      const jobsRef = collection(db, 'jobs');
       const jobsSnap = await getDocs(jobsRef);
       const jobs = jobsSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
       setJobs(jobs);
@@ -51,17 +51,20 @@ const EditJobPost = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const methods = useForm({
-    mode: "onChange",
+    mode: 'onChange',
     defaultValues: {
-      name: "",
-      description: "",
-      functionDescription: "",
-      profileSkills: "",
-      offer: "",
-      schedule: "",
-      email: "",
-      "job-type": "",
-      state: "",
+      name: '',
+      description: '',
+      functionDescription: '',
+      profileSkills: '',
+      offer: '',
+      schedule: '',
+      email: '',
+      'job-type': '',
+      state: '',
+      address: '',
+      postalCode: '',
+      salary: '',
       tags: [],
     },
   });
@@ -72,34 +75,37 @@ const EditJobPost = () => {
   const jobOptions = jobs.map((job) => ({
     value: job.id,
     label: `${job.title} - ${job.location} (${new Date(
-      job.createdAt
+      job.createdAt,
     ).toLocaleDateString()})`,
     job: job, // Keep the full job object for reference
   }));
 
   const handleJobSelection = (selectedOption) => {
-    const jobId = selectedOption ? selectedOption.value : "";
+    const jobId = selectedOption ? selectedOption.value : '';
     setSelectedJobId(jobId);
     if (jobId) {
       const selectedJob = jobs.find((job) => job.id === jobId);
       if (selectedJob) {
-        setValue("name", selectedJob.title || "");
-        setValue("description", selectedJob.description || "");
-        setValue("functionDescription", selectedJob.functionDescription || "");
-        setValue("profileSkills", selectedJob.profileSkills || "");
-        setValue("offer", selectedJob.offer || "");
-        setValue("schedule", selectedJob.schedule || "");
-        setValue("email", selectedJob.email || "");
-        setValue("job-type", selectedJob.jobType || "");
-        setValue("state", selectedJob.location || "");
+        setValue('name', selectedJob.title || '');
+        setValue('description', selectedJob.description || '');
+        setValue('functionDescription', selectedJob.functionDescription || '');
+        setValue('profileSkills', selectedJob.profileSkills || '');
+        setValue('offer', selectedJob.offer || '');
+        setValue('schedule', selectedJob.schedule || '');
+        setValue('email', selectedJob.email || '');
+        setValue('job-type', selectedJob.jobType || '');
+        setValue('state', selectedJob.location || '');
+        setValue('address', selectedJob.address || '');
+        setValue('postalCode', selectedJob.postalCode || '');
+        setValue('salary', selectedJob.salary || '');
         setValue(
-          "tags",
+          'tags',
           selectedJob.tags
             ? selectedJob.tags.map((tag) => ({
                 value: tag,
                 label: formatString(tag),
               }))
-            : []
+            : [],
         );
       }
     } else {
@@ -110,7 +116,7 @@ const EditJobPost = () => {
   const onSubmit = async (data) => {
     if (loading) return;
     if (!selectedJobId) {
-      setError("Please select a job to edit");
+      setError('Please select a job to edit');
       return;
     }
 
@@ -127,26 +133,29 @@ const EditJobPost = () => {
         schedule: data.schedule,
         email: data.email,
         location: data.state,
-        jobType: data["job-type"],
+        jobType: data['job-type'],
+        address: data.address?.trim() ?? '',
+        postalCode: data.postalCode?.trim() ?? '',
+        salary: data.salary?.trim() ?? '',
         tags: data.tags.map((tag) => tag.value),
       };
 
       const { success, error: apiError } = await updateJob(
         selectedJobId,
-        payload
+        payload,
       );
       if (!success) {
-        throw new Error(apiError || "Failed to update job post.");
+        throw new Error(apiError || 'Failed to update job post.');
       }
 
       reset();
-      setSelectedJobId("");
-      push("/admin-dashboard/edit-job-posts");
+      setSelectedJobId('');
+      push('/admin-dashboard/edit-job-posts');
     } catch (err) {
       setError(
-        err.message || "An unexpected error occurred. Please try again."
+        err.message || 'An unexpected error occurred. Please try again.',
       );
-      console.error("Error during job post update:", err);
+      console.error('Error during job post update:', err);
     } finally {
       setLoading(false);
     }
@@ -155,11 +164,11 @@ const EditJobPost = () => {
   const handleDelete = async () => {
     if (loading) return;
     if (!selectedJobId) {
-      setError("Please select a job to delete");
+      setError('Please select a job to delete');
       return;
     }
     if (!selector?.user?.uid) {
-      setError("User authentication data is missing.");
+      setError('User authentication data is missing.');
       return;
     }
     setLoading(true);
@@ -167,21 +176,21 @@ const EditJobPost = () => {
     try {
       const { success, error: apiError } = await deleteJob(
         selectedJobId,
-        selector.user.uid
+        selector.user.uid,
       );
       if (!success) {
-        throw new Error(apiError || "Failed to delete job post.");
+        throw new Error(apiError || 'Failed to delete job post.');
       }
       reset();
-      setSelectedJobId("");
+      setSelectedJobId('');
       fetchJobs();
-      push("/admin-dashboard/edit-job-posts");
+      push('/admin-dashboard/edit-job-posts');
       setIsDeleteModalOpen(false);
     } catch (err) {
       setError(
-        err.message || "An unexpected error occurred. Please try again."
+        err.message || 'An unexpected error occurred. Please try again.',
       );
-      console.error("Error during job post delete:", err);
+      console.error('Error during job post delete:', err);
     } finally {
       setLoading(false);
     }
@@ -189,17 +198,17 @@ const EditJobPost = () => {
 
   if (jobsLoading) {
     return (
-      <div className="ls-widget">
-        <div className="tabs-box">
-          <div className="widget-title">
+      <div className='ls-widget'>
+        <div className='tabs-box'>
+          <div className='widget-title'>
             <h4>Edit Job Posts</h4>
           </div>
-          <div className="widget-content">
+          <div className='widget-content'>
             <div
               style={{
-                display: "flex",
-                justifyContent: "center",
-                padding: "50px",
+                display: 'flex',
+                justifyContent: 'center',
+                padding: '50px',
               }}
             >
               <CircularLoader />
@@ -212,13 +221,13 @@ const EditJobPost = () => {
 
   if (jobsError) {
     return (
-      <div className="ls-widget">
-        <div className="tabs-box">
-          <div className="widget-title">
+      <div className='ls-widget'>
+        <div className='tabs-box'>
+          <div className='widget-title'>
             <h4>Edit Job Posts</h4>
           </div>
-          <div className="widget-content">
-            <div style={{ color: "red", textAlign: "center", padding: "20px" }}>
+          <div className='widget-content'>
+            <div style={{ color: 'red', textAlign: 'center', padding: '20px' }}>
               Error loading jobs: {jobsError.message}
             </div>
           </div>
@@ -228,21 +237,21 @@ const EditJobPost = () => {
   }
 
   return (
-    <div className="ls-widget">
-      <div className="tabs-box">
-        <div className="widget-title">
+    <div className='ls-widget'>
+      <div className='tabs-box'>
+        <div className='widget-title'>
           <h4>Edit Job Posts</h4>
         </div>
 
-        <div className="widget-content">
-          <div className="form-group col-lg-12 col-md-12 mb-4">
+        <div className='widget-content'>
+          <div className='form-group col-lg-12 col-md-12 mb-4'>
             <label
               style={{
-                display: "flex",
-                alignItems: "center",
-                fontSize: "15px",
-                fontWeight: "500",
-                marginBottom: "6px",
+                display: 'flex',
+                alignItems: 'center',
+                fontSize: '15px',
+                fontWeight: '500',
+                marginBottom: '6px',
               }}
             >
               Select Job to Edit
@@ -254,13 +263,13 @@ const EditJobPost = () => {
               }
               onChange={handleJobSelection}
               options={jobOptions}
-              placeholder="Search and select a job to edit..."
+              placeholder='Search and select a job to edit...'
               isClearable
               isSearchable
-              className="basic-single-select"
-              classNamePrefix="select"
-              noOptionsMessage={() => "No jobs found"}
-              loadingMessage={() => "Loading jobs..."}
+              className='basic-single-select'
+              classNamePrefix='select'
+              noOptionsMessage={() => 'No jobs found'}
+              loadingMessage={() => 'Loading jobs...'}
               isLoading={jobsLoading}
             />
           </div>
@@ -269,118 +278,145 @@ const EditJobPost = () => {
             <FormProvider {...methods}>
               <form
                 onKeyDown={(e) => {
-                  if (e.key === "Enter") {
+                  if (e.key === 'Enter') {
                     handleSubmit(onSubmit)();
                   }
                 }}
                 onSubmit={handleSubmit(onSubmit)}
-                className="default-form"
+                className='default-form'
               >
-                <div className="row">
-                  <div className="form-group col-lg-12 col-md-12">
+                <div className='row'>
+                  <div className='form-group col-lg-12 col-md-12'>
                     <InputField
-                      name="name"
-                      placeholder="Title"
+                      name='name'
+                      placeholder='Title'
                       required
-                      label="Job Title"
-                      fieldType="Text"
-                      defaultValue=""
+                      label='Job Title'
+                      fieldType='Text'
+                      defaultValue=''
                       disabled={false}
                     />
                   </div>
 
-                  <div className="form-group col-lg-12 col-md-12">
+                  <div className='form-group col-lg-12 col-md-12'>
                     <TextAreaField
-                      label="Description"
-                      name="description"
-                      placeholder="Describe what type of job it is"
+                      label='Description'
+                      name='description'
+                      placeholder='Describe what type of job it is'
                       required
                       minLength={10}
                       maxLength={1000}
                     />
                   </div>
 
-                  <div className="form-group col-lg-12 col-md-12">
+                  <div className='form-group col-lg-12 col-md-12'>
                     <TextAreaField
-                      label="Functieomschrijving"
-                      name="functionDescription"
-                      placeholder="Beschrijf de functie in detail"
+                      label='Functieomschrijving'
+                      name='functionDescription'
+                      placeholder='Beschrijf de functie in detail'
                       required
                       minLength={10}
                       maxLength={1000}
                     />
                   </div>
 
-                  <div className="form-group col-lg-12 col-md-12">
+                  <div className='form-group col-lg-12 col-md-12'>
                     <TextAreaField
-                      label="Profiel/vaardigheden"
-                      name="profileSkills"
-                      placeholder="Beschrijf het gewenste profiel en vaardigheden"
+                      label='Profiel/vaardigheden'
+                      name='profileSkills'
+                      placeholder='Beschrijf het gewenste profiel en vaardigheden'
                       required
                       minLength={10}
                       maxLength={1000}
                     />
                   </div>
 
-                  <div className="form-group col-lg-12 col-md-12">
+                  <div className='form-group col-lg-12 col-md-12'>
                     <TextAreaField
-                      label="Aanbod"
-                      name="offer"
-                      placeholder="Beschrijf wat je aanbiedt (salaris, voordelen, etc.)"
+                      label='Aanbod'
+                      name='offer'
+                      placeholder='Beschrijf wat je aanbiedt (salaris, voordelen, etc.)'
                       required
                       minLength={10}
                       maxLength={1000}
                     />
                   </div>
 
-                  <div className="form-group col-lg-12 col-md-12">
+                  <div className='form-group col-lg-12 col-md-12'>
                     <TextAreaField
-                      label="Uurrooster"
-                      name="schedule"
-                      placeholder="Beschrijf het uurrooster en werktijden"
+                      label='Uurrooster'
+                      name='schedule'
+                      placeholder='Beschrijf het uurrooster en werktijden'
                       required
                       minLength={10}
                       maxLength={1000}
                     />
                   </div>
 
-                  <div className="form-group col-lg-6 col-md-12">
+                  <div className='form-group col-lg-6 col-md-12'>
                     <InputField
-                      label="Email"
-                      name="email"
-                      placeholder="candidate@gmail.com"
+                      label='Email'
+                      name='email'
+                      placeholder='candidate@gmail.com'
                       required
-                      fieldType="Email"
-                      defaultValue=""
+                      fieldType='Email'
+                      defaultValue=''
                       disabled={false}
                     />
                   </div>
 
-                  <div className="form-group col-lg-6 col-md-12">
+                  <div className='form-group col-lg-6 col-md-12'>
                     <SelectField
-                      label="Job Type"
-                      name="job-type"
+                      label='Job Type'
+                      name='job-type'
                       options={JOB_TYPE_OPTIONS}
-                      placeholder="Select a Job Type"
+                      placeholder='Select a Job Type'
                       required
                     />
                   </div>
 
-                  <div className="form-group col-lg-6 col-md-12">
+                  <div className='form-group col-lg-6 col-md-12'>
                     <SelectField
-                      label="State"
-                      name="state"
+                      label='State'
+                      name='state'
                       options={STATES}
-                      placeholder="Select a state"
+                      placeholder='Select a state'
                       required
                     />
                   </div>
 
-                  <div className="form-group col-lg-6 col-md-12">
+                  <div className='form-group col-lg-6 col-md-12'>
+                    <InputField
+                      label='Postcode'
+                      name='postalCode'
+                      placeholder='e.g. 2000'
+                      fieldType='Text'
+                    />
+                  </div>
+
+                  <div className='form-group col-lg-12 col-md-12'>
+                    <InputField
+                      label='Adres'
+                      name='address'
+                      placeholder='Straat en huisnummer'
+                      fieldType='Text'
+                    />
+                  </div>
+
+                  <div className='form-group col-lg-6 col-md-12'>
+                    <InputField
+                      label='Salaris (optioneel)'
+                      name='salary'
+                      placeholder='e.g. 15-20 €/uur of 2500 €/maand'
+                      fieldType='Text'
+                    />
+                  </div>
+
+                  <div className='form-group col-lg-6 col-md-12'>
                     <AutoSelect
-                      label="Job Tags"
-                      placeholder="Select Tags"
-                      name="tags"
+                      label='Job Tags'
+                      placeholder='Select Tags'
+                      name='tags'
                       options={SECTORS}
                       required
                       defaultValue={[]}
@@ -388,39 +424,39 @@ const EditJobPost = () => {
                   </div>
 
                   <div
-                    className="form-group col-lg-12 col-md-12 text-right"
-                    style={{ display: "flex", justifyContent: "space-between" }}
+                    className='form-group col-lg-12 col-md-12 text-right'
+                    style={{ display: 'flex', justifyContent: 'space-between' }}
                   >
                     <button
                       className={`theme-btn ${
-                        loading ? "btn-style-three" : "btn-style-one"
+                        loading ? 'btn-style-three' : 'btn-style-one'
                       }`}
-                      type="submit"
+                      type='submit'
                       disabled={loading}
                     >
                       {loading ? (
                         <div
                           style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "10px",
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '10px',
                           }}
                         >
                           <CircularLoader />
                           <p style={{ margin: 0 }}>Updating Job Post...</p>
                         </div>
                       ) : (
-                        "Update Job"
+                        'Update Job'
                       )}
                     </button>
                     <button
-                      type="button"
-                      className="theme-btn btn-style-two ml-2"
-                      style={{ background: "#dc3545", color: "#fff" }}
+                      type='button'
+                      className='theme-btn btn-style-two ml-2'
+                      style={{ background: '#dc3545', color: '#fff' }}
                       onClick={() => setIsDeleteModalOpen(true)}
                       disabled={loading}
                     >
-                      {loading ? "Deleting..." : "Delete Job"}
+                      {loading ? 'Deleting...' : 'Delete Job'}
                     </button>
                   </div>
                 </div>
@@ -430,8 +466,8 @@ const EditJobPost = () => {
 
           {!selectedJobId && (
             <div
-              className="text-center"
-              style={{ padding: "40px", color: "#666" }}
+              className='text-center'
+              style={{ padding: '40px', color: '#666' }}
             >
               <p>
                 Please select a job from the dropdown above to edit its
@@ -440,7 +476,7 @@ const EditJobPost = () => {
             </div>
           )}
           {error && (
-            <div style={{ color: "red", textAlign: "center", marginTop: 10 }}>
+            <div style={{ color: 'red', textAlign: 'center', marginTop: 10 }}>
               {error}
             </div>
           )}

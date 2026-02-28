@@ -56,6 +56,9 @@ const PostJobForEmployer = () => {
       email: "",
       "job-type": "",
       state: "",
+      address: "",
+      postalCode: "",
+      salary: "",
       tags: [],
     },
   });
@@ -100,6 +103,9 @@ const PostJobForEmployer = () => {
         email: data.email,
         location: data.state,
         jobType: data["job-type"],
+        address: data.address || undefined,
+        postalCode: data.postalCode || undefined,
+        salary: data.salary || undefined,
         tags: data.tags.map((tag) => tag.value),
         employerId: data.employerId,
         isOpen: true, // Set to true so job appears on listing page
@@ -119,6 +125,9 @@ const PostJobForEmployer = () => {
         email: "email",
         location: "text",
         jobType: "text",
+        address: "company_location",
+        postalCode: "company_location",
+        salary: "company_location",
         tags: "company_type",
         employerId: "employerid",
       };
@@ -257,6 +266,30 @@ const PostJobForEmployer = () => {
                     }
                     required
                     disabled={statesLoading}
+                  />
+                </div>
+                <div className="form-group col-lg-6 col-md-12">
+                  <InputField
+                    label="Postcode"
+                    name="postalCode"
+                    placeholder="e.g. 2000"
+                    fieldType="Text"
+                  />
+                </div>
+                <div className="form-group col-lg-12 col-md-12">
+                  <InputField
+                    label="Adres"
+                    name="address"
+                    placeholder="Straat en huisnummer"
+                    fieldType="Text"
+                  />
+                </div>
+                <div className="form-group col-lg-6 col-md-12">
+                  <InputField
+                    label="Salaris (optioneel)"
+                    name="salary"
+                    placeholder="e.g. 15-20 €/uur of 2500 €/maand"
+                    fieldType="Text"
                   />
                 </div>
                 <div className="form-group col-lg-6 col-md-12">

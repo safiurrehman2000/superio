@@ -1,8 +1,8 @@
-"use client";
-import { setAppliedJobs } from "@/slices/userSlice";
-import { db } from "@/utils/firebase";
-import { errorToast, successToast } from "@/utils/toast";
-import { sanitizeFormData } from "@/utils/sanitization";
+'use client';
+import { setAppliedJobs } from '@/slices/userSlice';
+import { db } from '@/utils/firebase';
+import { errorToast, successToast } from '@/utils/toast';
+import { sanitizeFormData } from '@/utils/sanitization';
 import {
   addDoc,
   collection,
@@ -19,33 +19,36 @@ import {
   writeBatch,
   orderBy,
   limit,
-} from "firebase/firestore";
-import { useEffect, useState, useRef } from "react";
+} from 'firebase/firestore';
+import { useEffect, useState, useRef } from 'react';
 
 export const useCreateJobPost = async (payload) => {
   try {
     // Sanitize the job data before processing
     const fieldTypes = {
-      title: "title",
-      description: "description",
-      functionDescription: "description",
-      profileSkills: "description",
-      offer: "description",
-      schedule: "description",
-      email: "email",
-      location: "text",
-      jobType: "text",
-      tags: "company_type", // Array of tags
-      employerId: "employerid",
+      title: 'title',
+      description: 'description',
+      functionDescription: 'description',
+      profileSkills: 'description',
+      offer: 'description',
+      schedule: 'description',
+      email: 'email',
+      location: 'text',
+      jobType: 'text',
+      address: 'company_location',
+      postalCode: 'company_location',
+      salary: 'company_location',
+      tags: 'company_type',
+      employerId: 'employerid',
     };
 
     const sanitizedPayload = sanitizeFormData(payload, fieldTypes);
 
     // Validate subscription and job posting limits before creating job
-    const validationResponse = await fetch("/api/validate-job-posting", {
-      method: "POST",
+    const validationResponse = await fetch('/api/validate-job-posting', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         userId: sanitizedPayload.employerId,
@@ -56,7 +59,7 @@ export const useCreateJobPost = async (payload) => {
     if (!validationResponse.ok) {
       const errorData = await validationResponse.json();
       throw new Error(
-        errorData.error || "Failed to validate job posting permission",
+        errorData.error || 'Failed to validate job posting permission',
       );
     }
 
@@ -65,16 +68,16 @@ export const useCreateJobPost = async (payload) => {
     if (!validationResult.canPost) {
       throw new Error(
         validationResult.message ||
-          "Cannot post job due to subscription limits",
+          'Cannot post job due to subscription limits',
       );
     }
 
-    const docRef = await addDoc(collection(db, "jobs"), sanitizedPayload);
+    const docRef = await addDoc(collection(db, 'jobs'), sanitizedPayload);
     const jobData = {
       id: docRef.id,
       ...sanitizedPayload,
     };
-    successToast("Job Created Successfully");
+    successToast('Job Created Successfully');
     return { success: true, job: jobData };
   } catch (error) {
     errorToast(error.message || "Couldn't create job post");
@@ -90,7 +93,7 @@ export const useGetJobListing = () => {
   useEffect(() => {
     const fetchJobs = async () => {
       try {
-        const jobsRef = collection(db, "jobs");
+        const jobsRef = collection(db, 'jobs');
         const jobsSnap = await getDocs(jobsRef);
 
         const jobs = jobsSnap.docs.map((doc) => ({
@@ -101,7 +104,7 @@ export const useGetJobListing = () => {
         setData(jobs);
       } catch (err) {
         setError(err);
-        console.error("Error fetching jobs:", err);
+        console.error('Error fetching jobs:', err);
       } finally {
         setLoading(false);
       }
@@ -124,7 +127,7 @@ export const useGetJobById = (jobId) => {
       setError(null);
 
       try {
-        const jobRef = doc(db, "jobs", jobId);
+        const jobRef = doc(db, 'jobs', jobId);
         const jobSnap = await getDoc(jobRef);
 
         if (jobSnap.exists()) {
@@ -133,10 +136,10 @@ export const useGetJobById = (jobId) => {
             ...jobSnap.data(),
           });
         } else {
-          throw new Error("Job not found");
+          throw new Error('Job not found');
         }
       } catch (err) {
-        console.error("Error fetching job:", err);
+        console.error('Error fetching job:', err);
         setError(err.message);
       } finally {
         setLoading(false);
@@ -162,24 +165,24 @@ export const useApplyForJob = async (
   dispatch,
 ) => {
   try {
-    if (!candidateId) throw new Error("You must be logged in to apply.");
+    if (!candidateId) throw new Error('You must be logged in to apply.');
 
     // Check if already applied using the new function
     const isApplied = await checkIfJobApplied(candidateId, jobId);
     if (isApplied) {
-      throw new Error("You have already applied to this job.");
+      throw new Error('You have already applied to this job.');
     }
 
-    await addDoc(collection(db, "applications"), {
+    await addDoc(collection(db, 'applications'), {
       candidateId,
       jobId,
       resumeId: selectedResume?.id,
-      message: message || "",
+      message: message || '',
       appliedAt: Date.now(),
-      status: "Active",
+      status: 'Active',
     });
 
-    successToast("Application submitted successfully!");
+    successToast('Application submitted successfully!');
     return { success: true };
   } catch (err) {
     errorToast(err.message);
@@ -193,8 +196,8 @@ export const useGetAppliedJobs = async (candidateId, dispatch) => {
 
     // Fetch applied job IDs
     const applicationsQuery = query(
-      collection(db, "applications"),
-      where("candidateId", "==", candidateId),
+      collection(db, 'applications'),
+      where('candidateId', '==', candidateId),
     );
     const querySnapshot = await getDocs(applicationsQuery);
     const applications = querySnapshot.docs.map((doc) => ({
@@ -206,7 +209,7 @@ export const useGetAppliedJobs = async (candidateId, dispatch) => {
     // Fetch job details for each job ID
     const jobDetailsPromises = applications.map(
       async ({ jobId, appliedAt }) => {
-        const jobDocRef = doc(db, "jobs", jobId);
+        const jobDocRef = doc(db, 'jobs', jobId);
         const jobDocSnap = await getDoc(jobDocRef);
         if (jobDocSnap.exists()) {
           return { id: jobId, appliedAt, status, ...jobDocSnap.data() };
@@ -221,7 +224,7 @@ export const useGetAppliedJobs = async (candidateId, dispatch) => {
 
     dispatch(setAppliedJobs(jobDetails));
   } catch (err) {
-    console.error("Failed to fetch applied jobs:", err);
+    console.error('Failed to fetch applied jobs:', err);
   }
 };
 
@@ -229,13 +232,13 @@ export const useGetCompanyJobListings = async (employerId) => {
   try {
     // Validate employerId before making the query
     if (!employerId) {
-      console.warn("useGetCompanyJobListings: employerId is undefined or null");
+      console.warn('useGetCompanyJobListings: employerId is undefined or null');
       return { jobs: [] };
     }
 
-    const jobsRef = collection(db, "jobs");
+    const jobsRef = collection(db, 'jobs');
 
-    const q = query(jobsRef, where("employerId", "==", employerId));
+    const q = query(jobsRef, where('employerId', '==', employerId));
 
     const querySnapshot = await getDocs(q);
 
@@ -250,7 +253,7 @@ export const useGetCompanyJobListings = async (employerId) => {
 
     return { jobs };
   } catch (error) {
-    console.error("Error getting employer jobs:", error);
+    console.error('Error getting employer jobs:', error);
     throw error;
   }
 };
@@ -259,18 +262,18 @@ export const useSaveJob = async (userId, jobId) => {
   try {
     // Validate required parameters
     if (!userId) {
-      throw new Error("User ID is required");
+      throw new Error('User ID is required');
     }
 
     if (!jobId) {
-      throw new Error("Job ID is required");
+      throw new Error('Job ID is required');
     }
 
     // First check if the job is already saved
     const q = query(
-      collection(db, "saved_jobs"),
-      where("userId", "==", userId),
-      where("jobId", "==", jobId),
+      collection(db, 'saved_jobs'),
+      where('userId', '==', userId),
+      where('jobId', '==', jobId),
     );
     const querySnapshot = await getDocs(q);
 
@@ -287,12 +290,12 @@ export const useSaveJob = async (userId, jobId) => {
       savedAt: new Date().toISOString(),
     };
 
-    const docRef = await addDoc(collection(db, "saved_jobs"), savedJob);
-    successToast("Job Saved Successfully");
+    const docRef = await addDoc(collection(db, 'saved_jobs'), savedJob);
+    successToast('Job Saved Successfully');
     return { id: docRef.id, jobId, ...savedJob };
   } catch (error) {
-    console.error("Error saving job:", error);
-    errorToast("Failed to save Job, Please try again");
+    console.error('Error saving job:', error);
+    errorToast('Failed to save Job, Please try again');
     throw error;
   }
 };
@@ -301,17 +304,17 @@ export const useUnsaveJob = async (userId, jobId) => {
   try {
     // Validate required parameters
     if (!userId) {
-      throw new Error("User ID is required");
+      throw new Error('User ID is required');
     }
 
     if (!jobId) {
-      throw new Error("Job ID is required");
+      throw new Error('Job ID is required');
     }
 
     const q = query(
-      collection(db, "saved_jobs"),
-      where("userId", "==", userId),
-      where("jobId", "==", jobId),
+      collection(db, 'saved_jobs'),
+      where('userId', '==', userId),
+      where('jobId', '==', jobId),
     );
     const querySnapshot = await getDocs(q);
 
@@ -320,15 +323,15 @@ export const useUnsaveJob = async (userId, jobId) => {
     }
 
     const deletePromises = querySnapshot.docs.map((docSnapshot) =>
-      deleteDoc(doc(db, "saved_jobs", docSnapshot.id)),
+      deleteDoc(doc(db, 'saved_jobs', docSnapshot.id)),
     );
 
     await Promise.all(deletePromises);
-    successToast("Successfully unsaved job");
+    successToast('Successfully unsaved job');
     return true;
   } catch (error) {
-    console.error("Error unsaving job:", error);
-    errorToast("Error unsaving job");
+    console.error('Error unsaving job:', error);
+    errorToast('Error unsaving job');
     throw error;
   }
 };
@@ -338,8 +341,8 @@ export const useGetSavedJobs = async (userId) => {
     if (!userId) return [];
 
     const q = query(
-      collection(db, "saved_jobs"),
-      where("userId", "==", userId),
+      collection(db, 'saved_jobs'),
+      where('userId', '==', userId),
     );
     const querySnapshot = await getDocs(q);
 
@@ -349,7 +352,7 @@ export const useGetSavedJobs = async (userId) => {
     for (const docSnapshot of querySnapshot.docs) {
       const savedJob = docSnapshot.data();
       promises.push(
-        getDoc(doc(db, "jobs", savedJob.jobId)).then((jobDoc) => {
+        getDoc(doc(db, 'jobs', savedJob.jobId)).then((jobDoc) => {
           if (jobDoc.exists()) {
             savedJobs.push({
               id: docSnapshot.id,
@@ -365,7 +368,7 @@ export const useGetSavedJobs = async (userId) => {
     await Promise.all(promises);
     return savedJobs;
   } catch (error) {
-    console.error("Error fetching saved jobs:", error);
+    console.error('Error fetching saved jobs:', error);
     throw error;
   }
 };
@@ -374,7 +377,7 @@ export const useJobViewIncrement = (jobId, user) => {
   const isTracking = useRef(false);
 
   useEffect(() => {
-    if (!user || !jobId || user.userType !== "Candidate") return;
+    if (!user || !jobId || user.userType !== 'Candidate') return;
     const trackJobView = async () => {
       if (isTracking?.current) return;
       isTracking.current = true;
@@ -389,17 +392,17 @@ export const useJobViewIncrement = (jobId, user) => {
         const viewDoc = await getDoc(viewDocRef);
         if (viewDoc.exists()) return;
 
-        console.log("trackJobView is being called :>> ");
+        console.log('trackJobView is being called :>> ');
 
-        const jobRef = doc(db, "jobs", jobId);
+        const jobRef = doc(db, 'jobs', jobId);
         // Increment viewCount
         await updateDoc(jobRef, { viewCount: increment(1) });
         // Record view in jobViews subcollection, creating jobViews if needed
         await setDoc(viewDocRef, { userId: user.uid, timestamp: Date.now() });
-        sessionStorage.setItem(sessionKey, "true");
+        sessionStorage.setItem(sessionKey, 'true');
         console.log(`View count incremented for job ${jobId}`);
       } catch (error) {
-        console.error("Error incrementing view count:", error);
+        console.error('Error incrementing view count:', error);
       } finally {
         isTracking.current = false; // Reset tracking flag
       }
@@ -413,12 +416,12 @@ export const useFetchEmployerJobs = async (employerId) => {
   try {
     // Validate employerId before making the query
     if (!employerId) {
-      console.warn("useFetchEmployerJobs: employerId is undefined or null");
+      console.warn('useFetchEmployerJobs: employerId is undefined or null');
       return [];
     }
 
-    const jobsRef = collection(db, "jobs");
-    const q = query(jobsRef, where("employerId", "==", employerId));
+    const jobsRef = collection(db, 'jobs');
+    const q = query(jobsRef, where('employerId', '==', employerId));
     const querySnapshot = await getDocs(q);
 
     const jobs = [];
@@ -428,7 +431,7 @@ export const useFetchEmployerJobs = async (employerId) => {
 
     return jobs; // Returns an array of jobs
   } catch (error) {
-    console.error("Error fetching jobs:", error);
+    console.error('Error fetching jobs:', error);
     throw error;
   }
 };
@@ -443,18 +446,18 @@ export const useFetchEmployerJobsPaginated = async (
     // Validate employerId before making the query
     if (!employerId) {
       console.warn(
-        "useFetchEmployerJobsPaginated: employerId is undefined or null",
+        'useFetchEmployerJobsPaginated: employerId is undefined or null',
       );
       return { jobs: [], totalJobs: 0, totalPages: 0 };
     }
 
-    const jobsRef = collection(db, "jobs");
+    const jobsRef = collection(db, 'jobs');
 
     // Create base query for employer's jobs
     let q = query(
       jobsRef,
-      where("employerId", "==", employerId),
-      orderBy("createdAt", "desc"),
+      where('employerId', '==', employerId),
+      orderBy('createdAt', 'desc'),
     );
 
     const querySnapshot = await getDocs(q);
@@ -489,7 +492,7 @@ export const useFetchEmployerJobsPaginated = async (
       currentPage: page,
     };
   } catch (error) {
-    console.error("Error fetching paginated employer jobs:", error);
+    console.error('Error fetching paginated employer jobs:', error);
     throw error;
   }
 };
@@ -504,7 +507,7 @@ export const useFetchApplications = (employerId, selectedJobId, refreshKey) => {
       try {
         // Validate employerId before making any queries
         if (!employerId) {
-          console.warn("useFetchApplications: employerId is undefined or null");
+          console.warn('useFetchApplications: employerId is undefined or null');
           setApplications([]);
           setLoading(false);
           return;
@@ -515,14 +518,14 @@ export const useFetchApplications = (employerId, selectedJobId, refreshKey) => {
         if (selectedJobId) {
           // Fetch applications for the selected job
           applicationsQuery = query(
-            collection(db, "applications"),
-            where("jobId", "==", selectedJobId),
+            collection(db, 'applications'),
+            where('jobId', '==', selectedJobId),
           );
         } else {
           // First fetch all jobs for this employer
           const jobsQuery = query(
-            collection(db, "jobs"),
-            where("employerId", "==", employerId),
+            collection(db, 'jobs'),
+            where('employerId', '==', employerId),
           );
           const jobsSnapshot = await getDocs(jobsQuery);
           const jobIds = jobsSnapshot.docs.map((doc) => doc.id);
@@ -536,8 +539,8 @@ export const useFetchApplications = (employerId, selectedJobId, refreshKey) => {
 
           // Then fetch all applications for these job IDs
           applicationsQuery = query(
-            collection(db, "applications"),
-            where("jobId", "in", jobIds),
+            collection(db, 'applications'),
+            where('jobId', 'in', jobIds),
           );
         }
 
@@ -551,7 +554,7 @@ export const useFetchApplications = (employerId, selectedJobId, refreshKey) => {
         const applicationsWithDetails = await Promise.all(
           applicationsData.map(async (app) => {
             // Fetch candidate document
-            const candidateDocRef = doc(db, "users", app.candidateId);
+            const candidateDocRef = doc(db, 'users', app.candidateId);
             const candidateSnapshot = await getDoc(candidateDocRef);
             const candidateData = candidateSnapshot.exists()
               ? candidateSnapshot.data()
@@ -562,9 +565,9 @@ export const useFetchApplications = (employerId, selectedJobId, refreshKey) => {
             if (app.resumeId) {
               const resumeDocRef = doc(
                 db,
-                "users",
+                'users',
                 app.candidateId,
-                "resumes",
+                'resumes',
                 app.resumeId,
               );
               const resumeSnapshot = await getDoc(resumeDocRef);
@@ -580,7 +583,7 @@ export const useFetchApplications = (employerId, selectedJobId, refreshKey) => {
             return {
               ...app,
               candidate:
-                candidateData && candidateData.userType === "Candidate"
+                candidateData && candidateData.userType === 'Candidate'
                   ? candidateData
                   : {},
               resume: resumeData,
@@ -590,7 +593,7 @@ export const useFetchApplications = (employerId, selectedJobId, refreshKey) => {
 
         setApplications(applicationsWithDetails);
       } catch (error) {
-        console.error("Error fetching applications:", error);
+        console.error('Error fetching applications:', error);
       } finally {
         setLoading(false);
       }
@@ -609,16 +612,16 @@ export const useFetchApplications = (employerId, selectedJobId, refreshKey) => {
 
 export const updateApplicationStatus = async (applicationId, newStatus) => {
   try {
-    const applicationRef = doc(db, "applications", applicationId);
+    const applicationRef = doc(db, 'applications', applicationId);
     await updateDoc(applicationRef, {
       status: newStatus,
       updatedAt: Date.now(),
     });
-    successToast("Application status updated");
+    successToast('Application status updated');
     return { success: true };
   } catch (error) {
     errorToast("Couldn't change application status, please try again");
-    console.error("Error updating application status:", error);
+    console.error('Error updating application status:', error);
     return { success: false, error: error.message };
   }
 };
@@ -631,12 +634,12 @@ export const createJobAlert = async (
 ) => {
   try {
     if (!userId) {
-      errorToast("You need to login as a candidate to create job alerts");
+      errorToast('You need to login as a candidate to create job alerts');
       return;
     }
-    const userDoc = await getDoc(doc(db, "users", userId));
-    if (!userDoc.exists() || userDoc.data().userType !== "Candidate") {
-      errorToast("Only candidates can create job alerts.");
+    const userDoc = await getDoc(doc(db, 'users', userId));
+    if (!userDoc.exists() || userDoc.data().userType !== 'Candidate') {
+      errorToast('Only candidates can create job alerts.');
       return;
     }
     const alertRef = await addDoc(collection(db, `users/${userId}/jobAlerts`), {
@@ -644,12 +647,12 @@ export const createJobAlert = async (
       categories,
       locations,
       createdAt: Timestamp.now(),
-      status: "active",
+      status: 'active',
     });
     return { id: alertRef.id, success: true };
   } catch (error) {
-    console.error("Error creating job alert:", error);
-    errorToast("Error creating job alert:", error);
+    console.error('Error creating job alert:', error);
+    errorToast('Error creating job alert:', error);
     return { success: false, error: error.message };
   }
 };
@@ -657,36 +660,36 @@ export const createJobAlert = async (
 export const deleteJob = async (jobId, employerId) => {
   try {
     if (!jobId) {
-      throw new Error("Job ID is required");
+      throw new Error('Job ID is required');
     }
 
     if (!employerId) {
-      throw new Error("Employer ID is required");
+      throw new Error('Employer ID is required');
     }
 
     // Verify the user is an employer
-    const userDoc = await getDoc(doc(db, "users", employerId));
+    const userDoc = await getDoc(doc(db, 'users', employerId));
     if (!userDoc.exists()) {
-      throw new Error("User not found");
+      throw new Error('User not found');
     }
 
     const userData = userDoc.data();
-    if (userData.userType !== "Employer" && userData.userType !== "Admin") {
-      throw new Error("Only employers or admins can delete job postings");
+    if (userData.userType !== 'Employer' && userData.userType !== 'Admin') {
+      throw new Error('Only employers or admins can delete job postings');
     }
 
     // Verify the job exists and belongs to the employer
-    const jobRef = doc(db, "jobs", jobId);
+    const jobRef = doc(db, 'jobs', jobId);
     const jobDoc = await getDoc(jobRef);
 
     if (!jobDoc.exists()) {
-      throw new Error("Job not found");
+      throw new Error('Job not found');
     }
 
     const jobData = jobDoc.data();
     // If user is Employer, ensure they own the job. Admins can delete any job.
-    if (userData.userType === "Employer" && jobData.employerId !== employerId) {
-      throw new Error("You can only delete your own job postings");
+    if (userData.userType === 'Employer' && jobData.employerId !== employerId) {
+      throw new Error('You can only delete your own job postings');
     }
 
     // Start batch operations for atomic deletion
@@ -694,8 +697,8 @@ export const deleteJob = async (jobId, employerId) => {
 
     // 1. Delete all applications for this job
     const applicationsQuery = query(
-      collection(db, "applications"),
-      where("jobId", "==", jobId),
+      collection(db, 'applications'),
+      where('jobId', '==', jobId),
     );
     const applicationsSnapshot = await getDocs(applicationsQuery);
     applicationsSnapshot.docs.forEach((doc) => {
@@ -704,8 +707,8 @@ export const deleteJob = async (jobId, employerId) => {
 
     // 2. Delete all saved job entries for this job
     const savedJobsQuery = query(
-      collection(db, "saved_jobs"),
-      where("jobId", "==", jobId),
+      collection(db, 'saved_jobs'),
+      where('jobId', '==', jobId),
     );
     const savedJobsSnapshot = await getDocs(savedJobsQuery);
     savedJobsSnapshot.docs.forEach((doc) => {
@@ -725,7 +728,7 @@ export const deleteJob = async (jobId, employerId) => {
     // Execute all deletions in a single batch
     await batch.commit();
 
-    successToast("Job and all related data deleted successfully");
+    successToast('Job and all related data deleted successfully');
     return {
       success: true,
       deletedCount: {
@@ -735,8 +738,8 @@ export const deleteJob = async (jobId, employerId) => {
       },
     };
   } catch (error) {
-    console.error("Error deleting job:", error);
-    errorToast(error.message || "Failed to delete job");
+    console.error('Error deleting job:', error);
+    errorToast(error.message || 'Failed to delete job');
     return { success: false, error: error.message };
   }
 };
@@ -744,35 +747,36 @@ export const deleteJob = async (jobId, employerId) => {
 export const updateJob = async (jobId, updateData) => {
   try {
     if (!jobId) {
-      throw new Error("Job ID is required");
+      throw new Error('Job ID is required');
     }
 
     if (!updateData || Object.keys(updateData).length === 0) {
-      throw new Error("Update data is required");
+      throw new Error('Update data is required');
     }
 
     // Verify the job exists
-    const jobRef = doc(db, "jobs", jobId);
+    const jobRef = doc(db, 'jobs', jobId);
     const jobDoc = await getDoc(jobRef);
 
     if (!jobDoc.exists()) {
-      throw new Error("Job not found");
+      throw new Error('Job not found');
     }
 
-    // Prepare the update data with timestamp
     const updatePayload = {
-      ...updateData,
+      ...Object.fromEntries(
+        Object.entries(updateData).filter(([, v]) => v !== undefined),
+      ),
       updatedAt: Date.now(),
     };
 
     // Update the job document
     await updateDoc(jobRef, updatePayload);
 
-    successToast("Job updated successfully");
+    successToast('Job updated successfully');
     return { success: true };
   } catch (error) {
-    console.error("Error updating job:", error);
-    errorToast(error.message || "Failed to update job");
+    console.error('Error updating job:', error);
+    errorToast(error.message || 'Failed to update job');
     return { success: false, error: error.message };
   }
 };
@@ -789,8 +793,8 @@ export const fetchJobViews = async (selectedJob) => {
     }
   });
   const sortedMonths = Object.keys(monthMap).sort((a, b) => {
-    const [ma, ya] = a.split(" ");
-    const [mb, yb] = b.split(" ");
+    const [ma, ya] = a.split(' ');
+    const [mb, yb] = b.split(' ');
     return new Date(`${ma} 1, ${ya}`) - new Date(`${mb} 1, ${yb}`);
   });
   return {
@@ -808,13 +812,13 @@ export const useGetJobListingPaginated = (params = {}) => {
   const {
     page = 1,
     limit: itemsPerPage = 20,
-    search = "",
-    location = "",
-    category = "",
-    jobType = "",
-    datePosted = "",
-    sortOrder = "",
-    status = "active",
+    search = '',
+    location = '',
+    category = '',
+    jobType = '',
+    datePosted = '',
+    sortOrder = '',
+    status = 'active',
   } = params;
 
   useEffect(() => {
@@ -828,17 +832,17 @@ export const useGetJobListingPaginated = (params = {}) => {
 
         // Filter by status (exclude archived jobs)
         if (status) {
-          constraints.push(where("status", "!=", "archived"));
+          constraints.push(where('status', '!=', 'archived'));
         }
 
         // Apply sorting
-        if (sortOrder === "asc") {
-          constraints.push(orderBy("createdAt", "asc"));
-        } else if (sortOrder === "desc") {
-          constraints.push(orderBy("createdAt", "desc"));
+        if (sortOrder === 'asc') {
+          constraints.push(orderBy('createdAt', 'asc'));
+        } else if (sortOrder === 'desc') {
+          constraints.push(orderBy('createdAt', 'desc'));
         } else {
           // Default sorting by creation date (newest first)
-          constraints.push(orderBy("createdAt", "desc"));
+          constraints.push(orderBy('createdAt', 'desc'));
         }
 
         // Apply pagination
@@ -847,7 +851,7 @@ export const useGetJobListingPaginated = (params = {}) => {
         constraints.push(limit(offset + itemsPerPage));
 
         // Create the query
-        const jobsRef = collection(db, "jobs");
+        const jobsRef = collection(db, 'jobs');
         const jobsQuery = query(jobsRef, ...constraints);
         const jobsSnap = await getDocs(jobsQuery);
 
@@ -890,17 +894,17 @@ export const useGetJobListingPaginated = (params = {}) => {
           let filterDate;
 
           switch (datePosted) {
-            case "today":
+            case 'today':
               filterDate = new Date(
                 now.getFullYear(),
                 now.getMonth(),
                 now.getDate(),
               );
               break;
-            case "week":
+            case 'week':
               filterDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
               break;
-            case "month":
+            case 'month':
               filterDate = new Date(
                 now.getFullYear(),
                 now.getMonth() - 1,
@@ -921,8 +925,8 @@ export const useGetJobListingPaginated = (params = {}) => {
 
         // Get total count for pagination
         const totalQuery = query(
-          collection(db, "jobs"),
-          where("status", "!=", "archived"),
+          collection(db, 'jobs'),
+          where('status', '!=', 'archived'),
         );
         const totalSnap = await getDocs(totalQuery);
         const totalCount = totalSnap.docs.length;
@@ -934,7 +938,7 @@ export const useGetJobListingPaginated = (params = {}) => {
         await Promise.all(
           employerIds.map(async (uid) => {
             try {
-              const userSnap = await getDoc(doc(db, "users", uid));
+              const userSnap = await getDoc(doc(db, 'users', uid));
               if (userSnap.exists()) {
                 const d = userSnap.data();
                 employerMap[uid] = {
@@ -960,7 +964,7 @@ export const useGetJobListingPaginated = (params = {}) => {
         setTotalItems(totalCount);
       } catch (err) {
         setError(err);
-        console.error("Error fetching jobs:", err);
+        console.error('Error fetching jobs:', err);
       } finally {
         setLoading(false);
       }
@@ -998,17 +1002,17 @@ export const useGetAppliedJobsPaginated = async (
   try {
     if (!candidateId) {
       console.warn(
-        "useGetAppliedJobsPaginated: candidateId is undefined or null",
+        'useGetAppliedJobsPaginated: candidateId is undefined or null',
       );
       return { jobs: [], totalJobs: 0, totalPages: 0 };
     }
 
     // Fetch applied job IDs with pagination
-    const applicationsRef = collection(db, "applications");
+    const applicationsRef = collection(db, 'applications');
     const applicationsQuery = query(
       applicationsRef,
-      where("candidateId", "==", candidateId),
-      orderBy("appliedAt", "desc"),
+      where('candidateId', '==', candidateId),
+      orderBy('appliedAt', 'desc'),
     );
 
     const querySnapshot = await getDocs(applicationsQuery);
@@ -1045,7 +1049,7 @@ export const useGetAppliedJobsPaginated = async (
     // Fetch job details for paginated applications
     const jobDetailsPromises = paginatedApplications.map(
       async ({ jobId, appliedAt, status }) => {
-        const jobDocRef = doc(db, "jobs", jobId);
+        const jobDocRef = doc(db, 'jobs', jobId);
         const jobDocSnap = await getDoc(jobDocRef);
         if (jobDocSnap.exists()) {
           return {
@@ -1071,7 +1075,7 @@ export const useGetAppliedJobsPaginated = async (
       currentPage: page,
     };
   } catch (error) {
-    console.error("Error fetching paginated applied jobs:", error);
+    console.error('Error fetching paginated applied jobs:', error);
     throw error;
   }
 };
@@ -1084,16 +1088,16 @@ export const useGetSavedJobsPaginated = async (
 ) => {
   try {
     if (!userId) {
-      console.warn("useGetSavedJobsPaginated: userId is undefined or null");
+      console.warn('useGetSavedJobsPaginated: userId is undefined or null');
       return { jobs: [], totalJobs: 0, totalPages: 0 };
     }
 
     // Fetch saved job IDs with pagination
-    const savedJobsRef = collection(db, "saved_jobs");
+    const savedJobsRef = collection(db, 'saved_jobs');
     const savedJobsQuery = query(
       savedJobsRef,
-      where("userId", "==", userId),
-      orderBy("savedAt", "desc"),
+      where('userId', '==', userId),
+      orderBy('savedAt', 'desc'),
     );
 
     const querySnapshot = await getDocs(savedJobsQuery);
@@ -1126,7 +1130,7 @@ export const useGetSavedJobsPaginated = async (
     // Fetch job details for paginated saved jobs
     const jobDetailsPromises = paginatedSavedJobs.map(
       async ({ jobId, savedAt }) => {
-        const jobDocRef = doc(db, "jobs", jobId);
+        const jobDocRef = doc(db, 'jobs', jobId);
         const jobDocSnap = await getDoc(jobDocRef);
         if (jobDocSnap.exists()) {
           return {
@@ -1152,7 +1156,7 @@ export const useGetSavedJobsPaginated = async (
       currentPage: page,
     };
   } catch (error) {
-    console.error("Error fetching paginated saved jobs:", error);
+    console.error('Error fetching paginated saved jobs:', error);
     throw error;
   }
 };
@@ -1164,15 +1168,15 @@ export const checkIfJobApplied = async (candidateId, jobId) => {
     }
 
     const applicationsQuery = query(
-      collection(db, "applications"),
-      where("candidateId", "==", candidateId),
-      where("jobId", "==", jobId),
+      collection(db, 'applications'),
+      where('candidateId', '==', candidateId),
+      where('jobId', '==', jobId),
     );
     const querySnapshot = await getDocs(applicationsQuery);
 
     return !querySnapshot.empty;
   } catch (error) {
-    console.error("Error checking if job is applied:", error);
+    console.error('Error checking if job is applied:', error);
     return false;
   }
 };
@@ -1184,15 +1188,15 @@ export const checkIfJobSaved = async (userId, jobId) => {
     }
 
     const savedJobsQuery = query(
-      collection(db, "saved_jobs"),
-      where("userId", "==", userId),
-      where("jobId", "==", jobId),
+      collection(db, 'saved_jobs'),
+      where('userId', '==', userId),
+      where('jobId', '==', jobId),
     );
     const querySnapshot = await getDocs(savedJobsQuery);
 
     return !querySnapshot.empty;
   } catch (error) {
-    console.error("Error checking if job is saved:", error);
+    console.error('Error checking if job is saved:', error);
     return false;
   }
 };

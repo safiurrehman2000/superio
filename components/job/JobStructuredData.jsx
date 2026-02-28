@@ -30,6 +30,8 @@ export default function JobStructuredData({ job }) {
       "@type": "Place",
       address: {
         "@type": "PostalAddress",
+        ...(job.address && { streetAddress: job.address }),
+        ...(job.postalCode && { postalCode: job.postalCode }),
         addressLocality: job.location,
         addressCountry: "BE",
       },
@@ -42,6 +44,17 @@ export default function JobStructuredData({ job }) {
 
     directApply: true,
   };
+
+  if (job.salary) {
+    jsonLd.baseSalary = {
+      "@type": "MonetaryAmount",
+      currency: "EUR",
+      value: {
+        "@type": "QuantitativeValue",
+        value: job.salary,
+      },
+    };
+  }
 
   return (
     <script

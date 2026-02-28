@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
-import { TbBookmark, TbBookmarkFilled } from "react-icons/tb";
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { TbBookmark, TbBookmarkFilled } from 'react-icons/tb';
 
 import {
   checkIfJobApplied,
@@ -12,15 +12,15 @@ import {
   useSaveJob,
   useUnsaveJob,
   useJobViewIncrement,
-} from "@/APIs/auth/jobs";
+} from '@/APIs/auth/jobs';
 
-import ApplyJobModalContent from "@/components/job-single-pages/shared-components/ApplyJobModalContent";
-import JobDetailsDescriptions from "@/components/job-single-pages/shared-components/JobDetailsDescriptions";
-import SocialTwo from "@/components/job-single-pages/social/SocialTwo";
-import CompnayInfo from "@/components/job-single-pages/shared-components/CompanyInfo";
-import CircularLoader from "@/components/circular-loading/CircularLoading";
-import { errorToast } from "@/utils/toast";
-import { formatString } from "@/utils/constants";
+import ApplyJobModalContent from '@/components/job-single-pages/shared-components/ApplyJobModalContent';
+import JobDetailsDescriptions from '@/components/job-single-pages/shared-components/JobDetailsDescriptions';
+import SocialTwo from '@/components/job-single-pages/social/SocialTwo';
+import CompnayInfo from '@/components/job-single-pages/shared-components/CompanyInfo';
+import CircularLoader from '@/components/circular-loading/CircularLoading';
+import { errorToast } from '@/utils/toast';
+import { formatString } from '@/utils/constants';
 
 export default function JobClient({ job }) {
   const router = useRouter();
@@ -42,7 +42,7 @@ export default function JobClient({ job }) {
 
   const toggleBookmark = async () => {
     if (!selector?.user?.uid) {
-      errorToast("Log in om een job op te slaan");
+      errorToast('Log in om een job op te slaan');
       return;
     }
 
@@ -59,43 +59,49 @@ export default function JobClient({ job }) {
 
   const logoGetter = (logo) => {
     const logoSrc = logo
-      ? logo.startsWith("data:image")
+      ? logo.startsWith('data:image')
         ? logo
         : `data:image/jpeg;base64,${logo}`
-      : "/images/resource/company-6.png";
+      : '/images/resource/company-6.png';
     setLogo(logoSrc);
   };
 
   return (
-    <section className="job-detail-section">
-      <div className="job-detail-outer">
-        <div className="auto-container">
-          <div className="row">
-
-            {/* CONTENT */}
-            <div className="content-column col-lg-8 col-md-12 col-sm-12">
-              <div className="job-block-outer">
-                <div className="job-block-seven style-two">
-                  <div className="inner-box">
-                    <div className="content">
+    <section className='job-detail-section'>
+      <div className='job-detail-outer'>
+        <div className='auto-container'>
+          <div className='row'>
+            <div className='content-column col-lg-8 col-md-12 col-sm-12'>
+              <div className='job-block-outer'>
+                <div className='job-block-seven style-two'>
+                  <div className='inner-box'>
+                    <div className='content'>
                       <h4>{formatString(job.title)}</h4>
 
-                      <ul className="job-info">
+                      <ul className='job-info'>
                         <li>
-                          <span className="icon flaticon-briefcase"></span>
+                          <span className='icon flaticon-briefcase'></span>
                           {formatString(job.jobType)}
                         </li>
                         <li>
-                          <span className="icon flaticon-map-locator"></span>
-                          {formatString(job.location)}
+                          <span className='icon flaticon-map-locator'></span>
+                          {[job.address, job.postalCode, job.location]
+                            .filter(Boolean)
+                            .join(', ') || formatString(job.location)}
                         </li>
                         <li>
-                          <span className="icon flaticon-clock-3"></span>
+                          <span className='icon flaticon-clock-3'></span>
                           {new Date(job.createdAt).toLocaleDateString()}
                         </li>
+                        {job.salary && (
+                          <li>
+                            <span className='icon flaticon-money'></span>
+                            {job.salary}
+                          </li>
+                        )}
                       </ul>
 
-                      <ul className="job-other-info">
+                      <ul className='job-other-info'>
                         {job?.tags?.map((tag, i) => (
                           <li key={i} className={tag.styleClass}>
                             {tag.type}
@@ -115,34 +121,32 @@ export default function JobClient({ job }) {
                 schedule={job.schedule}
               />
 
-              <div className="other-options">
-                <div className="social-share">
+              <div className='other-options'>
+                <div className='social-share'>
                   <h5>Deel deze vacature</h5>
                   <SocialTwo />
                 </div>
               </div>
             </div>
-
             {/* SIDEBAR */}
-            <div className="sidebar-column col-lg-4 col-md-12 col-sm-12">
-              <aside className="sidebar">
-
-                <div className="btn-box">
+            <div className='sidebar-column col-lg-4 col-md-12 col-sm-12'>
+              <aside className='sidebar'>
+                <div className='btn-box'>
                   {selector.user ? (
                     <button
-                      disabled={hasApplied || selector.userType === "Employer"}
+                      disabled={hasApplied || selector.userType === 'Employer'}
                       className={`theme-btn ${
-                        hasApplied ? "btn-style-three" : "btn-style-one"
+                        hasApplied ? 'btn-style-three' : 'btn-style-one'
                       }`}
-                      data-bs-toggle="modal"
-                      data-bs-target="#applyJobModal"
+                      data-bs-toggle='modal'
+                      data-bs-target='#applyJobModal'
                     >
-                      {hasApplied ? "Gesolliciteerd" : "Solliciteer"}
+                      {hasApplied ? 'Gesolliciteerd' : 'Solliciteer'}
                     </button>
                   ) : (
                     <button
                       onClick={() => router.push(`/login?id=${job.id}`)}
-                      className="theme-btn btn-style-one"
+                      className='theme-btn btn-style-one'
                     >
                       Log in om te solliciteren
                     </button>
@@ -150,13 +154,13 @@ export default function JobClient({ job }) {
 
                   <button
                     onClick={toggleBookmark}
-                    className="bookmark-btn"
+                    className='bookmark-btn'
                     disabled={bookmarkLoading}
                   >
                     {bookmarkLoading ? (
-                      <CircularLoader strokeColor="#000" />
+                      <CircularLoader strokeColor='#000' />
                     ) : isBookmarked ? (
-                      <TbBookmarkFilled style={{ color: "#FA5508" }} />
+                      <TbBookmarkFilled style={{ color: '#FA5508' }} />
                     ) : (
                       <TbBookmark />
                     )}
@@ -165,19 +169,19 @@ export default function JobClient({ job }) {
 
                 {/* MODAL */}
                 <div
-                  className="modal fade"
-                  id="applyJobModal"
-                  tabIndex="-1"
-                  aria-hidden="true"
+                  className='modal fade'
+                  id='applyJobModal'
+                  tabIndex='-1'
+                  aria-hidden='true'
                 >
-                  <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-                    <div className="apply-modal-content modal-content">
-                      <div className="text-center">
-                        <h3 className="title">Solliciteer op vacature</h3>
+                  <div className='modal-dialog modal-dialog-centered modal-dialog-scrollable'>
+                    <div className='apply-modal-content modal-content'>
+                      <div className='text-center'>
+                        <h3 className='title'>Solliciteer op vacature</h3>
                         <button
-                          type="button"
-                          className="closed-modal"
-                          data-bs-dismiss="modal"
+                          type='button'
+                          className='closed-modal'
+                          data-bs-dismiss='modal'
                         />
                       </div>
                       <ApplyJobModalContent />
@@ -186,25 +190,25 @@ export default function JobClient({ job }) {
                 </div>
 
                 {/* COMPANY */}
-                <div className="sidebar-widget company-widget">
-                  <div className="widget-content">
-                    <div className="company-title">
-                      <div className="company-logo">
+                <div className='sidebar-widget company-widget'>
+                  <div className='widget-content'>
+                    <div className='company-title'>
+                      <div className='company-logo'>
                         <Image
                           width={54}
                           height={54}
-                          src={logo || "/images/resource/company-6.png"}
+                          src={logo || '/images/resource/company-6.png'}
                           alt={job.company}
                           style={{
-                            borderRadius: "50%",
-                            objectFit: "cover",
+                            borderRadius: '50%',
+                            objectFit: 'cover',
                           }}
                         />
                       </div>
-                      <h5 className="company-name">{job.company}</h5>
+                      <h5 className='company-name'>{job.company}</h5>
                       <a
                         href={`/company-profile/${job.employerId}`}
-                        className="profile-link"
+                        className='profile-link'
                       >
                         Bekijk bedrijfsprofiel
                       </a>
@@ -216,12 +220,12 @@ export default function JobClient({ job }) {
                     />
 
                     {job.link && (
-                      <div className="btn-box">
+                      <div className='btn-box'>
                         <a
                           href={job.link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="theme-btn btn-style-three"
+                          target='_blank'
+                          rel='noopener noreferrer'
+                          className='theme-btn btn-style-three'
                         >
                           Bezoek Website
                         </a>
@@ -229,7 +233,6 @@ export default function JobClient({ job }) {
                     )}
                   </div>
                 </div>
-
               </aside>
             </div>
           </div>

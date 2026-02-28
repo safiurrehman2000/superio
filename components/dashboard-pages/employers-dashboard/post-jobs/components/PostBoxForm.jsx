@@ -1,25 +1,25 @@
-"use client";
+'use client';
 
-import { useUpdateIsFirstTime } from "@/APIs/auth/database";
-import { useCreateJobPost } from "@/APIs/auth/jobs";
-import AutoSelect from "@/components/autoselect/AutoSelect";
-import CircularLoader from "@/components/circular-loading/CircularLoading";
-import { InputField } from "@/components/inputfield/InputField";
-import { SelectField } from "@/components/selectfield/SelectField";
-import { TextAreaField } from "@/components/textarea/TextArea";
-import { addEmployerJob } from "@/slices/userSlice";
-import { JOB_TYPE_OPTIONS } from "@/utils/constants";
-import { useStates, useSectors } from "@/utils/hooks/useOptionsFromFirebase";
+import { useUpdateIsFirstTime } from '@/APIs/auth/database';
+import { useCreateJobPost } from '@/APIs/auth/jobs';
+import AutoSelect from '@/components/autoselect/AutoSelect';
+import CircularLoader from '@/components/circular-loading/CircularLoading';
+import { InputField } from '@/components/inputfield/InputField';
+import { SelectField } from '@/components/selectfield/SelectField';
+import { TextAreaField } from '@/components/textarea/TextArea';
+import { addEmployerJob } from '@/slices/userSlice';
+import { JOB_TYPE_OPTIONS } from '@/utils/constants';
+import { useStates, useSectors } from '@/utils/hooks/useOptionsFromFirebase';
 import {
   checkSubscriptionStatus,
   validateJobPostingPermission,
   refreshSubscriptionStatus,
-} from "@/utils/subscription";
-import { useRouter } from "next/navigation";
-import React, { useState } from "react";
-import { FormProvider, useForm } from "react-hook-form";
-import { useDispatch, useSelector } from "react-redux";
-import { Timestamp } from "firebase/firestore";
+} from '@/utils/subscription';
+import { useRouter } from 'next/navigation';
+import React, { useState } from 'react';
+import { FormProvider, useForm } from 'react-hook-form';
+import { useDispatch, useSelector } from 'react-redux';
+import { Timestamp } from 'firebase/firestore';
 
 const PostBoxForm = () => {
   const dispatch = useDispatch();
@@ -36,19 +36,22 @@ const PostBoxForm = () => {
   const { options: sectors, loading: sectorsLoading } = useSectors();
 
   const methods = useForm({
-    mode: "onSubmit",
+    mode: 'onSubmit',
     defaultValues: {
-      name: "",
-      description: "",
-      functionDescription: "",
-      profileSkills: "",
-      offer: "",
-      schedule: "",
-      email: "",
-      "job-type": "",
-      state: "",
+      name: '',
+      description: '',
+      functionDescription: '',
+      profileSkills: '',
+      offer: '',
+      schedule: '',
+      email: '',
+      'job-type': '',
+      state: '',
+      address: '',
+      postalCode: '',
+      salary: '',
       tags: [],
-      status: "active",
+      status: 'active',
     },
   });
   const {
@@ -60,7 +63,7 @@ const PostBoxForm = () => {
 
   React.useEffect(() => {
     if (selector?.user?.email) {
-      setValue("email", selector.user.email);
+      setValue('email', selector.user.email);
     }
   }, [selector?.user?.email, setValue]);
 
@@ -73,7 +76,7 @@ const PostBoxForm = () => {
 
         // Check job posting permission
         const permission = await validateJobPostingPermission(
-          selector.user.uid
+          selector.user.uid,
         );
         setJobPostingPermission(permission);
       }
@@ -88,7 +91,7 @@ const PostBoxForm = () => {
 
     try {
       if (!selector?.user?.uid) {
-        throw new Error("User authentication data is missing.");
+        throw new Error('User authentication data is missing.');
       }
 
       // Validate job posting permission before proceeding
@@ -107,16 +110,19 @@ const PostBoxForm = () => {
         schedule: data.schedule,
         email: data.email,
         location: data.state,
-        jobType: data["job-type"],
+        jobType: data['job-type'],
+        address: data.address || undefined,
+        postalCode: data.postalCode || undefined,
+        salary: data.salary || undefined,
         tags: data.tags.map((tag) => tag.value),
-        status: "active",
+        status: 'active',
         employerId: selector?.user?.uid,
         isOpen: false,
 
         // 🔑 Important for Google Jobs
         createdAt: Timestamp.now(),
         validThrough: Timestamp.fromDate(
-          new Date(Date.now() + 90 * 24 * 60 * 60 * 1000)
+          new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
         ),
 
         viewCount: 0,
@@ -124,7 +130,7 @@ const PostBoxForm = () => {
 
       const { success, error: apiError, job } = await useCreateJobPost(payload);
       if (!success) {
-        throw new Error(apiError || "Failed to create job post.");
+        throw new Error(apiError || 'Failed to create job post.');
       }
       if (job) {
         dispatch(addEmployerJob(job));
@@ -132,12 +138,12 @@ const PostBoxForm = () => {
 
       await useUpdateIsFirstTime(selector.user.uid, { hasPostedJob: true });
 
-      push("/employers-dashboard/dashboard");
+      push('/employers-dashboard/dashboard');
     } catch (err) {
       setError(
-        err.message || "An unexpected error occurred. Please try again."
+        err.message || 'An unexpected error occurred. Please try again.',
       );
-      console.error("Error during job post creation:", err);
+      console.error('Error during job post creation:', err);
       setLoading(false);
     }
   };
@@ -158,14 +164,14 @@ const PostBoxForm = () => {
         setSubscriptionStatus(status);
 
         const permission = await validateJobPostingPermission(
-          selector.user.uid
+          selector.user.uid,
         );
         setJobPostingPermission(permission);
       } else {
-        setError("Failed to refresh subscription status");
+        setError('Failed to refresh subscription status');
       }
     } catch (error) {
-      setError("Error refreshing subscription status");
+      setError('Error refreshing subscription status');
     } finally {
       setRefreshing(false);
     }
@@ -175,126 +181,151 @@ const PostBoxForm = () => {
     <FormProvider {...methods}>
       <form
         onKeyDown={(e) => {
-          if (e.key === "Enter") {
+          if (e.key === 'Enter') {
             handleSubmit(onSubmit)();
           }
         }}
         onSubmit={handleSubmit(onSubmit)}
-        className="default-form"
+        className='default-form'
       >
-        <div className="row">
+        <div className='row'>
           {/* <!-- Input --> */}
-          <div className="form-group col-lg-12 col-md-12">
+          <div className='form-group col-lg-12 col-md-12'>
             <InputField
-              name="name"
-              placeholder="Titel"
+              name='name'
+              placeholder='Titel'
               required
-              label="Functietitel"
-              fieldType="Text"
+              label='Functietitel'
+              fieldType='Text'
               disabled={isFormDisabled}
             />
           </div>
 
           {/* <!-- About Company --> */}
-          <div className="form-group col-lg-12 col-md-12">
+          <div className='form-group col-lg-12 col-md-12'>
             <TextAreaField
-              label="Beschrijving"
-              name="description"
-              placeholder="Beschrijf het type job"
+              label='Beschrijving'
+              name='description'
+              placeholder='Beschrijf het type job'
               required
               disabled={isFormDisabled}
             />
           </div>
 
           {/* <!-- Functieomschrijving --> */}
-          <div className="form-group col-lg-12 col-md-12">
+          <div className='form-group col-lg-12 col-md-12'>
             <TextAreaField
-              label="Functieomschrijving"
-              name="functionDescription"
-              placeholder="Beschrijf de functie in detail"
+              label='Functieomschrijving'
+              name='functionDescription'
+              placeholder='Beschrijf de functie in detail'
               required
               disabled={isFormDisabled}
             />
           </div>
 
           {/* <!-- Profiel/vaardigheden --> */}
-          <div className="form-group col-lg-12 col-md-12">
+          <div className='form-group col-lg-12 col-md-12'>
             <TextAreaField
-              label="Profiel/vaardigheden"
-              name="profileSkills"
-              placeholder="Beschrijf het gewenste profiel en vaardigheden"
+              label='Profiel/vaardigheden'
+              name='profileSkills'
+              placeholder='Beschrijf het gewenste profiel en vaardigheden'
               required
               disabled={isFormDisabled}
             />
           </div>
 
           {/* <!-- Aanbod --> */}
-          <div className="form-group col-lg-12 col-md-12">
+          <div className='form-group col-lg-12 col-md-12'>
             <TextAreaField
-              label="Aanbod"
-              name="offer"
-              placeholder="Beschrijf wat je aanbiedt (salaris, voordelen, etc.)"
+              label='Aanbod'
+              name='offer'
+              placeholder='Beschrijf wat je aanbiedt (salaris, voordelen, etc.)'
               required
               disabled={isFormDisabled}
             />
           </div>
 
           {/* <!-- Uurrooster --> */}
-          <div className="form-group col-lg-12 col-md-12">
+          <div className='form-group col-lg-12 col-md-12'>
             <TextAreaField
-              label="Uurrooster"
-              name="schedule"
-              placeholder="Beschrijf het uurrooster en werktijden"
+              label='Uurrooster'
+              name='schedule'
+              placeholder='Beschrijf het uurrooster en werktijden'
               required
               disabled={isFormDisabled}
             />
           </div>
 
           {/* <!-- Input --> */}
-          <div className="form-group col-lg-6 col-md-12">
+          <div className='form-group col-lg-6 col-md-12'>
             <InputField
-              label="E-mail"
-              name="email"
-              placeholder="kandidaat@email.be"
+              label='E-mail'
+              name='email'
+              placeholder='kandidaat@email.be'
               required
-              fieldType="Email"
+              fieldType='Email'
               disabled={true}
             />
           </div>
 
-          <div className="form-group col-lg-6 col-md-12">
+          <div className='form-group col-lg-6 col-md-12'>
             <SelectField
-              label="Type contract"
-              name="job-type"
+              label='Type contract'
+              name='job-type'
               options={JOB_TYPE_OPTIONS}
-              placeholder="Selecteer een Job Type"
+              placeholder='Selecteer een Job Type'
               required
               disabled={isFormDisabled}
             />
           </div>
 
           {/* <!-- Input --> */}
-          <div className="form-group col-lg-6 col-md-12">
+          <div className='form-group col-lg-6 col-md-12'>
             <SelectField
-              label="Gemeente"
-              name="state"
+              label='Gemeente'
+              name='state'
               options={states}
               placeholder={
-                statesLoading
-                  ? "Gemeentes laden..."
-                  : "Selecteer een gemeente"
+                statesLoading ? 'Gemeentes laden...' : 'Selecteer een gemeente'
               }
               required
               disabled={isFormDisabled || statesLoading}
             />
           </div>
-          <div className="form-group col-lg-6 col-md-12">
+          <div className='form-group col-lg-6 col-md-12'>
+            <InputField
+              label='Postcode'
+              name='postalCode'
+              placeholder='bijv. 2000'
+              fieldType='Text'
+              disabled={isFormDisabled}
+            />
+          </div>
+          <div className='form-group col-lg-12 col-md-12'>
+            <InputField
+              label='Adres'
+              name='address'
+              placeholder='Straat en huisnummer'
+              fieldType='Text'
+              disabled={isFormDisabled}
+            />
+          </div>
+          <div className='form-group col-lg-6 col-md-12'>
+            <InputField
+              label='Salaris (optioneel)'
+              name='salary'
+              placeholder='bijv. 15-20 €/uur of 2500 €/maand'
+              fieldType='Text'
+              disabled={isFormDisabled}
+            />
+          </div>
+          <div className='form-group col-lg-6 col-md-12'>
             <AutoSelect
-              label="Job Tags"
+              label='Job Tags'
               placeholder={
-                sectorsLoading ? "Sectoren laden..." : "Selecteer Tags"
+                sectorsLoading ? 'Sectoren laden...' : 'Selecteer Tags'
               }
-              name="tags"
+              name='tags'
               options={sectors}
               required
               disabled={isFormDisabled || sectorsLoading}
@@ -303,53 +334,53 @@ const PostBoxForm = () => {
 
           {/* Display subscription and job posting status */}
           {jobPostingPermission && (
-            <div className="form-group col-12">
+            <div className='form-group col-12'>
               <div
                 className={`alert ${
                   jobPostingPermission.canPost
-                    ? "alert-success"
-                    : "alert-warning"
+                    ? 'alert-success'
+                    : 'alert-warning'
                 }`}
                 style={{
-                  padding: "12px 16px",
-                  borderRadius: "8px",
-                  marginBottom: "20px",
-                  border: "1px solid",
+                  padding: '12px 16px',
+                  borderRadius: '8px',
+                  marginBottom: '20px',
+                  border: '1px solid',
                   borderColor: jobPostingPermission.canPost
-                    ? "#d4edda"
-                    : "#fff3cd",
+                    ? '#d4edda'
+                    : '#fff3cd',
                   backgroundColor: jobPostingPermission.canPost
-                    ? "#d1ecf1"
-                    : "#fff3cd",
-                  color: jobPostingPermission.canPost ? "#0c5460" : "#856404",
+                    ? '#d1ecf1'
+                    : '#fff3cd',
+                  color: jobPostingPermission.canPost ? '#0c5460' : '#856404',
                 }}
               >
                 <strong>
                   {jobPostingPermission.canPost
-                    ? "✅ Can Post Job"
-                    : "⚠️ Cannot Post Job"}
+                    ? '✅ Can Post Job'
+                    : '⚠️ Cannot Post Job'}
                 </strong>
                 <br />
                 {jobPostingPermission.message}
                 {jobPostingPermission.subscriptionData && (
-                  <div style={{ marginTop: "8px", fontSize: "14px" }}>
+                  <div style={{ marginTop: '8px', fontSize: '14px' }}>
                     <strong>Subscription Details:</strong>
-                    <br />• Job Limit:{" "}
+                    <br />• Job Limit:{' '}
                     {jobPostingPermission.subscriptionData.jobLimit || 0}
-                    <br />• Jobs Posted:{" "}
+                    <br />• Jobs Posted:{' '}
                     {jobPostingPermission.subscriptionData.jobsPosted || 0}
-                    <br />• Remaining Jobs:{" "}
+                    <br />• Remaining Jobs:{' '}
                     {jobPostingPermission.subscriptionData.remainingJobs || 0}
                   </div>
                 )}
                 {!jobPostingPermission.canPost && (
-                  <div style={{ marginTop: "8px" }}>
+                  <div style={{ marginTop: '8px' }}>
                     <a
-                      href="/employers-dashboard/packages"
+                      href='/employers-dashboard/packages'
                       style={{
-                        color: "#856404",
-                        textDecoration: "underline",
-                        fontWeight: "bold",
+                        color: '#856404',
+                        textDecoration: 'underline',
+                        fontWeight: 'bold',
                       }}
                     >
                       View subscription plans
@@ -358,18 +389,18 @@ const PostBoxForm = () => {
                       onClick={handleRefreshSubscription}
                       disabled={refreshing}
                       style={{
-                        marginLeft: "10px",
-                        padding: "4px 8px",
-                        fontSize: "12px",
-                        backgroundColor: "#007bff",
-                        color: "white",
-                        border: "none",
-                        borderRadius: "4px",
-                        cursor: refreshing ? "not-allowed" : "pointer",
+                        marginLeft: '10px',
+                        padding: '4px 8px',
+                        fontSize: '12px',
+                        backgroundColor: '#007bff',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: refreshing ? 'not-allowed' : 'pointer',
                         opacity: refreshing ? 0.6 : 1,
                       }}
                     >
-                      {refreshing ? "Refreshing..." : "Refresh Status"}
+                      {refreshing ? 'Refreshing...' : 'Refresh Status'}
                     </button>
                   </div>
                 )}
@@ -379,34 +410,34 @@ const PostBoxForm = () => {
 
           {/* Display error message if exists */}
           {error && (
-            <div className="form-group col-12" style={{ color: "red" }}>
+            <div className='form-group col-12' style={{ color: 'red' }}>
               {error}
             </div>
           )}
 
           {/* <!-- Input --> */}
-          <div className="form-group col-lg-12 col-md-12 text-right">
+          <div className='form-group col-lg-12 col-md-12 text-right'>
             <button
               className={`theme-btn ${
-                loading ? "btn-style-three" : "btn-style-one"
+                loading ? 'btn-style-three' : 'btn-style-one'
               }`}
               disabled={isFormDisabled}
               style={{
                 opacity: isFormDisabled ? 0.6 : 1,
-                cursor: isFormDisabled ? "not-allowed" : "pointer",
+                cursor: isFormDisabled ? 'not-allowed' : 'pointer',
               }}
             >
               {loading ? (
                 <div
-                  style={{ display: "flex", alignItems: "center", gap: "10px" }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
                 >
                   <CircularLoader />
                   <p style={{ margin: 0 }}>Job Plaatsen...</p>
                 </div>
               ) : jobPostingPermission?.canPost ? (
-                "Job Plaatsen"
+                'Job Plaatsen'
               ) : (
-                "Kan Geen Job Plaatsen"
+                'Kan Geen Job Plaatsen'
               )}
             </button>
           </div>
