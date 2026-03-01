@@ -26,7 +26,7 @@ const EditJobPost = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const { push } = useRouter();
-  const selector = useSelector((store: any) => store.user);
+  const selector = useSelector((store) => store.user);
   const [jobs, setJobs] = useState([]);
   const [jobsLoading, setJobsLoading] = useState(true);
   const [jobsError, setJobsError] = useState(null);
@@ -391,6 +391,9 @@ const EditJobPost = () => {
                       name='postalCode'
                       placeholder='e.g. 2000'
                       fieldType='Text'
+                      required={false}
+                      defaultValue=''
+                      disabled={false}
                     />
                   </div>
 
@@ -400,6 +403,9 @@ const EditJobPost = () => {
                       name='address'
                       placeholder='Straat en huisnummer'
                       fieldType='Text'
+                      required={false}
+                      defaultValue=''
+                      disabled={false}
                     />
                   </div>
 
@@ -409,6 +415,9 @@ const EditJobPost = () => {
                       name='salary'
                       placeholder='e.g. 15-20 €/uur of 2500 €/maand'
                       fieldType='Text'
+                      required={false}
+                      defaultValue=''
+                      disabled={false}
                     />
                   </div>
 

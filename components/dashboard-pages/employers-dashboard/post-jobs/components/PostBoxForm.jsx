@@ -194,10 +194,11 @@ const PostBoxForm = () => {
             <InputField
               name='name'
               placeholder='Titel'
-              required
+              required={true}
               label='Functietitel'
               fieldType='Text'
               disabled={isFormDisabled}
+              defaultValue=''
             />
           </div>
 
@@ -262,9 +263,10 @@ const PostBoxForm = () => {
               label='E-mail'
               name='email'
               placeholder='kandidaat@email.be'
-              required
+              required={true}
               fieldType='Email'
               disabled={true}
+              defaultValue=''
             />
           </div>
 
@@ -298,6 +300,8 @@ const PostBoxForm = () => {
               name='postalCode'
               placeholder='bijv. 2000'
               fieldType='Text'
+              required={false}
+              defaultValue=''
               disabled={isFormDisabled}
             />
           </div>
@@ -307,6 +311,8 @@ const PostBoxForm = () => {
               name='address'
               placeholder='Straat en huisnummer'
               fieldType='Text'
+              required={false}
+              defaultValue=''
               disabled={isFormDisabled}
             />
           </div>
@@ -316,6 +322,8 @@ const PostBoxForm = () => {
               name='salary'
               placeholder='bijv. 15-20 €/uur of 2500 €/maand'
               fieldType='Text'
+              required={false}
+              defaultValue=''
               disabled={isFormDisabled}
             />
           </div>

@@ -28,7 +28,8 @@
     "**/*.ts",
     "**/*.tsx",
     "components/dashboard-pages/employers-dashboard/manage-jobs/components/DeleteModal.jsx",
-    "app/admin-dashboard/edit-users/page.jsx"
+    "app/admin-dashboard/edit-users/page.jsx",
+    "components/admin-dashboard-pages/edit-job-posts/components/EditJobPost.jsx"
   ],
   "exclude": ["node_modules"]
 }
