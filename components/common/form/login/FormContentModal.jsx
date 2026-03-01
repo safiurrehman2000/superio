@@ -1,24 +1,24 @@
-"use client";
-import { useLogIn } from "@/APIs/auth/auth";
-import CircularLoader from "@/components/circular-loading/CircularLoading";
-import { useState } from "react";
-import { FormProvider, useForm } from "react-hook-form";
-import PropTypes from "prop-types";
+'use client';
+import { useLogIn } from '@/APIs/auth/auth';
+import CircularLoader from '@/components/circular-loading/CircularLoading';
+import { useState } from 'react';
+import { FormProvider, useForm } from 'react-hook-form';
+import PropTypes from 'prop-types';
 
-import { InputField } from "@/components/inputfield/InputField";
-import { LOGO } from "@/utils/constants";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { setAuthPersistence } from "@/APIs/auth/auth";
+import { InputField } from '@/components/inputfield/InputField';
+import { LOGO } from '@/utils/constants';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { setAuthPersistence } from '@/APIs/auth/auth';
 
 const FormContentModal = ({ onLoginSuccess }) => {
   const methods = useForm({
     defaultValues: {
-      email: "",
-      password: "",
+      email: '',
+      password: '',
       rememberMe: false,
     },
-    mode: "onChange",
+    mode: 'onChange',
   });
   const {
     handleSubmit,
@@ -28,17 +28,17 @@ const FormContentModal = ({ onLoginSuccess }) => {
     watch,
   } = methods;
   const [isLoading, setIsLoading] = useState(false);
-  const [apiError, setApiError] = useState("");
+  const [apiError, setApiError] = useState('');
   const { push } = useRouter();
 
   const onSubmit = async (data) => {
     setIsLoading(true);
-    setApiError("");
+    setApiError('');
 
     try {
       await setAuthPersistence(data.rememberMe);
     } catch (e) {
-      setApiError("Kon authenticatiepersistentie niet instellen.");
+      setApiError('Kon authenticatiepersistentie niet instellen.');
       setIsLoading(false);
       return;
     }
@@ -52,8 +52,8 @@ const FormContentModal = ({ onLoginSuccess }) => {
         });
       } else if (result.apiError) {
         setApiError(result.apiError);
-        setValue("email", "");
-        setValue("password", "");
+        setValue('email', '');
+        setValue('password', '');
         methods.reset();
       }
       setIsLoading(false);
@@ -65,93 +65,96 @@ const FormContentModal = ({ onLoginSuccess }) => {
   };
 
   return (
-    <div className="form-inner">
-      <div className="text-center mb-5">
-        <Image width={154} height={50} src={LOGO} alt="De Flexijobber Logo" />
+    <div className='form-inner'>
+      <div className='text-center mb-5'>
+        <Image width={154} height={50} src={LOGO} alt='De Flexijobber Logo' />
       </div>
-      <h3 className="text-center">Login bij De Flexijobber</h3>
+      <h3 className='text-center'>Login bij De Flexijobber</h3>
 
       <FormProvider {...methods}>
-        <form onSubmit={handleSubmit(onSubmit)} method="post">
+        <form onSubmit={handleSubmit(onSubmit)} method='post'>
           <InputField
-            label="E-mail"
-            name="email"
-            type="email"
-            placeholder="E-mail"
+            label='E-mail'
+            name='email'
+            type='email'
+            placeholder='E-mail'
             required
-            fieldType="Email"
+            fieldType='Email'
           />
           <InputField
-            label="Wachtwoord"
-            name="password"
-            type="password"
-            placeholder="Wachtwoord"
+            label='Wachtwoord'
+            name='password'
+            type='password'
+            placeholder='Wachtwoord'
             required
-            fieldType="Password"
+            fieldType='Password'
           />
-          <div className="form-group">
-            <div className="field-outer">
-              <div className="input-group checkboxes square">
+          <div className='form-group'>
+            <div className='field-outer'>
+              <div className='input-group checkboxes square'>
                 <input
-                  {...register("rememberMe")}
-                  type="checkbox"
-                  name="rememberMe"
-                  id="remember"
-                  checked={watch("rememberMe")}
-                  onChange={(e) => setValue("rememberMe", e.target.checked)}
+                  {...register('rememberMe')}
+                  type='checkbox'
+                  name='rememberMe'
+                  id='remember'
+                  checked={watch('rememberMe')}
+                  onChange={(e) => setValue('rememberMe', e.target.checked)}
                 />
-                <label htmlFor="remember" className="remember">
-                  <span className="custom-checkbox"></span> Onthoud mij
+                <label htmlFor='remember' className='remember'>
+                  <span className='custom-checkbox'></span> Onthoud mij
                 </label>
               </div>
-              <a href="/forgot-password" className="pwd">
+              <a href='/forgot-password' className='pwd'>
                 Wachtwoord vergeten?
               </a>
             </div>
           </div>
-          <div className="form-group">
+          <div className='form-group'>
             <button
               disabled={isLoading || !isValid}
               className={`theme-btn btn-style-one btn ${
-                isLoading ? "btn-secondary disabled" : ""
+                isLoading ? 'btn-secondary disabled' : ''
               } `}
-              type="submit"
+              type='submit'
             >
               {isLoading ? (
-                <div className="d-flex justify-content-center gap-2">
+                <div className='d-flex justify-content-center gap-2'>
                   <CircularLoader />
-                  <p className={`${isLoading ? "text-black" : "text-white"}`}>
+                  <p className={`${isLoading ? 'text-black' : 'text-white'}`}>
                     Inloggen...
                   </p>
                 </div>
               ) : (
-                "Inloggen"
+                'Inloggen'
               )}
             </button>
             {apiError && (
-              <p className="text-center text-danger mt-2">{apiError}</p>
+              <p className='text-center text-danger mt-2'>{apiError}</p>
             )}
           </div>
         </form>
       </FormProvider>
 
-      <div className="bottom-box">
-        <div className="text d-flex justify-content-center">
+      <div className='bottom-box'>
+        <div
+          className='text d-flex justify-content-center'
+          style={{ fontWeight: 700 }}
+        >
           Nog geen account?&nbsp;
           <div
-            style={{ cursor: "pointer" }}
+            style={{ cursor: 'pointer', fontWeight: 700 }}
             onClick={() => {
-              if (typeof window !== "undefined") {
-                const modalEl = document.getElementById("loginPopupModal");
+              if (typeof window !== 'undefined') {
+                const modalEl = document.getElementById('loginPopupModal');
 
-                const backdrop = document.querySelector(".modal-backdrop");
+                const backdrop = document.querySelector('.modal-backdrop');
                 if (backdrop) {
                   backdrop.remove();
                 }
 
-                document.body.classList.remove("modal-open");
-                document.body.style.overflow = "";
-                document.body.style.paddingRight = "";
+                document.body.classList.remove('modal-open');
+                document.body.style.overflow = '';
+                document.body.style.paddingRight = '';
 
                 if (window.bootstrap && modalEl) {
                   const modal = window.bootstrap.Modal.getInstance(modalEl);
@@ -161,7 +164,7 @@ const FormContentModal = ({ onLoginSuccess }) => {
                 }
               }
 
-              push("/register");
+              push('/register');
             }}
           >
             Registreren
