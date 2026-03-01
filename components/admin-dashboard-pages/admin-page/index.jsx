@@ -1,14 +1,14 @@
-"use client";
-import DefaulHeader2 from "@/components/header/DefaulHeader2";
-import LoginPopup from "../../common/form/login/LoginPopup";
-import DashboardAdmin from "../../header/DashboardAdminSidebar";
-import MobileMenu from "../../header/MobileMenu";
-import BreadCrumb from "../../dashboard-pages/BreadCrumb";
-import CopyrightFooter from "../../dashboard-pages/CopyrightFooter";
-import MenuToggler from "../../dashboard-pages/MenuToggler";
-import Admin from "./components/Admin";
-import { useState, useEffect } from "react";
-import AdminSkeleton from "./components/AdminSkeleton";
+'use client';
+import DefaulHeader2 from '@/components/header/DefaulHeader2';
+import LoginPopup from '../../common/form/login/LoginPopup';
+import DashboardAdmin from '../../header/DashboardAdminSidebar';
+import MobileMenu from '../../header/MobileMenu';
+import BreadCrumb from '../../dashboard-pages/BreadCrumb';
+import CopyrightFooter from '../../dashboard-pages/CopyrightFooter';
+import MenuToggler from '../../dashboard-pages/MenuToggler';
+import Admin from './components/Admin';
+import { useState, useEffect } from 'react';
+import AdminSkeleton from './components/AdminSkeleton';
 
 const Index = () => {
   const [loading, setLoading] = useState(true);
@@ -17,7 +17,7 @@ const Index = () => {
     return () => clearTimeout(timer);
   }, []);
   return (
-    <div className="page-wrapper dashboard">
+    <div className='page-wrapper dashboard'>
       {/* <!-- Header Span for hight --> */}
 
       <LoginPopup />
@@ -32,15 +32,15 @@ const Index = () => {
       {/* <!-- End User Sidebar Menu --> */}
 
       {/* <!-- Dashboard --> */}
-      <section className="user-dashboard">
-        <div className="dashboard-outer">
-          <BreadCrumb title="Admin Panel" />
+      <section className='user-dashboard'>
+        <div className='dashboard-outer'>
+          <BreadCrumb title='Admin Panel' />
           {/* breadCrumb */}
 
           <MenuToggler />
           {/* Collapsible sidebar button */}
 
-          <div className="row">
+          <div className='row'>
             {loading ? <AdminSkeleton /> : <Admin loading={loading} />}
           </div>
           {/* End .row profile and notificatins */}

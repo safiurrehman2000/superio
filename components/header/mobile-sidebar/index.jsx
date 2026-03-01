@@ -1,12 +1,6 @@
 "use client";
 
 import { Sidebar, Menu, MenuItem, SubMenu } from "react-pro-sidebar";
-import { useState } from "react";
-import { FormProvider, useForm } from "react-hook-form";
-import { reauthenticateUser, useDeleteUserAccount } from "@/APIs/auth/database";
-import { errorToast } from "@/utils/toast";
-import CircularLoader from "../../circular-loading/CircularLoading";
-import { InputField } from "../../inputfield/InputField";
 import { useSignOut } from "@/APIs/auth/auth";
 
 import mobileMenuData from "../../../data/mobileMenuData";
@@ -21,36 +15,8 @@ import { useSelector } from "react-redux";
 
 const Index = () => {
   const router = useRouter();
+  const pathname = usePathname();
   const { user, userType } = useSelector((state) => state.user);
-  const [loading, setLoading] = useState(false);
-  const [showModal, setShowModal] = useState(false);
-
-  const methods = useForm({
-    mode: "onChange",
-    defaultValues: {
-      password: "",
-    },
-  });
-  const { handleSubmit } = methods;
-
-  const onSubmit = async (data) => {
-    if (!user) {
-      errorToast("Log in om uw account te verwijderen");
-      return;
-    }
-    try {
-      const { success } = await reauthenticateUser(
-        user?.email,
-        data?.password,
-        setLoading
-      );
-      if (success) {
-        await useDeleteUserAccount(user?.uid);
-      }
-    } catch (err) {
-      console.error("Account deletion process failed:", err);
-    }
-  };
 
   // Filter menu items based on user type and authentication status
   const filteredMenuData = mobileMenuData
@@ -61,10 +27,8 @@ const Index = () => {
           ...item,
           items: item.items.filter((menuItem) => {
             if (user) {
-              // User is logged in - show items with showWhenLoggedIn flag
               return menuItem.showWhenLoggedIn;
             } else {
-              // User is not logged in - show items with showWhenLoggedOut flag
               return menuItem.showWhenLoggedOut;
             }
           }),
@@ -89,13 +53,13 @@ const Index = () => {
 
       return item;
     })
-    .filter(Boolean); // Remove null items
+    .filter(Boolean);
 
   const handleMenuItemClick = (menuItem, event) => {
     if (menuItem.isAction && menuItem.routePath === "delete-account") {
       event?.preventDefault();
       event?.stopPropagation();
-      setShowModal(true);
+      window.dispatchEvent(new CustomEvent("openDeleteAccountModal"));
     } else if (menuItem.isAction && menuItem.name === "Uitloggen") {
       event?.preventDefault();
       event?.stopPropagation();
@@ -119,7 +83,7 @@ const Index = () => {
           {filteredMenuData.map((item) => (
             <SubMenu
               className={
-                isActiveParentChaild(item.items, usePathname())
+                isActiveParentChaild(item.items, pathname)
                   ? "menu-active"
                   : ""
               }
@@ -130,7 +94,7 @@ const Index = () => {
                 <MenuItem
                   onClick={(event) => handleMenuItemClick(menuItem, event)}
                   className={
-                    isActiveLink(menuItem.routePath, usePathname())
+                    isActiveLink(menuItem.routePath, pathname)
                       ? "menu-active-link"
                       : ""
                   }
@@ -145,82 +109,6 @@ const Index = () => {
       </Sidebar>
 
       <SidebarFooter />
-
-      {/* Delete Account Modal */}
-      <div
-        className={`modal fade ${showModal ? "show d-block" : ""}`}
-        id="deleteProfileModal"
-        tabIndex="-1"
-        aria-labelledby="deleteProfileModalLabel"
-        aria-hidden={!showModal}
-      >
-        <div className="modal-dialog modal-dialog-centered">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h5 className="modal-title" id="deleteProfileModalLabel">
-                Account Verwijdering Bevestigen
-              </h5>
-              <button
-                type="button"
-                className="btn-close"
-                onClick={() => setShowModal(false)}
-                aria-label="Sluiten"
-              ></button>
-            </div>
-            <div className="modal-body">
-              Weet je zeker dat je je account wilt verwijderen? Deze actie kan
-              niet ongedaan worden gemaakt.
-            </div>
-            <FormProvider {...methods}>
-              <form className="p-3" onSubmit={handleSubmit(onSubmit)}>
-                <InputField
-                  name="password"
-                  fieldType="Password"
-                  label="Voer je wachtwoord in om te bevestigen"
-                  required
-                  placeholder={"Voer je wachtwoord in"}
-                />
-                <div className="modal-footer">
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    onClick={() => setShowModal(false)}
-                  >
-                    Annuleren
-                  </button>
-                  <button
-                    type="submit"
-                    className={`btn ${
-                      loading ? "btn-style-three" : "btn btn-danger"
-                    } `}
-                    style={{ padding: "6px 12px" }}
-                  >
-                    {loading ? (
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "10px",
-                        }}
-                      >
-                        {" "}
-                        <CircularLoader />{" "}
-                        <p style={{ margin: 0, padding: 0 }}>
-                          {" "}
-                          Verwijderen....{" "}
-                        </p>
-                      </div>
-                    ) : (
-                      "Account Verwijderen"
-                    )}
-                  </button>
-                </div>
-              </form>
-            </FormProvider>
-          </div>
-        </div>
-      </div>
-      {showModal && <div className="modal-backdrop show fade"></div>}
     </div>
   );
 };

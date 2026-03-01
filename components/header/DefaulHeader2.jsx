@@ -12,7 +12,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSelector } from "react-redux";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { reauthenticateUser, useDeleteUserAccount } from "@/APIs/auth/database";
 import { errorToast } from "@/utils/toast";
@@ -22,6 +22,7 @@ import HeaderNavContent from "./HeaderNavContent";
 
 const DefaulHeader2 = () => {
   const selector = useSelector((store) => store.user);
+  const pathname = usePathname();
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
 
@@ -51,6 +52,12 @@ const DefaulHeader2 = () => {
       console.error("Account deletion process failed:", err);
     }
   };
+
+  useEffect(() => {
+    const handler = () => setShowModal(true);
+    window.addEventListener("openDeleteAccountModal", handler);
+    return () => window.removeEventListener("openDeleteAccountModal", handler);
+  }, []);
 
   const logoSrc = selector.user?.logo
     ? selector.user.logo.startsWith("data:image")
@@ -140,9 +147,9 @@ const DefaulHeader2 = () => {
                 {candidateMenuData.map((item) => (
                   <li
                     className={`${
-                      isActiveLink(item.routePath, usePathname())
-                        ? "active"
-                        : ""
+              isActiveLink(item.routePath, pathname)
+                      ? "active"
+                      : ""
                     } mb-1`}
                     key={item.id}
                   >
@@ -182,7 +189,7 @@ const DefaulHeader2 = () => {
                 {employerMenuData.map((item) => (
                   <li
                     className={`${
-                      isActiveLink(item.routePath, usePathname())
+                      isActiveLink(item.routePath, pathname)
                         ? "active"
                         : ""
                     } mb-1`}
@@ -224,7 +231,7 @@ const DefaulHeader2 = () => {
                 {adminMenuData?.map((item) => (
                   <li
                     className={`${
-                      isActiveLink(item.routePath, usePathname())
+                      isActiveLink(item.routePath, pathname)
                         ? "active"
                         : ""
                     } mb-1`}

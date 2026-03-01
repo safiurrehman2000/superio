@@ -22,19 +22,10 @@ const CompanyInfo = ({ logoFn, companyId }) => {
     ? formatString(data.company_type[0].value)
     : "Not specified";
 
-  const phone = data?.phone || "Not provided";
-  const email = data?.email || "Not available";
-  const location = data?.company_location
-    ? formatString(data.company_location)
-    : "Location not specified";
-
   return (
     <ul className="company-info">
       <li>
         Primary industry: <span>{primaryIndustry}</span>
-      </li>
-      <li>
-        Location: <span>{location}</span>
       </li>
       {/* <li>
        Social media:

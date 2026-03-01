@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useState, useCallback } from "react";
+import "@/styles/customStyles.css";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter, usePathname } from "next/navigation";
 import {
@@ -148,11 +149,11 @@ const SubscriptionBanner = () => {
     <div
       style={{
         position: "fixed",
-        top: 0, // At the very top, below browser bar
+        top: 0,
         left: 0,
         right: 0,
         zIndex: 1000,
-        animation: "slideDown 0.3s ease-out",
+        animation: "subscription-slide-down 0.3s ease-out",
       }}
     >
       <div
@@ -317,18 +318,6 @@ const SubscriptionBanner = () => {
         </div>
       </div>
 
-      <style jsx>{`
-        @keyframes slideDown {
-          from {
-            opacity: 0;
-            transform: translateY(-100%);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-      `}</style>
     </div>
   );
 };

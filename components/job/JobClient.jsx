@@ -219,6 +219,21 @@ export default function JobClient({ job }) {
                       companyId={job.employerId}
                     />
 
+                    {[job.address, job.postalCode, job.location].some(
+                      Boolean,
+                    ) && (
+                      <ul className='company-info' style={{ marginTop: 8 }}>
+                        <li>
+                          Werkadres:{' '}
+                          <span>
+                            {[job.address, job.postalCode, job.location]
+                              .filter(Boolean)
+                              .join(', ') || formatString(job.location)}
+                          </span>
+                        </li>
+                      </ul>
+                    )}
+
                     {job.link && (
                       <div className='btn-box'>
                         <a

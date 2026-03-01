@@ -1,11 +1,7 @@
-import Admin from "@/components/admin-dashboard-pages/admin-page/index";
+import Admin from '@/components/admin-dashboard-pages/admin-page/index';
 
 const index = () => {
-  return (
-    <>
-      <Admin />
-    </>
-  );
+  return <Admin />;
 };
 
 export default index;

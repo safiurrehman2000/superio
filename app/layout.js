@@ -13,10 +13,6 @@ import WhatsAppWidget from "@/components/common/WhatsAppWidget";
 
 import RouteGuard from "./RouteGuard";
 
-if (typeof window !== "undefined") {
-  require("bootstrap/dist/js/bootstrap");
-}
-
 const siteUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://www.de-flexi-jobber.be";
 
 export default function RootLayout({ children }) {
@@ -25,10 +21,11 @@ export default function RootLayout({ children }) {
       duration: 1400,
       once: true,
     });
+    require("bootstrap/dist/js/bootstrap");
   }, []);
 
   return (
-    <html lang="nl">
+    <html lang="nl" translate="no" suppressHydrationWarning>
       <head>
         <link
           rel="stylesheet"
@@ -82,7 +79,7 @@ export default function RootLayout({ children }) {
         <link rel="canonical" href={siteUrl} />
       </head>
 
-      <body>
+      <body suppressHydrationWarning>
         <Provider store={store}>
           <Suspense fallback={<Loading />}>
             <RouteGuard>

@@ -198,3 +198,23 @@ Deep Blue – #0074E1 */
     min-width: 320px !important;
   }
 }
+
+@keyframes loading-bounce {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-1rem);
+  }
+}
+
+@keyframes subscription-slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

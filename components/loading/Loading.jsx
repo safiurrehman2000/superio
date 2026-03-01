@@ -1,4 +1,12 @@
 import React from "react";
+import "@/styles/customStyles.css";
+
+const dotStyle = (delay) => ({
+  width: "1rem",
+  height: "1rem",
+  animation: `loading-bounce 0.6s infinite alternate ${delay}`,
+  background: "#FA5508",
+});
 
 const Loading = () => {
   return (
@@ -7,45 +15,10 @@ const Loading = () => {
       style={{ height: "11rem" }}
     >
       <div className="d-flex gap-2">
-        {/* Animated circles */}
-        <div
-          className="rounded-circle"
-          style={{
-            width: "1rem",
-            height: "1rem",
-            animation: "bounce 0.6s infinite alternate",
-            background: "#FA5508",
-          }}
-        ></div>
-        <div
-          className="rounded-circle"
-          style={{
-            width: "1rem",
-            height: "1rem",
-            animation: "bounce 0.6s infinite alternate 0.2s",
-            background: "#FA5508",
-          }}
-        ></div>
-        <div
-          className="rounded-circle"
-          style={{
-            width: "1rem",
-            height: "1rem",
-            animation: "bounce 0.6s infinite alternate 0.4s",
-            background: "#FA5508",
-          }}
-        ></div>
+        <div className="rounded-circle" style={dotStyle("0s")} />
+        <div className="rounded-circle" style={dotStyle("0.2s")} />
+        <div className="rounded-circle" style={dotStyle("0.4s")} />
       </div>
-      <style jsx>{`
-        @keyframes bounce {
-          0% {
-            transform: translateY(0);
-          }
-          100% {
-            transform: translateY(-1rem);
-          }
-        }
-      `}</style>
     </div>
   );
 };

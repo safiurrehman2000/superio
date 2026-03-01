@@ -10,6 +10,7 @@ import { candidateMenuData, employerMenuData } from "@/utils/constants";
 import { useSelector } from "react-redux";
 const DashboardCandidatesHeader = () => {
   const [navbar, setNavbar] = useState(false);
+  const pathname = usePathname();
   const selector = useSelector((store) => store.user);
 
   const changeBackground = () => {
@@ -89,7 +90,7 @@ const DashboardCandidatesHeader = () => {
                   {candidateMenuData.map((item) => (
                     <li
                       className={`${
-                        isActiveLink(item.routePath, usePathname())
+                        isActiveLink(item.routePath, pathname)
                           ? "active"
                           : ""
                       } mb-1`}
@@ -106,7 +107,7 @@ const DashboardCandidatesHeader = () => {
                   {employerMenuData.map((item) => (
                     <li
                       className={`${
-                        isActiveLink(item.routePath, usePathname())
+                        isActiveLink(item.routePath, pathname)
                           ? "active"
                           : ""
                       } mb-1`}
