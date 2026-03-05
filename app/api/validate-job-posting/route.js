@@ -108,7 +108,9 @@ export async function POST(request) {
       jobsQuery.forEach((jobDoc) => {
         const jobData = jobDoc.data();
         const jobCreatedAt = jobData.createdAt
-          ? new Date(jobData.createdAt)
+          ? jobData.createdAt.toDate
+            ? jobData.createdAt.toDate()
+            : new Date(jobData.createdAt)
           : new Date(0);
 
         // Only count jobs created after the subscription started
