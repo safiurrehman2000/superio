@@ -1,41 +1,41 @@
 export const getFirebaseErrorMessage = (error) => {
-  let errorMessage = "Er is een fout opgetreden. Probeer het opnieuw.";
+  let errorMessage = 'Er is een fout opgetreden. Probeer het opnieuw.';
   switch (error.code) {
     // Registration/Sign-up errors
-    case "auth/email-already-in-use":
-      errorMessage = "Dit e-mailadres is al geregistreerd.";
+    case 'auth/email-already-in-use':
+      errorMessage = 'Dit e-mailadres is al geregistreerd.';
       break;
-    case "auth/invalid-email":
-      errorMessage = "Voer een geldig e-mailadres in.";
+    case 'auth/invalid-email':
+      errorMessage = 'Voer een geldig e-mailadres in.';
       break;
-    case "auth/weak-password":
-      errorMessage = "Wachtwoord is te zwak. Gebruik een sterker wachtwoord.";
+    case 'auth/weak-password':
+      errorMessage = 'Wachtwoord is te zwak. Gebruik een sterker wachtwoord.';
       break;
-    case "auth/operation-not-allowed":
-      errorMessage = "Deze bewerking is momenteel uitgeschakeld.";
+    case 'auth/operation-not-allowed':
+      errorMessage = 'Deze bewerking is momenteel uitgeschakeld.';
       break;
 
     // Login errors
-    case "auth/user-not-found":
-      errorMessage = "Geen account gevonden met dit e-mailadres.";
+    case 'auth/user-not-found':
+      errorMessage = 'Geen account gevonden met dit e-mailadres.';
       break;
-    case "auth/wrong-password":
-      errorMessage = "Onjuist wachtwoord. Probeer het opnieuw.";
+    case 'auth/wrong-password':
+      errorMessage = 'Onjuist wachtwoord. Probeer het opnieuw.';
       break;
-    case "auth/too-many-requests":
-      errorMessage = "Te veel pogingen. Probeer het later opnieuw.";
+    case 'auth/too-many-requests':
+      errorMessage = 'Te veel pogingen. Probeer het later opnieuw.';
       break;
 
     // Sign-out errors
-    case "auth/network-request-failed":
+    case 'auth/network-request-failed':
       errorMessage =
-        "Netwerkfout. Controleer uw verbinding en probeer het opnieuw.";
+        'Netwerkfout. Controleer uw verbinding en probeer het opnieuw.';
       break;
 
     // General errors
-    case "auth/invalid-credential":
+    case 'auth/invalid-credential':
       errorMessage =
-        "Ongeldige inloggegevens. Controleer uw e-mail en wachtwoord.";
+        'Ongeldige inloggegevens. Controleer uw e-mail en wachtwoord.';
       break;
     default:
       errorMessage = `Bewerking mislukt: ${error.message}`;
@@ -43,285 +43,299 @@ export const getFirebaseErrorMessage = (error) => {
   return errorMessage;
 };
 
-export const LOGO = "/images/logo-deflexijobber.png";
+export const LOGO = '/images/logo-deflexijobber.png';
 
 export const candidateMenuData = [
   {
     id: 2,
-    name: "Mijn Profiel",
-    icon: "la-user-tie",
-    routePath: "/candidates-dashboard/my-profile",
-    active: "",
+    name: 'Mijn Profiel',
+    icon: 'la-user-tie',
+    routePath: '/candidates-dashboard/my-profile',
+    active: '',
   },
 
   {
     id: 4,
-    name: "Gesolliciteerde Jobs",
-    icon: "la-briefcase",
-    routePath: "/candidates-dashboard/applied-jobs",
-    active: "",
+    name: 'Gesolliciteerde Jobs',
+    icon: 'la-briefcase',
+    routePath: '/candidates-dashboard/applied-jobs',
+    active: '',
   },
 
   {
     id: 6,
-    name: "Bewaarde Jobs",
-    icon: "la-bookmark-o",
-    routePath: "/candidates-dashboard/short-listed-jobs",
-    active: "",
+    name: 'Bewaarde Jobs',
+    icon: 'la-bookmark-o',
+    routePath: '/candidates-dashboard/short-listed-jobs',
+    active: '',
   },
   {
     id: 7,
-    name: "CV Beheer",
-    icon: "la la-file-invoice",
-    routePath: "/candidates-dashboard/cv-manager",
-    active: "",
+    name: 'CV Beheer',
+    icon: 'la la-file-invoice',
+    routePath: '/candidates-dashboard/cv-manager',
+    active: '',
   },
   {
     id: 8,
-    name: "Job Meldingen",
-    icon: "la-bell",
-    routePath: "/candidates-dashboard/job-alerts",
-    active: "",
+    name: 'Job Meldingen',
+    icon: 'la-bell',
+    routePath: '/candidates-dashboard/job-alerts',
+    active: '',
   },
   {
     id: 10,
-    name: "Wachtwoord Wijzigen",
-    icon: "la-lock",
-    routePath: "/candidates-dashboard/change-password",
-    active: "",
+    name: 'Wachtwoord Wijzigen',
+    icon: 'la-lock',
+    routePath: '/candidates-dashboard/change-password',
+    active: '',
   },
   {
     id: 11,
-    name: "Uitloggen",
-    icon: "la-sign-out",
-    routePath: "/login",
-    active: "",
+    name: 'Uitloggen',
+    icon: 'la-sign-out',
+    routePath: '/login',
+    active: '',
   },
   {
     id: 12,
-    name: "Profiel Verwijderen",
-    icon: "la-trash",
-    routePath: "/",
-    active: "",
+    name: 'Profiel Verwijderen',
+    icon: 'la-trash',
+    routePath: '/',
+    active: '',
   },
 ];
 
 export const adminMenuData = [
   {
     id: 1,
-    name: "Admin",
-    icon: "la-file-invoice",
-    routePath: "/admin-dashboard/admin-dashboard",
-    active: "",
+    name: 'Admin',
+    icon: 'la-file-invoice',
+    routePath: '/admin-dashboard/admin-dashboard',
+    active: '',
   },
   {
     id: 2,
-    name: "Jobs Bewerken",
-    icon: "la-edit",
-    routePath: "/admin-dashboard/edit-job-posts",
-    active: "",
+    name: 'Jobs Bewerken',
+    icon: 'la-edit',
+    routePath: '/admin-dashboard/edit-job-posts',
+    active: '',
   },
   {
     id: 3,
-    name: "Gebruikers Bewerken",
-    icon: "la-users",
-    routePath: "/admin-dashboard/edit-users",
-    active: "",
+    name: 'Gebruikers Bewerken',
+    icon: 'la-users',
+    routePath: '/admin-dashboard/edit-users',
+    active: '',
   },
   {
     id: 4,
-    name: "Job Plaatsen Voor Werkgever",
-    icon: "la-paper-plane",
-    routePath: "/admin-dashboard/post-job-for-employer",
-    active: "",
+    name: 'Job Plaatsen Voor Werkgever',
+    icon: 'la-paper-plane',
+    routePath: '/admin-dashboard/post-job-for-employer',
+    active: '',
   },
   {
     id: 5,
-    name: "Opties Beheren",
-    icon: "la-cog",
-    routePath: "/admin-dashboard/manage-options",
-    active: "",
+    name: 'Opties Beheren',
+    icon: 'la-cog',
+    routePath: '/admin-dashboard/manage-options',
+    active: '',
   },
   {
     id: 6,
-    name: "Prijzen Beheren",
-    icon: "la-credit-card",
-    routePath: "/admin-dashboard/manage-pricing",
-    active: "",
+    name: 'Prijzen Beheren',
+    icon: 'la-credit-card',
+    routePath: '/admin-dashboard/manage-pricing',
+    active: '',
   },
   {
     id: 7,
-    name: "Kortingscodes Beheren",
-    icon: "la-ticket-alt",
-    routePath: "/admin-dashboard/manage-coupons",
-    active: "",
+    name: 'Kortingscodes Beheren',
+    icon: 'la-ticket-alt',
+    routePath: '/admin-dashboard/manage-coupons',
+    active: '',
   },
   {
     id: 8,
-    name: "FAQ Beheren",
-    icon: "la-question-circle",
-    routePath: "/admin-dashboard/manage-faq",
-    active: "",
+    name: 'FAQ Beheren',
+    icon: 'la-question-circle',
+    routePath: '/admin-dashboard/manage-faq',
+    active: '',
   },
   {
     id: 9,
-    name: "Contact Queries",
-    icon: "la-envelope",
-    routePath: "/admin-dashboard/contact-queries",
-    active: "",
+    name: 'Contact Queries',
+    icon: 'la-envelope',
+    routePath: '/admin-dashboard/contact-queries',
+    active: '',
   },
   {
     id: 10,
-    name: "Uitloggen",
-    icon: "la-sign-out",
-    routePath: "/login",
-    active: "",
+    name: 'Uitloggen',
+    icon: 'la-sign-out',
+    routePath: '/login',
+    active: '',
   },
 ];
 
 export const employerMenuData = [
   {
     id: 1,
-    name: "Dashboard",
-    icon: "la-home",
-    routePath: "/employers-dashboard/dashboard",
-    active: "active",
+    name: 'Dashboard',
+    icon: 'la-home',
+    routePath: '/employers-dashboard/dashboard',
+    active: 'active',
   },
   {
     id: 2,
-    name: "Bedrijfsprofiel",
-    icon: "la-user-tie",
-    routePath: "/employers-dashboard/company-profile",
-    active: "",
+    name: 'Bedrijfsprofiel',
+    icon: 'la-user-tie',
+    routePath: '/employers-dashboard/company-profile',
+    active: '',
   },
   {
     id: 3,
-    name: "Nieuwe Job Plaatsen",
-    icon: "la-paper-plane",
-    routePath: "/employers-dashboard/post-jobs",
-    active: "",
+    name: 'Nieuwe Job Plaatsen',
+    icon: 'la-paper-plane',
+    routePath: '/employers-dashboard/post-jobs',
+    active: '',
   },
   {
     id: 4,
-    name: "Jobs Beheren",
-    icon: "la-briefcase",
-    routePath: "/employers-dashboard/manage-jobs",
-    active: "",
+    name: 'Jobs Beheren',
+    icon: 'la-briefcase',
+    routePath: '/employers-dashboard/manage-jobs',
+    active: '',
   },
   {
     id: 5,
-    name: "Alle Sollicitanten",
-    icon: "la-file-invoice",
-    routePath: "/employers-dashboard/all-applicants",
-    active: "",
+    name: 'Alle Sollicitanten',
+    icon: 'la-file-invoice',
+    routePath: '/employers-dashboard/all-applicants',
+    active: '',
   },
 
   {
     id: 7,
-    name: "Pakketten",
-    icon: "la-box",
-    routePath: "/employers-dashboard/packages",
-    active: "",
+    name: 'Pakketten',
+    icon: 'la-box',
+    routePath: '/employers-dashboard/packages',
+    active: '',
   },
 
   {
     id: 10,
-    name: "Wachtwoord Wijzigen",
-    icon: "la-lock",
-    routePath: "/employers-dashboard/change-password",
-    active: "",
+    name: 'Wachtwoord Wijzigen',
+    icon: 'la-lock',
+    routePath: '/employers-dashboard/change-password',
+    active: '',
   },
   {
     id: 11,
-    name: "Uitloggen",
-    icon: "la-sign-out",
-    routePath: "/login",
-    active: "",
+    name: 'Uitloggen',
+    icon: 'la-sign-out',
+    routePath: '/login',
+    active: '',
   },
   {
     id: 12,
-    name: "Profiel Verwijderen",
-    icon: "la-trash",
-    routePath: "/",
-    active: "",
+    name: 'Profiel Verwijderen',
+    icon: 'la-trash',
+    routePath: '/',
+    active: '',
   },
 ];
 
 export const GENDERS = [
-  { value: "male", label: "Man" },
-  { value: "female", label: "Vrouw" },
-  { value: "other", label: "Anders" },
+  { value: 'male', label: 'Man' },
+  { value: 'female', label: 'Vrouw' },
+  { value: 'other', label: 'Anders' },
 ];
 
 export const STATES = [
-  { value: "antwerp", label: "Antwerpen" },
-  { value: "limburg", label: "Limburg" },
-  { value: "east-flanders", label: "Oost-Vlaanderen" },
-  { value: "flemish-brabant", label: "Vlaams-Brabant" },
-  { value: "west-flanders", label: "West-Vlaanderen" },
+  { value: 'antwerp', label: 'Antwerpen' },
+  { value: 'limburg', label: 'Limburg' },
+  { value: 'east-flanders', label: 'Oost-Vlaanderen' },
+  { value: 'flemish-brabant', label: 'Vlaams-Brabant' },
+  { value: 'west-flanders', label: 'West-Vlaanderen' },
 ];
 
 export const SECTORS = [
-  { value: "funeral-sector", label: "Uitvaartsector" },
-  { value: "moving-sector", label: "Verhuissector" },
-  { value: "power-supply", label: "Energievoorziening" },
-  { value: "department-stores", label: "Warenhuizen" },
-  { value: "independent-retail", label: "Zelfstandige detailhandel" },
-  { value: "automotive-sector", label: "Autosector" },
-  { value: "bakeries", label: "Bakkerijen" },
-  { value: "cinemas", label: "Bioscopen" },
-  { value: "buses-and-coaches", label: "Bussen en touringcars" },
-  { value: "entertainment", label: "Entertainment" },
-  { value: "event-sector", label: "Eventsector" },
-  { value: "fashion-clothing", label: "Mode/Kledij" },
-  { value: "food-products", label: "Handel in voedingsproducten" },
-  { value: "hotel-sector", label: "Hotelsector" },
-  { value: "real-estate-sector", label: "Vastgoedsector" },
-  { value: "childcare", label: "Kinderopvang" },
-  { value: "food-retail-trade", label: "Voedingsdetailhandel" },
+  { value: 'funeral-sector', label: 'Uitvaartsector' },
+  { value: 'moving-sector', label: 'Verhuissector' },
+  { value: 'power-supply', label: 'Energievoorziening' },
+  { value: 'department-stores', label: 'Warenhuizen' },
+  { value: 'independent-retail', label: 'Zelfstandige detailhandel' },
+  { value: 'automotive-sector', label: 'Autosector' },
+  { value: 'bakeries', label: 'Bakkerijen' },
+  { value: 'cinemas', label: 'Bioscopen' },
+  { value: 'buses-and-coaches', label: 'Bussen en touringcars' },
+  { value: 'entertainment', label: 'Entertainment' },
+  { value: 'event-sector', label: 'Eventsector' },
+  { value: 'fashion-clothing', label: 'Mode/Kledij' },
+  { value: 'food-products', label: 'Handel in voedingsproducten' },
+  { value: 'hotel-sector', label: 'Hotelsector' },
+  { value: 'real-estate-sector', label: 'Vastgoedsector' },
+  { value: 'childcare', label: 'Kinderopvang' },
+  { value: 'food-retail-trade', label: 'Voedingsdetailhandel' },
   {
-    value: "agriculture-and-horticulture",
-    label: "Land- en tuinbouw",
+    value: 'agriculture-and-horticulture',
+    label: 'Land- en tuinbouw',
   },
   {
-    value: "medium-sized-food-companies",
-    label: "Middelgrote voedingsbedrijven",
+    value: 'medium-sized-food-companies',
+    label: 'Middelgrote voedingsbedrijven',
   },
-  { value: "education", label: "Onderwijs" },
-  { value: "driving-schools", label: "Rijscholen" },
-  { value: "sport", label: "Sport" },
+  { value: 'education', label: 'Onderwijs' },
+  { value: 'driving-schools', label: 'Rijscholen' },
+  { value: 'sport', label: 'Sport' },
   {
-    value: "sports-and-culture-in-the-flemish-community",
-    label: "Sport en Cultuur in de Vlaamse Gemeenschap",
+    value: 'sports-and-culture-in-the-flemish-community',
+    label: 'Sport en Cultuur in de Vlaamse Gemeenschap',
   },
 ];
 export const AGE_OPTIONS = [
-  { value: "18-25", label: "18-25" },
-  { value: "26-35", label: "26-35" },
-  { value: "36-45", label: "36-45" },
-  { value: "46-55", label: "46-55" },
-  { value: "56+", label: "56+" },
+  { value: '18-25', label: '18-25' },
+  { value: '26-35', label: '26-35' },
+  { value: '36-45', label: '36-45' },
+  { value: '46-55', label: '46-55' },
+  { value: '56+', label: '56+' },
 ];
 
 export const PROFILE_VISIBILITY_OPTIONS = [
-  { value: "yes", label: "Ja" },
-  { value: "no", label: "Nee" },
+  { value: 'yes', label: 'Ja' },
+  { value: 'no', label: 'Nee' },
 ];
 
 export const JOB_TYPE_OPTIONS = [
-  { value: "english_speaking_job", label: "Engels sprekend werk" },
-  { value: "flexijobber", label: "Flexijobber" },
-  { value: "retired_people", label: "Ouderen" },
-  { value: "student_job", label: "Student werk" },
+  { value: 'english_speaking_job', label: 'Engels sprekend werk' },
+  { value: 'flexijobber', label: 'Flexijobber' },
+  { value: 'retired_people', label: 'Ouderen' },
+  { value: 'student_job', label: 'Student werk' },
 ];
 
 export const formatString = (str) => {
-  if (!str) return "";
+  if (!str) return '';
   return str
-    .replace(/[-_]/g, " ")
-    .split(" ")
+    .replace(/[-_]/g, ' ')
+    .split(' ')
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
+    .join(' ');
+};
+
+export const formatJobDate = (value) => {
+  if (value == null) return '—';
+  let d;
+  if (typeof value?.toDate === 'function') {
+    d = value.toDate();
+  } else if (value && typeof value._seconds === 'number') {
+    d = new Date(value._seconds * 1000);
+  } else {
+    d = new Date(value);
+  }
+  if (Number.isNaN(d.getTime())) return '—';
+  return d.toLocaleDateString();
 };
 
 export const applyFilters = (state) => {
@@ -332,25 +346,25 @@ export const applyFilters = (state) => {
   let filteredJobs = state.jobs.filter((job) => {
     // Search filter
     const matchesSearch =
-      searchLower === "" ||
+      searchLower === '' ||
       job.title.toLowerCase().includes(searchLower) ||
       job.description.toLowerCase().includes(searchLower) ||
       (job.tags &&
         job.tags.some((tag) => tag.toLowerCase().includes(searchLower)));
 
     // Location filter
-    const formattedLocation = formatString(job.location || "").toLowerCase();
+    const formattedLocation = formatString(job.location || '').toLowerCase();
     const matchesLocation =
-      locationLower === "" || formattedLocation.includes(locationLower);
+      locationLower === '' || formattedLocation.includes(locationLower);
 
     // Category filter
     const matchesCategory =
-      state.selectedCategory === "" ||
+      state.selectedCategory === '' ||
       (job.tags && job.tags.includes(state.selectedCategory));
 
     // Job type filter
     const matchesJobType =
-      state.selectedJobType === "" || job.jobType === state.selectedJobType;
+      state.selectedJobType === '' || job.jobType === state.selectedJobType;
 
     // Date posted filter
     let matchesDatePosted = true;
@@ -358,13 +372,13 @@ export const applyFilters = (state) => {
       const jobDate = parseInt(job.createdAt);
       const dayInMs = 24 * 60 * 60 * 1000;
 
-      if (state.selectedDatePosted === "today") {
+      if (state.selectedDatePosted === 'today') {
         matchesDatePosted = now - jobDate < dayInMs;
-      } else if (state.selectedDatePosted === "3days") {
+      } else if (state.selectedDatePosted === '3days') {
         matchesDatePosted = now - jobDate < 3 * dayInMs;
-      } else if (state.selectedDatePosted === "week") {
+      } else if (state.selectedDatePosted === 'week') {
         matchesDatePosted = now - jobDate < 7 * dayInMs;
-      } else if (state.selectedDatePosted === "month") {
+      } else if (state.selectedDatePosted === 'month') {
         matchesDatePosted = now - jobDate < 30 * dayInMs;
       }
     }
@@ -379,9 +393,9 @@ export const applyFilters = (state) => {
   });
 
   // Then apply sorting if specified
-  if (state.sortOrder === "asc") {
+  if (state.sortOrder === 'asc') {
     filteredJobs.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-  } else if (state.sortOrder === "desc") {
+  } else if (state.sortOrder === 'desc') {
     filteredJobs.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   }
 
