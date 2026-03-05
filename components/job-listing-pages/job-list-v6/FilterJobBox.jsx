@@ -16,7 +16,7 @@ import {
   setPagination,
   setSortOrder,
 } from '@/features/job/newJobSlice';
-import { formatString, formatJobDate } from '@/utils/constants';
+import { formatString, formatJobDate, serializeFirestoreJob } from '@/utils/constants';
 import { errorToast, successToast } from '@/utils/toast';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -63,7 +63,7 @@ const FilterJobBox = () => {
   // Update Redux state when server data changes
   useEffect(() => {
     if (jobs) {
-      dispatch(setJobs(jobs));
+      dispatch(setJobs(jobs.map(serializeFirestoreJob)));
       dispatch(
         setPagination({
           totalItems,
