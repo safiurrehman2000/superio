@@ -1,5 +1,24 @@
 import { createSlice } from "@reduxjs/toolkit";
 
+const serializeJob = (job) => {
+  if (!job || typeof job !== "object") return job;
+  const result = { ...job };
+  for (const key of Object.keys(result)) {
+    const val = result[key];
+    if (val && typeof val === "object" && typeof val.toDate === "function") {
+      result[key] = val.toDate().toISOString();
+    } else if (
+      val &&
+      typeof val === "object" &&
+      typeof val.seconds === "number" &&
+      typeof val.nanoseconds === "number"
+    ) {
+      result[key] = new Date(val.seconds * 1000).toISOString();
+    }
+  }
+  return result;
+};
+
 const initialState = {
   jobs: [],
   filteredJobs: [],
@@ -34,8 +53,9 @@ const newJobsSlice = createSlice({
   initialState,
   reducers: {
     setJobs: (state, action) => {
-      state.jobs = action.payload;
-      state.filteredJobs = action.payload; // Server-side filtering means jobs are already filtered
+      const serialized = action.payload.map(serializeJob);
+      state.jobs = serialized;
+      state.filteredJobs = serialized;
     },
     setSearchTerm: (state, action) => {
       state.searchTerm = action.payload;

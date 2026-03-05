@@ -84,7 +84,8 @@ export default function JobClient({ job }) {
                           {(() => {
                             const raw = job?.jobType ?? job?.JobType;
                             if (!raw) return 'Niet gespecificeerd';
-                            if (typeof raw === 'string') return formatString(raw);
+                            if (typeof raw === 'string')
+                              return formatString(raw);
                             if (typeof raw === 'object') {
                               if (raw.label) return raw.label;
                               if (raw.value) return formatString(raw.value);
@@ -207,7 +208,7 @@ export default function JobClient({ job }) {
                           width={54}
                           height={54}
                           src={logo || '/images/resource/company-6.png'}
-                          alt={job.company}
+                          alt={job.company || 'Bedrijfslogo'}
                           style={{
                             borderRadius: '50%',
                             objectFit: 'cover',
