@@ -474,7 +474,15 @@ export const useFetchEmployerJobsPaginated = async (
       .map((doc) => ({ id: doc.id, ...doc.data() }))
       .filter((job) => {
         if (!job.createdAt) return false;
-        const jobDate = new Date(job.createdAt);
+
+        let jobDate;
+        if (job.createdAt instanceof Timestamp) {
+          jobDate = job.createdAt.toDate();
+        } else {
+          jobDate = new Date(job.createdAt);
+        }
+
+        if (isNaN(jobDate.getTime())) return false;
         return jobDate >= monthsAgo;
       });
 

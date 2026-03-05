@@ -1,14 +1,14 @@
-"use client";
-import { useFetchEmployerJobsPaginated, deleteJob } from "@/APIs/auth/jobs";
-import { formatString } from "@/utils/constants";
-import { errorToast, successToast } from "@/utils/toast";
-import Image from "next/image";
-import Link from "next/link";
-import { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
-import { useRouter } from "next/navigation";
-import { DeleteConfirmationModal } from "./DeleteModal";
-import ManageJobsSkeleton from "./ManageJobsSkeleton";
+'use client';
+import { useFetchEmployerJobsPaginated, deleteJob } from '@/APIs/auth/jobs';
+import { formatString } from '@/utils/constants';
+import { errorToast, successToast } from '@/utils/toast';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
+import { useRouter } from 'next/navigation';
+import { DeleteConfirmationModal } from './DeleteModal';
+import ManageJobsSkeleton from './ManageJobsSkeleton';
 
 const JobListingsTable = () => {
   const selector = useSelector((store) => store.user);
@@ -26,7 +26,27 @@ const JobListingsTable = () => {
   const [totalJobs, setTotalJobs] = useState(0);
 
   // Filter state
-  const [selectedFilter, setSelectedFilter] = useState("6"); // default to 6 months
+  const [selectedFilter, setSelectedFilter] = useState('6'); // default to 6 months
+
+  const getCreatedDate = (createdAt) => {
+    if (!createdAt) return 'N/A';
+
+    try {
+      let date;
+
+      // Support Firestore Timestamp objects
+      if (createdAt.toDate && typeof createdAt.toDate === 'function') {
+        date = createdAt.toDate();
+      } else {
+        date = new Date(createdAt);
+      }
+
+      if (isNaN(date.getTime())) return 'N/A';
+      return date.toLocaleDateString();
+    } catch {
+      return 'N/A';
+    }
+  };
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
@@ -47,8 +67,8 @@ const JobListingsTable = () => {
         setTotalPages(result.totalPages);
         setTotalJobs(result.totalJobs);
       } catch (error) {
-        console.error("Error fetching jobs:", error);
-        errorToast("Failed to fetch job listings");
+        console.error('Error fetching jobs:', error);
+        errorToast('Failed to fetch job listings');
       } finally {
         setLoading(false);
       }
@@ -61,8 +81,8 @@ const JobListingsTable = () => {
 
   const handleDeleteClick = (job) => {
     // Check if user is an employer
-    if (selector.userType !== "Employer") {
-      errorToast("Only employers can delete job postings");
+    if (selector.userType !== 'Employer') {
+      errorToast('Only employers can delete job postings');
       return;
     }
 
@@ -86,11 +106,11 @@ const JobListingsTable = () => {
         setShowDeleteModal(false);
         setJobToDelete(null);
       } else {
-        errorToast(result.error || "Failed to delete job");
+        errorToast(result.error || 'Failed to delete job');
       }
     } catch (error) {
-      console.error("Error deleting job:", error);
-      errorToast("An unexpected error occurred while deleting the job");
+      console.error('Error deleting job:', error);
+      errorToast('An unexpected error occurred while deleting the job');
     } finally {
       setDeletingJobId(null);
     }
@@ -108,34 +128,34 @@ const JobListingsTable = () => {
 
   return (
     <>
-      <div className="tabs-box">
-        <div className="widget-title">
+      <div className='tabs-box'>
+        <div className='widget-title'>
           <h4>My Job Listings</h4>
 
-          <div className="chosen-outer">
+          <div className='chosen-outer'>
             {/* <!--Tabs Box--> */}
             <select
-              className="chosen-single form-select"
+              className='chosen-single form-select'
               value={selectedFilter}
               onChange={(e) => {
                 setSelectedFilter(e.target.value);
                 setCurrentPage(1); // Reset to first page on filter change
               }}
             >
-              <option value="6">Last 6 Months</option>
-              <option value="12">Last 12 Months</option>
-              <option value="16">Last 16 Months</option>
-              <option value="24">Last 24 Months</option>
-              <option value="60">Last 5 years</option>
+              <option value='6'>Last 6 Months</option>
+              <option value='12'>Last 12 Months</option>
+              <option value='16'>Last 16 Months</option>
+              <option value='24'>Last 24 Months</option>
+              <option value='60'>Last 5 years</option>
             </select>
           </div>
         </div>
         {/* End filter top bar */}
 
         {/* Start table widget content */}
-        <div className="widget-content">
-          <div className="table-outer">
-            <table className="default-table manage-job-table">
+        <div className='widget-content'>
+          <div className='table-outer'>
+            <table className='default-table manage-job-table'>
               <thead>
                 <tr>
                   <th>Title</th>
@@ -150,8 +170,8 @@ const JobListingsTable = () => {
                 {jobs?.length === 0 ? (
                   <tr>
                     <td
-                      colSpan="5"
-                      style={{ textAlign: "center", padding: "40px" }}
+                      colSpan='5'
+                      style={{ textAlign: 'center', padding: '40px' }}
                     >
                       <p>
                         No job listings found. Create your first job posting!
@@ -162,107 +182,127 @@ const JobListingsTable = () => {
                   jobs?.map((item, index) => {
                     const logo = selector.user?.logo ?? item?.logo;
                     const logoSrc = logo
-                      ? logo.startsWith("data:image")
+                      ? logo.startsWith('data:image')
                         ? logo
                         : `data:image/jpeg;base64,${logo}`
-                      : "/images/resource/company-6.png";
+                      : '/images/resource/company-6.png';
+
+                    const fallbackSource =
+                      item?.email || selector.user?.email || '';
+                    const firstInitial =
+                      fallbackSource?.charAt(0)?.toUpperCase() || 'F';
+                    const secondInitial =
+                      fallbackSource?.charAt(1)?.toUpperCase() || 'J';
+                    const initials = `${firstInitial} ${secondInitial}`;
+
+                    // Normalise job type and location across legacy and new fields
+                    const rawJobType = item?.jobType ?? item?.JobType ?? '';
+                    const rawLocation =
+                      item?.location ??
+                      item?.Location ??
+                      item?.state ??
+                      item?.jobLocation ??
+                      '';
+                    const displayJobType = rawJobType
+                      ? formatString(rawJobType)
+                      : 'N/A';
+                    const displayLocation =
+                      [item?.address, item?.postalCode, rawLocation]
+                        .filter(Boolean)
+                        .join(', ') ||
+                      (rawLocation ? formatString(rawLocation) : 'N/A');
+
                     return (
                       <tr key={item?.id}>
                         <td>
-                          <div className="job-block">
-                            <div className="inner-box">
-                              <div className="content">
-                                <span className="company-logo">
+                          <div className='job-block'>
+                            <div className='inner-box'>
+                              <div className='content'>
+                                <span className='company-logo'>
                                   {logo ? (
                                     <Image
                                       width={50}
                                       height={49}
                                       src={logoSrc}
-                                      alt="company logo"
+                                      alt='company logo'
                                       style={{
-                                        borderRadius: "50%",
-                                        objectFit: "cover",
-                                        height: "50px",
-                                        width: "50px",
+                                        borderRadius: '50%',
+                                        objectFit: 'cover',
+                                        height: '50px',
+                                        width: '50px',
                                       }}
                                     />
                                   ) : (
                                     <div
                                       style={{
-                                        borderRadius: "50%",
-                                        height: "50px",
-                                        width: "50px",
+                                        borderRadius: '50%',
+                                        height: '50px',
+                                        width: '50px',
                                         backgroundColor:
                                           index % 3 === 0
-                                            ? "#FA5508"
+                                            ? '#FA5508'
                                             : index % 3 === 1
-                                              ? "#10E7DC"
-                                              : "#0074E1",
-                                        textAlign: "center",
-                                        alignContent: "center",
+                                              ? '#10E7DC'
+                                              : '#0074E1',
+                                        textAlign: 'center',
+                                        alignContent: 'center',
                                       }}
                                     >
-                                      <p style={{ margin: 0, color: "white" }}>
-                                        {item?.email?.charAt(0).toUpperCase() +
-                                          " " +
-                                          item?.email?.charAt(1).toUpperCase()}
+                                      <p style={{ margin: 0, color: 'white' }}>
+                                        {initials}
                                       </p>
                                     </div>
                                   )}
                                 </span>
                                 <h4>
-                                  <Link href={`/job-post/${item.id}`}>
+                                  <Link href={`/job-list/${item.id}`}>
                                     {item?.title}
                                   </Link>
                                 </h4>
-                                <ul className="job-info">
+                                <ul className='job-info'>
                                   <li>
-                                    <span className="icon flaticon-briefcase"></span>
-                                    {formatString(item?.jobType)}
+                                    <span className='icon flaticon-briefcase'></span>
+                                    {displayJobType}
                                   </li>
                                   <li>
-                                    <span className="icon flaticon-map-locator"></span>
-                                    {formatString(item?.location)}
+                                    <span className='icon flaticon-map-locator'></span>
+                                    {displayLocation}
                                   </li>
                                 </ul>
                               </div>
                             </div>
                           </div>
                         </td>
-                        <td className="applied">
+                        <td className='applied'>
                           <p>{item?.viewCount || 0}</p>
                         </td>
-                        <td>
-                          {item.createdAt
-                            ? new Date(item.createdAt).toLocaleDateString()
-                            : "N/A"}
-                        </td>
-                        <td className="status">
-                          {item.status === "archived" ? (
-                            <span className="badge bg-secondary">Archived</span>
-                          ) : item?.isOpen === "False" ? (
-                            "Expired"
+                        <td>{getCreatedDate(item.createdAt)}</td>
+                        <td className='status'>
+                          {item.status === 'archived' ? (
+                            <span className='badge bg-secondary'>Archived</span>
+                          ) : item?.isOpen === 'False' ? (
+                            'Expired'
                           ) : (
-                            "Active"
+                            'Active'
                           )}
                         </td>
                         <td>
-                          <div className="option-box">
-                            <ul className="option-list">
+                          <div className='option-box'>
+                            <ul className='option-list'>
                               <li>
                                 <button
                                   onClick={() => {
-                                    push("/employers-dashboard/all-applicants");
+                                    push('/employers-dashboard/all-applicants');
                                   }}
-                                  data-text="View Applicants"
+                                  data-text='View Applicants'
                                 >
-                                  <span className="la la-eye"></span>
+                                  <span className='la la-eye'></span>
                                 </button>
                               </li>
 
                               <li>
                                 <button
-                                  data-text="Delete Post"
+                                  data-text='Delete Post'
                                   onClick={() => handleDeleteClick(item)}
                                   disabled={deletingJobId === item.id}
                                   style={{
@@ -270,11 +310,11 @@ const JobListingsTable = () => {
                                       deletingJobId === item.id ? 0.6 : 1,
                                     cursor:
                                       deletingJobId === item.id
-                                        ? "not-allowed"
-                                        : "pointer",
+                                        ? 'not-allowed'
+                                        : 'pointer',
                                   }}
                                 >
-                                  <span className="la la-trash"></span>
+                                  <span className='la la-trash'></span>
                                 </button>
                               </li>
                             </ul>
@@ -302,47 +342,47 @@ const JobListingsTable = () => {
       {/* Pagination Controls */}
       {totalJobs > jobsPerPage && (
         <div
-          className="pagination-controls"
+          className='pagination-controls'
           style={{
             marginTop: 30,
-            padding: "20px 0",
-            borderTop: "1px solid #e5e7eb",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: "15px",
+            padding: '20px 0',
+            borderTop: '1px solid #e5e7eb',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '15px',
           }}
         >
           {/* Results Info */}
           <div
             style={{
-              color: "#6b7280",
-              fontSize: "14px",
-              fontWeight: "500",
-              marginBottom: "5px",
+              color: '#6b7280',
+              fontSize: '14px',
+              fontWeight: '500',
+              marginBottom: '5px',
             }}
           >
-            Showing{" "}
-            <span style={{ color: "#374151", fontWeight: "600" }}>
+            Showing{' '}
+            <span style={{ color: '#374151', fontWeight: '600' }}>
               {(currentPage - 1) * jobsPerPage + 1}
-            </span>{" "}
-            to{" "}
-            <span style={{ color: "#374151", fontWeight: "600" }}>
+            </span>{' '}
+            to{' '}
+            <span style={{ color: '#374151', fontWeight: '600' }}>
               {Math.min(currentPage * jobsPerPage, totalJobs)}
-            </span>{" "}
-            of{" "}
-            <span style={{ color: "#374151", fontWeight: "600" }}>
+            </span>{' '}
+            of{' '}
+            <span style={{ color: '#374151', fontWeight: '600' }}>
               {totalJobs}
-            </span>{" "}
+            </span>{' '}
             jobs
           </div>
 
           {/* Pagination Buttons */}
           <div
             style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
             }}
           >
             {/* Previous Button */}
@@ -350,27 +390,27 @@ const JobListingsTable = () => {
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
               style={{
-                padding: "8px 16px",
-                border: "1px solid #d1d5db",
-                backgroundColor: currentPage === 1 ? "#f3f4f6" : "#ffffff",
-                color: currentPage === 1 ? "#9ca3af" : "#374151",
-                borderRadius: "6px",
-                fontSize: "14px",
-                fontWeight: "500",
-                cursor: currentPage === 1 ? "not-allowed" : "pointer",
-                transition: "all 0.2s ease",
-                minWidth: "80px",
+                padding: '8px 16px',
+                border: '1px solid #d1d5db',
+                backgroundColor: currentPage === 1 ? '#f3f4f6' : '#ffffff',
+                color: currentPage === 1 ? '#9ca3af' : '#374151',
+                borderRadius: '6px',
+                fontSize: '14px',
+                fontWeight: '500',
+                cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                transition: 'all 0.2s ease',
+                minWidth: '80px',
               }}
               onMouseEnter={(e) => {
                 if (currentPage !== 1) {
-                  e.target.style.backgroundColor = "#f9fafb";
-                  e.target.style.borderColor = "#9ca3af";
+                  e.target.style.backgroundColor = '#f9fafb';
+                  e.target.style.borderColor = '#9ca3af';
                 }
               }}
               onMouseLeave={(e) => {
                 if (currentPage !== 1) {
-                  e.target.style.backgroundColor = "#ffffff";
-                  e.target.style.borderColor = "#d1d5db";
+                  e.target.style.backgroundColor = '#ffffff';
+                  e.target.style.borderColor = '#d1d5db';
                 }
               }}
             >
@@ -378,34 +418,34 @@ const JobListingsTable = () => {
             </button>
 
             {/* Page Numbers */}
-            <div style={{ display: "flex", gap: "4px" }}>
+            <div style={{ display: 'flex', gap: '4px' }}>
               {Array.from({ length: totalPages }, (_, i) => (
                 <button
                   key={i + 1}
                   onClick={() => handlePageChange(i + 1)}
                   style={{
-                    padding: "8px 12px",
-                    border: "1px solid #d1d5db",
+                    padding: '8px 12px',
+                    border: '1px solid #d1d5db',
                     backgroundColor:
-                      currentPage === i + 1 ? "#0074E1" : "#ffffff",
-                    color: currentPage === i + 1 ? "#ffffff" : "#374151",
-                    borderRadius: "6px",
-                    fontSize: "14px",
-                    fontWeight: currentPage === i + 1 ? "600" : "500",
-                    cursor: "pointer",
-                    transition: "all 0.2s ease",
-                    minWidth: "36px",
+                      currentPage === i + 1 ? '#0074E1' : '#ffffff',
+                    color: currentPage === i + 1 ? '#ffffff' : '#374151',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    fontWeight: currentPage === i + 1 ? '600' : '500',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    minWidth: '36px',
                   }}
                   onMouseEnter={(e) => {
                     if (currentPage !== i + 1) {
-                      e.target.style.backgroundColor = "#f9fafb";
-                      e.target.style.borderColor = "#9ca3af";
+                      e.target.style.backgroundColor = '#f9fafb';
+                      e.target.style.borderColor = '#9ca3af';
                     }
                   }}
                   onMouseLeave={(e) => {
                     if (currentPage !== i + 1) {
-                      e.target.style.backgroundColor = "#ffffff";
-                      e.target.style.borderColor = "#d1d5db";
+                      e.target.style.backgroundColor = '#ffffff';
+                      e.target.style.borderColor = '#d1d5db';
                     }
                   }}
                 >
@@ -419,28 +459,28 @@ const JobListingsTable = () => {
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
               style={{
-                padding: "8px 16px",
-                border: "1px solid #d1d5db",
+                padding: '8px 16px',
+                border: '1px solid #d1d5db',
                 backgroundColor:
-                  currentPage === totalPages ? "#f3f4f6" : "#ffffff",
-                color: currentPage === totalPages ? "#9ca3af" : "#374151",
-                borderRadius: "6px",
-                fontSize: "14px",
-                fontWeight: "500",
-                cursor: currentPage === totalPages ? "not-allowed" : "pointer",
-                transition: "all 0.2s ease",
-                minWidth: "80px",
+                  currentPage === totalPages ? '#f3f4f6' : '#ffffff',
+                color: currentPage === totalPages ? '#9ca3af' : '#374151',
+                borderRadius: '6px',
+                fontSize: '14px',
+                fontWeight: '500',
+                cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+                transition: 'all 0.2s ease',
+                minWidth: '80px',
               }}
               onMouseEnter={(e) => {
                 if (currentPage !== totalPages) {
-                  e.target.style.backgroundColor = "#f9fafb";
-                  e.target.style.borderColor = "#9ca3af";
+                  e.target.style.backgroundColor = '#f9fafb';
+                  e.target.style.borderColor = '#9ca3af';
                 }
               }}
               onMouseLeave={(e) => {
                 if (currentPage !== totalPages) {
-                  e.target.style.backgroundColor = "#ffffff";
-                  e.target.style.borderColor = "#d1d5db";
+                  e.target.style.backgroundColor = '#ffffff';
+                  e.target.style.borderColor = '#d1d5db';
                 }
               }}
             >

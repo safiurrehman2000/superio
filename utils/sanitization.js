@@ -352,6 +352,7 @@ export const sanitizeFormData = (formData, fieldTypes) => {
     name: sanitizeName,
     company_name: sanitizeName,
     title: sanitizeText,
+    text: sanitizeText,
     description: sanitizeDescription,
     website: sanitizeUrl,
     age: sanitizeAge,
