@@ -1,28 +1,28 @@
-const siteUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://flexijobber.be";
+const siteUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://flexijobber.be';
 
 /**
  * Generate organization structured data
  */
 export const generateOrganizationSchema = () => {
   return {
-    "@context": "https://schema.org",
-    "@type": "Organization",
-    name: "De Flexijobber",
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'De Flexijobber',
     url: siteUrl,
     logo: `${siteUrl}/images/resource/logo.png`,
     description:
-      "Het toonaangevende platform voor flexibele jobs in Vlaanderen. Verbindt werkgevers met flexwerkers in verschillende sectoren.",
+      'Het toonaangevende platform voor flexibele jobs in Vlaanderen. Verbindt werkgevers met flexwerkers in verschillende sectoren.',
     sameAs: [
       // Add social media links when available
     ],
     contactPoint: {
-      "@type": "ContactPoint",
-      contactType: "Customer Service",
-      availableLanguage: ["Dutch", "French"],
+      '@type': 'ContactPoint',
+      contactType: 'Customer Service',
+      availableLanguage: ['Dutch', 'French'],
     },
     areaServed: {
-      "@type": "Country",
-      name: "Belgium",
+      '@type': 'Country',
+      name: 'Belgium',
     },
   };
 };
@@ -49,16 +49,16 @@ export const generateJobPostingSchema = (job) => {
   if (job.schedule) {
     descriptionParts.push(`Uurrooster: ${job.schedule}`);
   }
-  const fullDescription = descriptionParts.join("\n\n");
+  const fullDescription = descriptionParts.join('\n\n');
 
   const baseSchema = {
-    "@context": "https://schema.org",
-    "@type": "JobPosting",
-    title: job.title || "Flexibele Job",
-    description: fullDescription || job.description || "",
+    '@context': 'https://schema.org',
+    '@type': 'JobPosting',
+    title: job.title || 'Flexibele Job',
+    description: fullDescription || job.description || '',
     identifier: {
-      "@type": "PropertyValue",
-      name: "De Flexijobber",
+      '@type': 'PropertyValue',
+      name: 'De Flexijobber',
       value: job.id,
     },
     datePosted: job.createdAt
@@ -67,19 +67,19 @@ export const generateJobPostingSchema = (job) => {
     validThrough: job.expiryDate
       ? new Date(job.expiryDate).toISOString()
       : new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
-    employmentType: mapJobTypeToSchema(job.jobType),
+    employmentType: mapJobTypeToSchema(job.jobType ?? job.JobType),
     hiringOrganization: {
-      "@type": "Organization",
-      name: job.company || "Werkgever",
+      '@type': 'Organization',
+      name: job.company || 'Werkgever',
       sameAs: job.link || siteUrl,
     },
     jobLocation: {
-      "@type": "Place",
+      '@type': 'Place',
       address: {
-        "@type": "PostalAddress",
-        addressLocality: job.location || "Vlaanderen",
-        addressRegion: "Vlaanderen",
-        addressCountry: "BE",
+        '@type': 'PostalAddress',
+        addressLocality: job.location || 'Vlaanderen',
+        addressRegion: 'Vlaanderen',
+        addressCountry: 'BE',
       },
     },
     url: jobUrl,
@@ -87,10 +87,10 @@ export const generateJobPostingSchema = (job) => {
 
   if (job.salary) {
     baseSchema.baseSalary = {
-      "@type": "MonetaryAmount",
-      currency: "EUR",
+      '@type': 'MonetaryAmount',
+      currency: 'EUR',
       value: {
-        "@type": "QuantitativeValue",
+        '@type': 'QuantitativeValue',
         value: job.salary,
       },
     };
@@ -104,10 +104,10 @@ export const generateJobPostingSchema = (job) => {
  */
 export const generateBreadcrumbSchema = (items) => {
   return {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
     itemListElement: items.map((item, index) => ({
-      "@type": "ListItem",
+      '@type': 'ListItem',
       position: index + 1,
       name: item.name,
       item: item.url,
@@ -120,13 +120,13 @@ export const generateBreadcrumbSchema = (items) => {
  */
 export const generateFAQSchema = (faqs) => {
   return {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
     mainEntity: faqs.map((faq) => ({
-      "@type": "Question",
+      '@type': 'Question',
       name: faq.question,
       acceptedAnswer: {
-        "@type": "Answer",
+        '@type': 'Answer',
         text: faq.answer,
       },
     })),
@@ -137,22 +137,22 @@ export const generateFAQSchema = (faqs) => {
  * Map job type to schema.org employment type
  */
 const mapJobTypeToSchema = (jobType) => {
-  if (!jobType) return "FULL_TIME";
+  if (!jobType) return 'FULL_TIME';
 
   const type = jobType.toLowerCase();
-  if (type.includes("part") || type.includes("deeltijd")) {
-    return "PART_TIME";
+  if (type.includes('part') || type.includes('deeltijd')) {
+    return 'PART_TIME';
   }
-  if (type.includes("full") || type.includes("voltijd")) {
-    return "FULL_TIME";
+  if (type.includes('full') || type.includes('voltijd')) {
+    return 'FULL_TIME';
   }
-  if (type.includes("contract") || type.includes("contract")) {
-    return "CONTRACTOR";
+  if (type.includes('contract') || type.includes('contract')) {
+    return 'CONTRACTOR';
   }
-  if (type.includes("temp") || type.includes("tijdelijk")) {
-    return "TEMPORARY";
+  if (type.includes('temp') || type.includes('tijdelijk')) {
+    return 'TEMPORARY';
   }
-  return "PART_TIME";
+  return 'PART_TIME';
 };
 
 /**
@@ -164,41 +164,41 @@ export const generatePageMetadata = (options = {}) => {
     description,
     image,
     url,
-    type = "website",
+    type = 'website',
     noindex = false,
   } = options;
 
   const metadata = {
     title: title
       ? `${title} | De Flexijobber`
-      : "De Flexijobber - Flexibele Jobs Platform in Vlaanderen",
+      : 'De Flexijobber - Flexibele Jobs Platform in Vlaanderen',
     description:
       description ||
-      "De Flexijobber - Het toonaangevende platform voor flexibele jobs in Vlaanderen.",
+      'De Flexijobber - Het toonaangevende platform voor flexibele jobs in Vlaanderen.',
     openGraph: {
-      title: title || "De Flexijobber - Flexibele Jobs Platform in Vlaanderen",
+      title: title || 'De Flexijobber - Flexibele Jobs Platform in Vlaanderen',
       description:
         description ||
-        "De Flexijobber - Het toonaangevende platform voor flexibele jobs in Vlaanderen.",
+        'De Flexijobber - Het toonaangevende platform voor flexibele jobs in Vlaanderen.',
       url: url || siteUrl,
-      siteName: "De Flexijobber",
-      locale: "nl_BE",
+      siteName: 'De Flexijobber',
+      locale: 'nl_BE',
       type: type,
       images: [
         {
           url: image || `${siteUrl}/images/resource/logo.png`,
           width: 1200,
           height: 630,
-          alt: title || "De Flexijobber",
+          alt: title || 'De Flexijobber',
         },
       ],
     },
     twitter: {
-      card: "summary_large_image",
-      title: title || "De Flexijobber - Flexibele Jobs Platform in Vlaanderen",
+      card: 'summary_large_image',
+      title: title || 'De Flexijobber - Flexibele Jobs Platform in Vlaanderen',
       description:
         description ||
-        "De Flexijobber - Het toonaangevende platform voor flexibele jobs in Vlaanderen.",
+        'De Flexijobber - Het toonaangevende platform voor flexibele jobs in Vlaanderen.',
       images: [image || `${siteUrl}/images/resource/logo.png`],
     },
     robots: {

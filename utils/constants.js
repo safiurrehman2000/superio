@@ -363,8 +363,9 @@ export const applyFilters = (state) => {
       (job.tags && job.tags.includes(state.selectedCategory));
 
     // Job type filter
+    const jobTypeRaw = job.jobType ?? job.JobType;
     const matchesJobType =
-      state.selectedJobType === '' || job.jobType === state.selectedJobType;
+      state.selectedJobType === '' || jobTypeRaw === state.selectedJobType;
 
     // Date posted filter
     let matchesDatePosted = true;
@@ -411,8 +412,8 @@ export const transformJobData = (jobs) => {
   return jobs.map((job) => ({
     ...job,
     jobType: {
-      value: job?.jobType,
-      label: findLabel(JOB_TYPE_OPTIONS, job.jobType),
+      value: job?.jobType ?? job?.JobType,
+      label: findLabel(JOB_TYPE_OPTIONS, job.jobType ?? job.JobType),
     },
     location: {
       value: job?.location,

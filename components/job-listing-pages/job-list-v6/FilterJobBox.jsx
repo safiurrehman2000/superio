@@ -250,7 +250,16 @@ const FilterJobBox = () => {
               <ul className='job-info'>
                 <li>
                   <span className='icon flaticon-briefcase'></span>
-                  {formatString(item?.jobType) || 'Not specified'}
+                  {(() => {
+                    const raw = item?.jobType ?? item?.JobType;
+                    if (!raw) return 'Not specified';
+                    if (typeof raw === 'string') return formatString(raw);
+                    if (typeof raw === 'object') {
+                      if (raw.label) return raw.label;
+                      if (raw.value) return formatString(raw.value);
+                    }
+                    return 'Not specified';
+                  })()}
                 </li>
                 {/* compnay info */}
                 <li>

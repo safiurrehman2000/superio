@@ -92,7 +92,10 @@ const EditJobPost = () => {
         setValue('profileSkills', selectedJob.profileSkills || '');
         setValue('offer', selectedJob.offer || '');
         setValue('schedule', selectedJob.schedule || '');
-        setValue('email', selectedJob.email || '');
+        setValue(
+          'email',
+          selectedJob.email || selector?.user?.email || '',
+        );
         setValue('job-type', selectedJob.jobType || '');
         setValue('state', selectedJob.location || '');
         setValue('address', selectedJob.address || '');

@@ -81,7 +81,16 @@ export default function JobClient({ job }) {
                       <ul className='job-info'>
                         <li>
                           <span className='icon flaticon-briefcase'></span>
-                          {formatString(job.jobType)}
+                          {(() => {
+                            const raw = job?.jobType ?? job?.JobType;
+                            if (!raw) return 'Niet gespecificeerd';
+                            if (typeof raw === 'string') return formatString(raw);
+                            if (typeof raw === 'object') {
+                              if (raw.label) return raw.label;
+                              if (raw.value) return formatString(raw.value);
+                            }
+                            return 'Niet gespecificeerd';
+                          })()}
                         </li>
                         <li>
                           <span className='icon flaticon-map-locator'></span>

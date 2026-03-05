@@ -886,7 +886,10 @@ export const useGetJobListingPaginated = (params = {}) => {
         }
 
         if (jobType) {
-          jobs = jobs.filter((job) => job.jobType === jobType);
+          jobs = jobs.filter((job) => {
+            const raw = job.jobType ?? job.JobType;
+            return raw === jobType;
+          });
         }
 
         if (datePosted) {

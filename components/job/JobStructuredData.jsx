@@ -9,7 +9,7 @@ export default function JobStructuredData({ job }) {
       ? new Date(job.validThrough).toISOString()
       : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
 
-    employmentType: job.jobType || "PART_TIME",
+    employmentType: job.jobType ?? job.JobType ?? "PART_TIME",
 
     identifier: {
       "@type": "PropertyValue",
