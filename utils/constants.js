@@ -431,8 +431,6 @@ export const transformJobData = (jobs) => {
 // Bright Aqua – #10E7DC
 // Deep Blue – #0074E1
 
-// Converts Firestore Timestamp fields on a plain job object to ISO strings
-// so the object is safe to store in Redux state or dispatch as an action payload.
 export const serializeFirestoreJob = (job) => {
   if (!job || typeof job !== 'object') return job;
   const result = { ...job };
