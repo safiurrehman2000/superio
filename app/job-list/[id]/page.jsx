@@ -14,6 +14,14 @@ function cleanDescription(text = "") {
   return text.replace(/<[^>]+>/g, "").slice(0, 160);
 }
 
+// ✅ Helper voor veilige company naam
+function getCompanyName(job) {
+  if (job?.company && job.company.trim() !== "") {
+    return job.company;
+  }
+  return "De Flexi Jobber";
+}
+
 export async function generateMetadata({ params }) {
   const job = await getJobByIdServer(params.id);
 
@@ -25,15 +33,20 @@ export async function generateMetadata({ params }) {
   }
 
   const description = cleanDescription(job.description);
+  const companyName = getCompanyName(job);
 
   return {
-    title: `${job.title} – ${job.company} | De Flexi Jobber`,
+    // ✅ SEO verbeterd + geen undefined mogelijk
+    title: `${job.title} in ${job.location} | ${companyName}`,
+
     description,
+
     alternates: {
       canonical: `${siteUrl}/job-list/${params.id}`,
     },
+
     openGraph: {
-      title: `${job.title} – ${job.company}`,
+      title: `${job.title} in ${job.location} | ${companyName}`,
       description,
       url: `${siteUrl}/job-list/${params.id}`,
       siteName: "De Flexi Jobber",
