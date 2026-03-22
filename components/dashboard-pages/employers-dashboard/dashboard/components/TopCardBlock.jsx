@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useFetchApplications, useFetchEmployerJobs } from "@/APIs/auth/jobs";
+import { useFetchApplications, useFetchEmployerJobs } from '@/APIs/auth/jobs';
 
-import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 
 const TopCardBlock = () => {
   const selector = useSelector((store) => store.user);
@@ -14,7 +14,7 @@ const TopCardBlock = () => {
     const fetchData = async () => {
       // Only fetch data if user ID exists
       if (!selector?.user?.uid) {
-        console.warn("TopCardBlock: User ID is undefined, skipping data fetch");
+        console.warn('TopCardBlock: User ID is undefined, skipping data fetch');
         setJobCount(0);
         return;
       }
@@ -23,7 +23,7 @@ const TopCardBlock = () => {
         const jobs = await useFetchEmployerJobs(selector.user.uid);
         setJobCount(jobs?.length || 0);
       } catch (error) {
-        console.error("Error fetching jobs in TopCardBlock:", error);
+        console.error('Error fetching jobs in TopCardBlock:', error);
         setJobCount(0);
       }
     };
@@ -34,24 +34,17 @@ const TopCardBlock = () => {
   const cardContent = [
     {
       id: 1,
-      icon: "flaticon-briefcase",
+      icon: 'flaticon-briefcase',
       countNumber: jobCount,
-      metaName: "Geplaatste Jobs",
-      uiClass: "ui-blue",
+      metaName: 'Geplaatste Jobs',
+      uiClass: 'ui-blue',
     },
     {
       id: 2,
-      icon: "la-file-invoice",
+      icon: 'la-file-invoice',
       countNumber: applications?.length || 0,
-      metaName: "Sollicitaties",
-      uiClass: "ui-red",
-    },
-    {
-      id: 3,
-      icon: "la-comment-o",
-      countNumber: "74",
-      metaName: "Berichten",
-      uiClass: "ui-yellow",
+      metaName: 'Sollicitaties',
+      uiClass: 'ui-red',
     },
   ];
 
@@ -59,14 +52,14 @@ const TopCardBlock = () => {
     <>
       {cardContent.map((item) => (
         <div
-          className="ui-block col-xl-3 col-lg-6 col-md-6 col-sm-12"
+          className='ui-block col-xl-3 col-lg-6 col-md-6 col-sm-12'
           key={item.id}
         >
           <div className={`ui-item ${item.uiClass}`}>
-            <div className="left">
+            <div className='left'>
               <i className={`icon la ${item.icon}`}></i>
             </div>
-            <div className="right">
+            <div className='right'>
               <h4>{item.countNumber}</h4>
               <p>{item.metaName}</p>
             </div>
