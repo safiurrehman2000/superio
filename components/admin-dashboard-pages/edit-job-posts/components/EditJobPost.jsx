@@ -148,9 +148,16 @@ const EditJobPost = () => {
         tags: data.tags.map((tag) => tag.value),
       };
 
+      if (!selector?.user?.uid) {
+        setError('You must be logged in to update a job.');
+        setLoading(false);
+        return;
+      }
+
       const { success, error: apiError } = await updateJob(
         selectedJobId,
         payload,
+        selector.user.uid,
       );
       if (!success) {
         throw new Error(apiError || 'Failed to update job post.');

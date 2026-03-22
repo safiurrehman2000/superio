@@ -752,7 +752,7 @@ export const deleteJob = async (jobId, employerId) => {
   }
 };
 
-export const updateJob = async (jobId, updateData) => {
+export const updateJob = async (jobId, updateData, userId) => {
   try {
     if (!jobId) {
       throw new Error('Job ID is required');
@@ -762,12 +762,30 @@ export const updateJob = async (jobId, updateData) => {
       throw new Error('Update data is required');
     }
 
-    // Verify the job exists
+    if (!userId) {
+      throw new Error('User authentication is required');
+    }
+
+    const userDoc = await getDoc(doc(db, 'users', userId));
+    if (!userDoc.exists()) {
+      throw new Error('User not found');
+    }
+
+    const userData = userDoc.data();
+    if (userData.userType !== 'Employer' && userData.userType !== 'Admin') {
+      throw new Error('Only employers or admins can update job postings');
+    }
+
     const jobRef = doc(db, 'jobs', jobId);
     const jobDoc = await getDoc(jobRef);
 
     if (!jobDoc.exists()) {
       throw new Error('Job not found');
+    }
+
+    const jobData = jobDoc.data();
+    if (userData.userType === 'Employer' && jobData.employerId !== userId) {
+      throw new Error('You can only update your own job postings');
     }
 
     const updatePayload = {
@@ -777,7 +795,6 @@ export const updateJob = async (jobId, updateData) => {
       updatedAt: Date.now(),
     };
 
-    // Update the job document
     await updateDoc(jobRef, updatePayload);
 
     successToast('Job updated successfully');

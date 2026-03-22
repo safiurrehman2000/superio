@@ -302,6 +302,21 @@ const JobListingsTable = () => {
 
                               <li>
                                 <button
+                                  type='button'
+                                  onClick={() =>
+                                    push(
+                                      `/employers-dashboard/edit-job/${item.id}`,
+                                    )
+                                  }
+                                  data-text='Edit Job'
+                                  title='Edit job'
+                                >
+                                  <span className='la la-pencil'></span>
+                                </button>
+                              </li>
+
+                              <li>
+                                <button
                                   data-text='Delete Post'
                                   onClick={() => handleDeleteClick(item)}
                                   disabled={deletingJobId === item.id}
