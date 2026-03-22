@@ -20,7 +20,7 @@ import SocialTwo from '@/components/job-single-pages/social/SocialTwo';
 import CompnayInfo from '@/components/job-single-pages/shared-components/CompanyInfo';
 import CircularLoader from '@/components/circular-loading/CircularLoading';
 import { errorToast } from '@/utils/toast';
-import { formatString } from '@/utils/constants';
+import { formatJobTypesDisplay, formatString } from '@/utils/constants';
 
 export default function JobClient({ job }) {
   const router = useRouter();
@@ -84,13 +84,19 @@ export default function JobClient({ job }) {
                           {(() => {
                             const raw = job?.jobType ?? job?.JobType;
                             if (!raw) return 'Niet gespecificeerd';
-                            if (typeof raw === 'string')
-                              return formatString(raw);
-                            if (typeof raw === 'object') {
+                            if (
+                              typeof raw === 'object' &&
+                              raw !== null &&
+                              !Array.isArray(raw)
+                            ) {
                               if (raw.label) return raw.label;
-                              if (raw.value) return formatString(raw.value);
+                              if (raw.value != null) {
+                                const s = formatJobTypesDisplay(raw.value);
+                                return s || 'Niet gespecificeerd';
+                              }
                             }
-                            return 'Niet gespecificeerd';
+                            const s = formatJobTypesDisplay(raw);
+                            return s || 'Niet gespecificeerd';
                           })()}
                         </li>
                         <li>

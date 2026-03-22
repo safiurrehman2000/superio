@@ -16,7 +16,12 @@ import {
   setPagination,
   setSortOrder,
 } from '@/features/job/newJobSlice';
-import { formatString, formatJobDate, serializeFirestoreJob } from '@/utils/constants';
+import {
+  formatString,
+  formatJobDate,
+  formatJobTypesDisplay,
+  serializeFirestoreJob,
+} from '@/utils/constants';
 import { errorToast, successToast } from '@/utils/toast';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -253,21 +258,25 @@ const FilterJobBox = () => {
                   {(() => {
                     const raw = item?.jobType ?? item?.JobType;
                     if (!raw) return 'Not specified';
-                    if (typeof raw === 'string') return formatString(raw);
-                    if (typeof raw === 'object') {
+                    if (
+                      typeof raw === 'object' &&
+                      raw !== null &&
+                      !Array.isArray(raw)
+                    ) {
                       if (raw.label) return raw.label;
-                      if (raw.value) return formatString(raw.value);
+                      if (raw.value != null)
+                        return formatJobTypesDisplay(raw.value) || 'Not specified';
                     }
-                    return 'Not specified';
+                    return formatJobTypesDisplay(raw) || 'Not specified';
                   })()}
                 </li>
                 {/* compnay info */}
-                <li>
+                {/* <li>
                   <span className='icon flaticon-map-locator'></span>
                   {[item?.address, item?.postalCode, item?.location]
                     .filter(Boolean)
                     .join(', ') || formatString(item?.location)}
-                </li>
+                </li> */}
                 {/* location info */}
                 <li>
                   <span className='icon flaticon-clock-3'></span>{' '}

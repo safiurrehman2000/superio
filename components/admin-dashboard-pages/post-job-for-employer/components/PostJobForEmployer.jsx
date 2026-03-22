@@ -54,7 +54,7 @@ const PostJobForEmployer = () => {
       offer: "",
       schedule: "",
       email: "",
-      "job-type": "",
+      "job-type": [],
       state: "",
       address: "",
       postalCode: "",
@@ -102,7 +102,7 @@ const PostJobForEmployer = () => {
         schedule: data.schedule,
         email: data.email,
         location: data.state,
-        jobType: data["job-type"],
+        jobType: (data["job-type"] || []).map((o) => o.value),
         address: data.address || undefined,
         postalCode: data.postalCode || undefined,
         salary: data.salary || undefined,
@@ -124,7 +124,7 @@ const PostJobForEmployer = () => {
         schedule: "description",
         email: "email",
         location: "text",
-        jobType: "text",
+        jobType: "job_type_array",
         address: "company_location",
         postalCode: "company_location",
         salary: "company_location",
@@ -248,12 +248,13 @@ const PostJobForEmployer = () => {
                   />
                 </div>
                 <div className="form-group col-lg-6 col-md-12">
-                  <SelectField
+                  <AutoSelect
                     label="Job Type"
                     name="job-type"
                     options={JOB_TYPE_OPTIONS}
-                    placeholder="Select a Job Type"
+                    placeholder="Select one or more contract types"
                     required
+                    defaultValue={[]}
                   />
                 </div>
                 <div className="form-group col-lg-6 col-md-12">

@@ -1,6 +1,6 @@
 'use client';
 import { useFetchEmployerJobsPaginated, deleteJob } from '@/APIs/auth/jobs';
-import { formatString } from '@/utils/constants';
+import { formatJobTypesDisplay, formatString } from '@/utils/constants';
 import { errorToast, successToast } from '@/utils/toast';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -204,7 +204,7 @@ const JobListingsTable = () => {
                       item?.jobLocation ??
                       '';
                     const displayJobType = rawJobType
-                      ? formatString(rawJobType)
+                      ? formatJobTypesDisplay(rawJobType)
                       : 'N/A';
                     const displayLocation =
                       [item?.address, item?.postalCode, rawLocation]

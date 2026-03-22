@@ -6,7 +6,7 @@ import PrivateMessageBox from "@/components/employer-single-pages/shared-compone
 import DefaulHeader2 from "@/components/header/DefaulHeader2";
 import MobileMenu from "@/components/header/MobileMenu";
 import Loading from "@/components/loading/Loading";
-import { formatString } from "@/utils/constants";
+import { formatJobTypesDisplay, formatString } from "@/utils/constants";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
@@ -226,7 +226,7 @@ const EmployersSingleV1 = () => {
                             <ul className="job-info">
                               <li>
                                 <span className="icon flaticon-briefcase"></span>
-                                {formatString(item?.jobType) || "N/A"}
+                                {formatJobTypesDisplay(item?.jobType) || "N/A"}
                               </li>
                               {/* compnay info */}
                               <li>

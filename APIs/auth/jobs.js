@@ -34,7 +34,7 @@ export const useCreateJobPost = async (payload) => {
       schedule: 'description',
       email: 'email',
       location: 'text',
-      jobType: 'text',
+      jobType: 'job_type_array',
       address: 'company_location',
       postalCode: 'company_location',
       salary: 'company_location',
@@ -896,6 +896,7 @@ export const useGetJobListingPaginated = (params = {}) => {
         if (jobType) {
           jobs = jobs.filter((job) => {
             const raw = job.jobType ?? job.JobType;
+            if (Array.isArray(raw)) return raw.includes(jobType);
             return raw === jobType;
           });
         }

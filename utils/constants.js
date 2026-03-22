@@ -324,6 +324,21 @@ export const formatString = (str) => {
     .join(' ');
 };
 
+export const formatJobTypesDisplay = (raw) => {
+  if (raw == null || raw === '') return '';
+  const labelFor = (value) => {
+    const option = JOB_TYPE_OPTIONS.find((opt) => opt.value === value);
+    return option ? option.label : formatString(value);
+  };
+  if (Array.isArray(raw)) {
+    return raw
+      .map((v) => labelFor(v))
+      .filter(Boolean)
+      .join(', ');
+  }
+  return labelFor(raw);
+};
+
 export const formatJobDate = (value) => {
   if (value == null) return '—';
   let d;
@@ -365,7 +380,10 @@ export const applyFilters = (state) => {
     // Job type filter
     const jobTypeRaw = job.jobType ?? job.JobType;
     const matchesJobType =
-      state.selectedJobType === '' || jobTypeRaw === state.selectedJobType;
+      state.selectedJobType === '' ||
+      (Array.isArray(jobTypeRaw)
+        ? jobTypeRaw.includes(state.selectedJobType)
+        : jobTypeRaw === state.selectedJobType);
 
     // Date posted filter
     let matchesDatePosted = true;
@@ -409,22 +427,32 @@ export const transformJobData = (jobs) => {
     return option ? option.label : formatString(value);
   };
 
-  return jobs.map((job) => ({
-    ...job,
-    jobType: {
-      value: job?.jobType ?? job?.JobType,
-      label: findLabel(JOB_TYPE_OPTIONS, job.jobType ?? job.JobType),
-    },
-    location: {
-      value: job?.location,
-      label: findLabel(STATES, job.location),
-    },
-    tags: job?.tags?.map((tag) => ({
-      value: tag,
-      label: findLabel(SECTORS, tag),
-    })),
-    createdAt: new Date(job.createdAt)?.toISOString(),
-  }));
+  return jobs.map((job) => {
+    const rawJt = job?.jobType ?? job?.JobType;
+    const jtLabel = (() => {
+      if (rawJt == null || rawJt === '') return '';
+      if (Array.isArray(rawJt)) {
+        return rawJt.map((v) => findLabel(JOB_TYPE_OPTIONS, v)).join(', ');
+      }
+      return findLabel(JOB_TYPE_OPTIONS, rawJt);
+    })();
+    return {
+      ...job,
+      jobType: {
+        value: rawJt,
+        label: jtLabel,
+      },
+      location: {
+        value: job?.location,
+        label: findLabel(STATES, job.location),
+      },
+      tags: job?.tags?.map((tag) => ({
+        value: tag,
+        label: findLabel(SECTORS, tag),
+      })),
+      createdAt: new Date(job.createdAt)?.toISOString(),
+    };
+  });
 };
 
 // Flex Orange – #FA5508

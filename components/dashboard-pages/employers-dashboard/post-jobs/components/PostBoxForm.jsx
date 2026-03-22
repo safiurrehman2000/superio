@@ -5,11 +5,10 @@ import { useCreateJobPost } from '@/APIs/auth/jobs';
 import AutoSelect from '@/components/autoselect/AutoSelect';
 import CircularLoader from '@/components/circular-loading/CircularLoading';
 import { InputField } from '@/components/inputfield/InputField';
-import { SelectField } from '@/components/selectfield/SelectField';
 import { TextAreaField } from '@/components/textarea/TextArea';
 import { addEmployerJob } from '@/slices/userSlice';
 import { JOB_TYPE_OPTIONS } from '@/utils/constants';
-import { useStates, useSectors } from '@/utils/hooks/useOptionsFromFirebase';
+import { useSectors } from '@/utils/hooks/useOptionsFromFirebase';
 import {
   checkSubscriptionStatus,
   validateJobPostingPermission,
@@ -32,7 +31,6 @@ const PostBoxForm = () => {
   const { push } = useRouter();
 
   // Fetch options from Firebase
-  const { options: states, loading: statesLoading } = useStates();
   const { options: sectors, loading: sectorsLoading } = useSectors();
 
   const methods = useForm({
@@ -45,7 +43,7 @@ const PostBoxForm = () => {
       offer: '',
       schedule: '',
       email: '',
-      'job-type': '',
+      'job-type': [],
       state: '',
       address: '',
       postalCode: '',
@@ -110,7 +108,7 @@ const PostBoxForm = () => {
         schedule: data.schedule,
         email: data.email,
         location: data.state,
-        jobType: data['job-type'],
+        jobType: (data['job-type'] || []).map((o) => o.value),
         address: data.address || undefined,
         postalCode: data.postalCode || undefined,
         salary: data.salary || undefined,
@@ -271,27 +269,27 @@ const PostBoxForm = () => {
           </div>
 
           <div className='form-group col-lg-6 col-md-12'>
-            <SelectField
+            <AutoSelect
               label='Type contract'
               name='job-type'
               options={JOB_TYPE_OPTIONS}
-              placeholder='Selecteer een Job Type'
+              placeholder='Selecteer één of meer contracttypes'
               required
+              defaultValue={[]}
               disabled={isFormDisabled}
             />
           </div>
 
           {/* <!-- Input --> */}
           <div className='form-group col-lg-6 col-md-12'>
-            <SelectField
+            <InputField
               label='Gemeente'
               name='state'
-              options={states}
-              placeholder={
-                statesLoading ? 'Gemeentes laden...' : 'Selecteer een gemeente'
-              }
+              placeholder='bijv. Antwerpen'
+              fieldType='Text'
               required
-              disabled={isFormDisabled || statesLoading}
+              defaultValue=''
+              disabled={isFormDisabled}
             />
           </div>
           <div className='form-group col-lg-6 col-md-12'>
