@@ -69,7 +69,7 @@ const ApplyJobModalContent = ({ onApplicationSuccess }) => {
         setMessage("");
         setSelected(null);
         setHasApplied(true);
-        onApplicationSuccess();
+        onApplicationSuccess?.();
       } else {
         throw new Error(result.error);
       }

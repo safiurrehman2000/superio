@@ -66,6 +66,17 @@ export default function JobClient({ job }) {
     setLogo(logoSrc);
   };
 
+  const handleApplicationSuccess = () => {
+    setHasApplied(true);
+    if (typeof window !== 'undefined' && window.bootstrap?.Modal) {
+      const modalEl = document.getElementById('applyJobModal');
+      if (modalEl) {
+        const instance = window.bootstrap.Modal.getInstance(modalEl);
+        instance?.hide();
+      }
+    }
+  };
+
   return (
     <section className='job-detail-section'>
       <div className='job-detail-outer'>
@@ -200,7 +211,9 @@ export default function JobClient({ job }) {
                           data-bs-dismiss='modal'
                         />
                       </div>
-                      <ApplyJobModalContent />
+                      <ApplyJobModalContent
+                        onApplicationSuccess={handleApplicationSuccess}
+                      />
                     </div>
                   </div>
                 </div>

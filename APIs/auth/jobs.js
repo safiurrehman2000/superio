@@ -206,13 +206,18 @@ export const useGetAppliedJobs = async (candidateId, dispatch) => {
       status: doc.data().status,
     }));
 
-    // Fetch job details for each job ID
     const jobDetailsPromises = applications.map(
-      async ({ jobId, appliedAt }) => {
+      async ({ jobId, appliedAt, status: applicationStatus }) => {
         const jobDocRef = doc(db, 'jobs', jobId);
         const jobDocSnap = await getDoc(jobDocRef);
         if (jobDocSnap.exists()) {
-          return { id: jobId, appliedAt, status, ...jobDocSnap.data() };
+          const jobData = jobDocSnap.data();
+          return {
+            ...jobData,
+            id: jobId,
+            appliedAt,
+            status: applicationStatus ?? 'Active',
+          };
         }
         return null;
       },
@@ -1077,16 +1082,17 @@ export const useGetAppliedJobsPaginated = async (
 
     // Fetch job details for paginated applications
     const jobDetailsPromises = paginatedApplications.map(
-      async ({ jobId, appliedAt, status }) => {
+      async ({ jobId, appliedAt, status: applicationStatus }) => {
         const jobDocRef = doc(db, 'jobs', jobId);
         const jobDocSnap = await getDoc(jobDocRef);
         if (jobDocSnap.exists()) {
+          const jobData = jobDocSnap.data();
           return {
+            ...jobData,
             id: jobId,
             appliedAt,
-            status,
-            createdAt: appliedAt, // Use appliedAt as createdAt for filtering
-            ...jobDocSnap.data(),
+            createdAt: appliedAt,
+            status: applicationStatus ?? 'Active',
           };
         }
         return null;
