@@ -6,20 +6,22 @@ import { db } from '@/utils/firebase';
 import AutoSelect from '@/components/autoselect/AutoSelect';
 import CircularLoader from '@/components/circular-loading/CircularLoading';
 import { InputField } from '@/components/inputfield/InputField';
-import { SelectField } from '@/components/selectfield/SelectField';
 import { TextAreaField } from '@/components/textarea/TextArea';
-import {
-  formatString,
-  JOB_TYPE_OPTIONS,
-  SECTORS,
-  STATES,
-} from '@/utils/constants';
+import { formatString, JOB_TYPE_OPTIONS, SECTORS } from '@/utils/constants';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import { DeleteConfirmationModal } from '@/components/dashboard-pages/employers-dashboard/manage-jobs/components/DeleteModal';
 import Select from 'react-select';
+
+const jobTypeValuesToOptions = (jt) => {
+  if (jt == null || jt === '') return [];
+  const values = Array.isArray(jt) ? jt : [jt];
+  return values
+    .map((v) => JOB_TYPE_OPTIONS.find((o) => o.value === v))
+    .filter(Boolean);
+};
 
 const EditJobPost = () => {
   const [selectedJobId, setSelectedJobId] = useState('');
@@ -60,7 +62,7 @@ const EditJobPost = () => {
       offer: '',
       schedule: '',
       email: '',
-      'job-type': '',
+      'job-type': [],
       state: '',
       address: '',
       postalCode: '',
@@ -96,7 +98,10 @@ const EditJobPost = () => {
           'email',
           selectedJob.email || selector?.user?.email || '',
         );
-        setValue('job-type', selectedJob.jobType || '');
+        setValue(
+          'job-type',
+          jobTypeValuesToOptions(selectedJob.jobType ?? selectedJob.JobType),
+        );
         setValue('state', selectedJob.location || '');
         setValue('address', selectedJob.address || '');
         setValue('postalCode', selectedJob.postalCode || '');
@@ -136,16 +141,23 @@ const EditJobPost = () => {
         schedule: data.schedule,
         email: data.email,
         location: data.state,
-        jobType: data['job-type'],
+        jobType: (data['job-type'] || []).map((o) => o.value),
         address: data.address?.trim() ?? '',
         postalCode: data.postalCode?.trim() ?? '',
         salary: data.salary?.trim() ?? '',
         tags: data.tags.map((tag) => tag.value),
       };
 
+      if (!selector?.user?.uid) {
+        setError('You must be logged in to update a job.');
+        setLoading(false);
+        return;
+      }
+
       const { success, error: apiError } = await updateJob(
         selectedJobId,
         payload,
+        selector.user.uid,
       );
       if (!success) {
         throw new Error(apiError || 'Failed to update job post.');
@@ -369,22 +381,25 @@ const EditJobPost = () => {
                   </div>
 
                   <div className='form-group col-lg-6 col-md-12'>
-                    <SelectField
+                    <AutoSelect
                       label='Job Type'
                       name='job-type'
                       options={JOB_TYPE_OPTIONS}
-                      placeholder='Select a Job Type'
+                      placeholder='Select one or more contract types'
                       required
+                      defaultValue={[]}
                     />
                   </div>
 
                   <div className='form-group col-lg-6 col-md-12'>
-                    <SelectField
-                      label='State'
+                    <InputField
+                      label='Gemeente'
                       name='state'
-                      options={STATES}
-                      placeholder='Select a state'
+                      placeholder='bijv. Antwerpen'
+                      fieldType='Text'
                       required
+                      defaultValue=''
+                      disabled={false}
                     />
                   </div>
 

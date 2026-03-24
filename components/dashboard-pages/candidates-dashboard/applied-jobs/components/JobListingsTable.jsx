@@ -1,10 +1,10 @@
-"use client";
-import Link from "next/link.js";
-import Image from "next/image.js";
-import { useSelector } from "react-redux";
-import { formatString } from "@/utils/constants";
-import { useState, useEffect } from "react";
-import { useGetAppliedJobsPaginated } from "@/APIs/auth/jobs";
+'use client';
+import Link from 'next/link.js';
+import Image from 'next/image.js';
+import { useSelector } from 'react-redux';
+import { formatJobTypesDisplay, formatString } from '@/utils/constants';
+import { useState, useEffect } from 'react';
+import { useGetAppliedJobsPaginated } from '@/APIs/auth/jobs';
 
 const JobListingsTable = () => {
   const selector = useSelector((store) => store.user);
@@ -33,14 +33,14 @@ const JobListingsTable = () => {
         candidateId,
         currentPage,
         jobsPerPage,
-        selectedFilter
+        selectedFilter,
       );
 
       setJobs(result.jobs);
       setTotalJobs(result.totalJobs);
       setTotalPages(result.totalPages);
     } catch (error) {
-      console.error("Error fetching paginated jobs:", error);
+      console.error('Error fetching paginated jobs:', error);
     } finally {
       setLoading(false);
     }
@@ -61,13 +61,27 @@ const JobListingsTable = () => {
     setCurrentPage(1); // Reset to first page on filter change
   };
 
+  const applicationStatusDisplay = (status) => {
+    const s = typeof status === 'string' ? status : '';
+    if (s === 'Accepted') {
+      return <span className='badge bg-success'>Geaccepteerd</span>;
+    }
+    if (s === 'Rejected') {
+      return <span className='badge bg-danger'>Afgewezen</span>;
+    }
+    if (s === 'Active' || !s) {
+      return <span className='badge bg-secondary'>In behandeling</span>;
+    }
+    return <span className='badge bg-secondary'>{s}</span>;
+  };
+
   if (loading) {
     return (
-      <div className="tabs-box">
-        <div className="widget-title">
+      <div className='tabs-box'>
+        <div className='widget-title'>
           <h4>My Applied Jobs</h4>
         </div>
-        <div className="widget-content">
+        <div className='widget-content'>
           <p>Loading...</p>
         </div>
       </div>
@@ -75,14 +89,14 @@ const JobListingsTable = () => {
   }
 
   return (
-    <div className="tabs-box">
-      <div className="widget-title">
+    <div className='tabs-box'>
+      <div className='widget-title'>
         <h4>My Applied Jobs</h4>
 
-        <div className="chosen-outer">
+        <div className='chosen-outer'>
           {/* <!--Tabs Box--> */}
           <select
-            className="chosen-single form-select"
+            className='chosen-single form-select'
             value={selectedFilter}
             onChange={handleFilterChange}
           >
@@ -97,10 +111,10 @@ const JobListingsTable = () => {
       {/* End filter top bar */}
 
       {/* Start table widget content */}
-      <div className="widget-content">
-        <div className="table-outer">
-          <div className="table-outer">
-            <table className="default-table manage-job-table">
+      <div className='widget-content'>
+        <div className='table-outer'>
+          <div className='table-outer'>
+            <table className='default-table manage-job-table'>
               <thead>
                 <tr>
                   <th>Job Title</th>
@@ -113,28 +127,28 @@ const JobListingsTable = () => {
               <tbody>
                 {jobs?.map((item) => {
                   const logoSrc = item?.logo
-                    ? item.logo.startsWith("data:image")
+                    ? item.logo.startsWith('data:image')
                       ? item.logo // Already a Data URL
                       : `data:image/jpeg;base64,${item.logo}`
-                    : "/images/resource/company-6.png";
+                    : '/images/resource/company-6.png';
                   return (
                     <tr key={item.id}>
                       <td>
                         {/* <!-- Job Block --> */}
-                        <div className="job-block">
-                          <div className="inner-box">
-                            <div className="content">
-                              <span className="company-logo">
+                        <div className='job-block'>
+                          <div className='inner-box'>
+                            <div className='content'>
+                              <span className='company-logo'>
                                 <Image
                                   width={50}
                                   height={49}
                                   src={logoSrc}
-                                  alt="logo"
+                                  alt='logo'
                                   style={{
-                                    borderRadius: "50%",
-                                    objectFit: "cover",
-                                    height: "50px",
-                                    width: "50px",
+                                    borderRadius: '50%',
+                                    objectFit: 'cover',
+                                    height: '50px',
+                                    width: '50px',
                                   }}
                                 />
                               </span>
@@ -143,13 +157,13 @@ const JobListingsTable = () => {
                                   {item?.title}
                                 </Link>
                               </h4>
-                              <ul className="job-info">
+                              <ul className='job-info'>
                                 <li>
-                                  <span className="icon flaticon-briefcase"></span>
-                                  {formatString(item?.jobType)}
+                                  <span className='icon flaticon-briefcase'></span>
+                                  {formatJobTypesDisplay(item?.jobType)}
                                 </li>
                                 <li>
-                                  <span className="icon flaticon-map-locator"></span>
+                                  <span className='icon flaticon-map-locator'></span>
                                   {formatString(item?.location)}
                                 </li>
                               </ul>
@@ -158,22 +172,20 @@ const JobListingsTable = () => {
                         </div>
                       </td>
                       <td>{new Date(item?.appliedAt)?.toLocaleDateString()}</td>
-                      <td className="status">
-                        {item?.status || (
-                          <p style={{ color: "black", margin: 0 }}>NA</p>
-                        )}
+                      <td className='status'>
+                        {applicationStatusDisplay(item?.status)}
                       </td>
                       <td>
-                        <div className="option-box">
-                          <ul className="option-list">
+                        <div className='option-box'>
+                          <ul className='option-list'>
                             <li>
-                              <button data-text="View Aplication">
-                                <span className="la la-eye"></span>
+                              <button data-text='View Aplication'>
+                                <span className='la la-eye'></span>
                               </button>
                             </li>
                             <li>
-                              <button data-text="Delete Aplication">
-                                <span className="la la-trash"></span>
+                              <button data-text='Delete Aplication'>
+                                <span className='la la-trash'></span>
                               </button>
                             </li>
                           </ul>
@@ -190,35 +202,35 @@ const JobListingsTable = () => {
       {/* End table widget content */}
       {totalPages > 1 && (
         <div
-          className="pagination-controls"
-          style={{ marginTop: 20, textAlign: "center" }}
+          className='pagination-controls'
+          style={{ marginTop: 20, textAlign: 'center' }}
         >
           <button
             onClick={() => handlePageChange(currentPage - 1)}
             disabled={currentPage === 1}
             style={{
-              padding: "8px 16px",
-              border: "1px solid #d1d5db",
-              backgroundColor: currentPage === 1 ? "#f3f4f6" : "#ffffff",
-              color: currentPage === 1 ? "#9ca3af" : "#374151",
-              borderRadius: "6px",
-              fontSize: "14px",
-              fontWeight: "500",
-              cursor: currentPage === 1 ? "not-allowed" : "pointer",
-              transition: "all 0.2s ease",
-              minWidth: "80px",
-              marginRight: "8px",
+              padding: '8px 16px',
+              border: '1px solid #d1d5db',
+              backgroundColor: currentPage === 1 ? '#f3f4f6' : '#ffffff',
+              color: currentPage === 1 ? '#9ca3af' : '#374151',
+              borderRadius: '6px',
+              fontSize: '14px',
+              fontWeight: '500',
+              cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+              transition: 'all 0.2s ease',
+              minWidth: '80px',
+              marginRight: '8px',
             }}
             onMouseEnter={(e) => {
               if (currentPage !== 1) {
-                e.target.style.backgroundColor = "#f9fafb";
-                e.target.style.borderColor = "#9ca3af";
+                e.target.style.backgroundColor = '#f9fafb';
+                e.target.style.borderColor = '#9ca3af';
               }
             }}
             onMouseLeave={(e) => {
               if (currentPage !== 1) {
-                e.target.style.backgroundColor = "#ffffff";
-                e.target.style.borderColor = "#d1d5db";
+                e.target.style.backgroundColor = '#ffffff';
+                e.target.style.borderColor = '#d1d5db';
               }
             }}
           >
@@ -230,28 +242,28 @@ const JobListingsTable = () => {
               onClick={() => handlePageChange(i + 1)}
               disabled={currentPage === i + 1}
               style={{
-                padding: "8px 12px",
-                border: "1px solid #d1d5db",
-                backgroundColor: currentPage === i + 1 ? "#007bff" : "#ffffff",
-                color: currentPage === i + 1 ? "#ffffff" : "#374151",
-                borderRadius: "6px",
-                fontSize: "14px",
-                fontWeight: currentPage === i + 1 ? "600" : "500",
-                cursor: "pointer",
-                transition: "all 0.2s ease",
-                minWidth: "40px",
-                marginRight: "4px",
+                padding: '8px 12px',
+                border: '1px solid #d1d5db',
+                backgroundColor: currentPage === i + 1 ? '#007bff' : '#ffffff',
+                color: currentPage === i + 1 ? '#ffffff' : '#374151',
+                borderRadius: '6px',
+                fontSize: '14px',
+                fontWeight: currentPage === i + 1 ? '600' : '500',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                minWidth: '40px',
+                marginRight: '4px',
               }}
               onMouseEnter={(e) => {
                 if (currentPage !== i + 1) {
-                  e.target.style.backgroundColor = "#f9fafb";
-                  e.target.style.borderColor = "#9ca3af";
+                  e.target.style.backgroundColor = '#f9fafb';
+                  e.target.style.borderColor = '#9ca3af';
                 }
               }}
               onMouseLeave={(e) => {
                 if (currentPage !== i + 1) {
-                  e.target.style.backgroundColor = "#ffffff";
-                  e.target.style.borderColor = "#d1d5db";
+                  e.target.style.backgroundColor = '#ffffff';
+                  e.target.style.borderColor = '#d1d5db';
                 }
               }}
             >
@@ -262,29 +274,29 @@ const JobListingsTable = () => {
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
             style={{
-              padding: "8px 16px",
-              border: "1px solid #d1d5db",
+              padding: '8px 16px',
+              border: '1px solid #d1d5db',
               backgroundColor:
-                currentPage === totalPages ? "#f3f4f6" : "#ffffff",
-              color: currentPage === totalPages ? "#9ca3af" : "#374151",
-              borderRadius: "6px",
-              fontSize: "14px",
-              fontWeight: "500",
-              cursor: currentPage === totalPages ? "not-allowed" : "pointer",
-              transition: "all 0.2s ease",
-              minWidth: "80px",
-              marginLeft: "8px",
+                currentPage === totalPages ? '#f3f4f6' : '#ffffff',
+              color: currentPage === totalPages ? '#9ca3af' : '#374151',
+              borderRadius: '6px',
+              fontSize: '14px',
+              fontWeight: '500',
+              cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+              transition: 'all 0.2s ease',
+              minWidth: '80px',
+              marginLeft: '8px',
             }}
             onMouseEnter={(e) => {
               if (currentPage !== totalPages) {
-                e.target.style.backgroundColor = "#f9fafb";
-                e.target.style.borderColor = "#9ca3af";
+                e.target.style.backgroundColor = '#f9fafb';
+                e.target.style.borderColor = '#9ca3af';
               }
             }}
             onMouseLeave={(e) => {
               if (currentPage !== totalPages) {
-                e.target.style.backgroundColor = "#ffffff";
-                e.target.style.borderColor = "#d1d5db";
+                e.target.style.backgroundColor = '#ffffff';
+                e.target.style.borderColor = '#d1d5db';
               }
             }}
           >

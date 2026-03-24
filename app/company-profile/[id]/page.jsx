@@ -1,17 +1,17 @@
-"use client";
-import { useGetUserById } from "@/APIs/auth/database";
-import { useGetCompanyJobListings } from "@/APIs/auth/jobs";
-import LoginPopup from "@/components/common/form/login/LoginPopup";
-import PrivateMessageBox from "@/components/employer-single-pages/shared-components/PrivateMessageBox";
-import DefaulHeader2 from "@/components/header/DefaulHeader2";
-import MobileMenu from "@/components/header/MobileMenu";
-import Loading from "@/components/loading/Loading";
-import { formatString } from "@/utils/constants";
-import dynamic from "next/dynamic";
-import Image from "next/image";
-import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+'use client';
+import { useGetUserById } from '@/APIs/auth/database';
+import { useGetCompanyJobListings } from '@/APIs/auth/jobs';
+import LoginPopup from '@/components/common/form/login/LoginPopup';
+import PrivateMessageBox from '@/components/employer-single-pages/shared-components/PrivateMessageBox';
+import DefaulHeader2 from '@/components/header/DefaulHeader2';
+import MobileMenu from '@/components/header/MobileMenu';
+import Loading from '@/components/loading/Loading';
+import { formatJobTypesDisplay, formatString } from '@/utils/constants';
+import dynamic from 'next/dynamic';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 const EmployersSingleV1 = () => {
   const params = useParams();
@@ -22,11 +22,11 @@ const EmployersSingleV1 = () => {
     const fetchJobs = async () => {
       try {
         const { jobs: fetchedJobs } = await useGetCompanyJobListings(
-          params?.id
+          params?.id,
         );
         setJobs(fetchedJobs);
       } catch (err) {
-        console.log("err :>> ", err);
+        console.log('err :>> ', err);
       }
     };
 
@@ -34,12 +34,12 @@ const EmployersSingleV1 = () => {
   }, [params?.id]);
 
   const { data, loading, error } = useGetUserById(params?.id);
-  console.log("data", data);
+  console.log('data', data);
   const logoSrc = data?.logo
-    ? data.logo.startsWith("data:image")
+    ? data.logo.startsWith('data:image')
       ? data.logo // Already a Data URL
       : `data:image/jpeg;base64,${data.logo}`
-    : "/images/resource/company-6.png";
+    : '/images/resource/company-6.png';
 
   if (!params?.id) {
     return <div>Error: No company ID provided</div>;
@@ -47,10 +47,10 @@ const EmployersSingleV1 = () => {
   if (loading) {
     return <Loading />;
   }
-  if (data && data.userType !== "Employer") {
+  if (data && data.userType !== 'Employer') {
     // Option 1: Redirect to home or a 404 page
-    if (typeof window !== "undefined") {
-      replace("/");
+    if (typeof window !== 'undefined') {
+      replace('/');
       return null;
     }
     // Option 2: Show an error message
@@ -59,7 +59,7 @@ const EmployersSingleV1 = () => {
   return (
     <>
       {/* <!-- Header Span --> */}
-      <span className="header-span"></span>
+      <span className='header-span'></span>
 
       <LoginPopup />
       {/* End Login Popup Modal */}
@@ -71,93 +71,93 @@ const EmployersSingleV1 = () => {
       {/* End MobileMenu */}
 
       {/* <!-- Job Detail Section --> */}
-      <section className="job-detail-section">
+      <section className='job-detail-section'>
         {/* <!-- Upper Box --> */}
-        <div className="upper-box">
-          <div className="auto-container">
-            <div className="job-block-seven">
-              <div className="inner-box">
-                <div className="content">
-                  <span className="company-logo">
+        <div className='upper-box'>
+          <div className='auto-container'>
+            <div className='job-block-seven'>
+              <div className='inner-box'>
+                <div className='content'>
+                  <span className='company-logo'>
                     <Image
                       width={100}
                       height={100}
-                      src={logoSrc || "/images/resource/company-6.png"}
-                      alt="logo"
+                      src={logoSrc || '/images/resource/company-6.png'}
+                      alt='logo'
                       style={{
-                        borderRadius: "50%",
-                        width: "100px",
-                        height: "100px",
-                        objectFit: "cover",
+                        borderRadius: '50%',
+                        width: '100px',
+                        height: '100px',
+                        objectFit: 'cover',
                       }}
                     />
                   </span>
-                  <h4>{formatString(data?.company_name) || "N/A"}</h4>
+                  <h4>{formatString(data?.company_name) || 'N/A'}</h4>
 
-                  <ul className="job-info">
+                  <ul className='job-info'>
                     <li>
-                      <span className="icon flaticon-map-locator"></span>
-                      {formatString(data?.company_location) || "N/A"}
+                      <span className='icon flaticon-map-locator'></span>
+                      {formatString(data?.company_location) || 'N/A'}
                     </li>
                     {/* compnay info */}
                     <li>
-                      <span className="icon flaticon-briefcase"></span>
-                      {formatString(data?.company_type?.[0]?.value) || "N/A"}
+                      <span className='icon flaticon-briefcase'></span>
+                      {formatString(data?.company_type?.[0]?.value) || 'N/A'}
                     </li>
                     {/* location info */}
-                    <li>
+                    {/* <li>
                       <span className="icon flaticon-telephone-1"></span>
                       {data?.phone || "N/A"}
-                    </li>
+                    </li> */}
                     {/* time info */}
-                    <li>
+                    {/* <li>
                       <span className="icon flaticon-mail"></span>
                       {data?.email || "N/A"}
-                    </li>
+                    </li> */}
                     {/* salary info */}
                   </ul>
                   {/* End .job-info */}
 
-                  <ul className="job-other-info">
-                    <li className="time">Open Jobs – {jobs?.length || 0}</li>
+                  <ul className='job-other-info'>
+                    <li className='time'>Open Jobs – {jobs?.length || 0}</li>
                   </ul>
                   {/* End .job-other-info */}
                 </div>
                 {/* End .content */}
 
-                <div className="btn-box">
+                <div className='btn-box'>
                   <button
-                    className="theme-btn btn-style-one"
-                    data-bs-toggle="modal"
-                    data-bs-target="#privateMessage"
+                    className='theme-btn btn-style-one'
+                    data-bs-toggle='modal'
+                    data-bs-target='#privateMessage'
                   >
                     Private Message
                   </button>
-                  <button className="bookmark-btn">
-                    <i className="flaticon-bookmark"></i>
+                  <button className='bookmark-btn'>
+                    <i className='flaticon-bookmark'></i>
                   </button>
                 </div>
                 {/* End btn-box */}
 
                 {/* <!-- Modal --> */}
                 <div
-                  className="modal fade"
-                  id="privateMessage"
-                  tabIndex="-1"
-                  aria-hidden="true"
+                  className='modal fade'
+                  id='privateMessage'
+                  tabIndex='-1'
+                  aria-hidden='true'
                 >
-                  <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-                    <div className="apply-modal-content modal-content">
-                      <div className="text-center">
-                        <h3 className="title">
-                          Send message to{" "}
-                          {formatString(data?.company_name) || "N/A"}
+                  <div className='modal-dialog modal-dialog-centered modal-dialog-scrollable'>
+                    <div className='apply-modal-content modal-content'>
+                      <div className='text-center'>
+                        <h3 className='title'>
+                          Send message to{' '}
+                          {formatString(data?.company_name) || 'N/A'}
                         </h3>
                         <button
-                          type="button"
-                          className="closed-modal"
-                          data-bs-dismiss="modal"
-                          aria-label="Close"
+                          type='button'
+                          className='closed-modal'
+                          data-bs-dismiss='modal'
+                          aria-label='Close'
                         ></button>
                       </div>
                       {/* End modal-header */}
@@ -177,95 +177,95 @@ const EmployersSingleV1 = () => {
         {/* <!-- Upper Box --> */}
 
         {/* <!-- job-detail-outer--> */}
-        <div className="job-detail-outer">
-          <div className="auto-container">
-            <div className="row">
-              <div className="content-column col-lg-8 col-md-12 col-sm-12">
+        <div className='job-detail-outer'>
+          <div className='auto-container'>
+            <div className='row'>
+              <div className='content-column col-lg-8 col-md-12 col-sm-12'>
                 {/*  job-detail */}
-                <div className="job-detail">
+                <div className='job-detail'>
                   <h4>About Company</h4>
                   <p>
-                    {data?.description || "No company description available."}
+                    {data?.description || 'No company description available.'}
                   </p>
                 </div>
                 {/* End job-detail */}
 
                 {/* <!-- Related Jobs --> */}
-                <div className="related-jobs">
-                  <div className="title-box">
+                <div className='related-jobs'>
+                  <div className='title-box'>
                     <h3>{jobs?.length || 0} Others jobs available</h3>
                   </div>
                   {/* End .title-box */}
 
                   {jobs?.length > 0 ? (
                     jobs?.map((item) => (
-                      <div className="job-block" key={item.id}>
-                        <div className="inner-box">
-                          <div className="content">
-                            <span className="company-logo">
+                      <div className='job-block' key={item.id}>
+                        <div className='inner-box'>
+                          <div className='content'>
+                            <span className='company-logo'>
                               <Image
                                 width={50}
                                 height={50}
                                 src={logoSrc}
-                                alt="resource"
+                                alt='resource'
                                 style={{
-                                  height: "50px",
-                                  width: "50px",
-                                  borderRadius: "50%",
-                                  objectFit: "cover",
+                                  height: '50px',
+                                  width: '50px',
+                                  borderRadius: '50%',
+                                  objectFit: 'cover',
                                 }}
                               />
                             </span>
                             <h4>
                               <Link href={`/job-list/${item.id}`}>
                                 {formatString(item?.title) ||
-                                  "Untitled Position"}
+                                  'Untitled Position'}
                               </Link>
                             </h4>
 
-                            <ul className="job-info">
+                            <ul className='job-info'>
                               <li>
-                                <span className="icon flaticon-briefcase"></span>
-                                {formatString(item?.jobType) || "N/A"}
+                                <span className='icon flaticon-briefcase'></span>
+                                {formatJobTypesDisplay(item?.jobType) || 'N/A'}
                               </li>
                               {/* compnay info */}
-                              <li>
-                                <span className="icon flaticon-map-locator"></span>
-                                {formatString(item?.location) || "N/A"}
-                              </li>
+                              {/* <li>
+                                <span className='icon flaticon-map-locator'></span>
+                                {formatString(item?.location) || 'N/A'}
+                              </li> */}
                               {/* location info */}
                               <li>
-                                <span className="icon flaticon-clock-3"></span>{" "}
+                                <span className='icon flaticon-clock-3'></span>{' '}
                                 {item?.createdAt
                                   ? new Date(
-                                      item?.createdAt
+                                      item?.createdAt,
                                     )?.toLocaleDateString()
-                                  : "N/A"}
+                                  : 'N/A'}
                               </li>
                               {/* time info */}
                             </ul>
                             {/* End .job-info */}
 
-                            <ul className="job-other-info">
+                            <ul className='job-other-info'>
                               {item?.tags?.length > 0 ? (
                                 item?.tags?.map((val, i) => {
-                                  let styleClass = "";
+                                  let styleClass = '';
                                   if (i % 3 === 0) {
-                                    styleClass = "time";
+                                    styleClass = 'time';
                                   } else if (i % 3 === 1) {
-                                    styleClass = "privacy";
+                                    styleClass = 'privacy';
                                   } else {
-                                    styleClass = "required";
+                                    styleClass = 'required';
                                   }
 
                                   return (
                                     <li key={i} className={styleClass}>
-                                      {formatString(val) || "N/A"}
+                                      {formatString(val) || 'N/A'}
                                     </li>
                                   );
                                 })
                               ) : (
-                                <li className="time">No tags available</li>
+                                <li className='time'>No tags available</li>
                               )}
                             </ul>
                           </div>
@@ -273,7 +273,7 @@ const EmployersSingleV1 = () => {
                       </div>
                     ))
                   ) : (
-                    <div className="text-center py-4">
+                    <div className='text-center py-4'>
                       <p>No jobs available at the moment.</p>
                     </div>
                   )}

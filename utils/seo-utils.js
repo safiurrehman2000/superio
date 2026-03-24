@@ -139,7 +139,9 @@ export const generateFAQSchema = (faqs) => {
 const mapJobTypeToSchema = (jobType) => {
   if (!jobType) return 'FULL_TIME';
 
-  const type = jobType.toLowerCase();
+  const first =
+    Array.isArray(jobType) && jobType.length ? jobType[0] : jobType;
+  const type = String(first).toLowerCase();
   if (type.includes('part') || type.includes('deeltijd')) {
     return 'PART_TIME';
   }

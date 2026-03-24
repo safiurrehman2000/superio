@@ -9,6 +9,7 @@ const AutoSelect = ({
   isMulti = true,
   defaultValue,
   required = false,
+  disabled = false,
 }) => {
   const { control } = useFormContext();
   return (
@@ -32,7 +33,16 @@ const AutoSelect = ({
         control={control}
         defaultValue={defaultValue}
         rules={{
-          required: required ? `${label || "This field"} is required!` : false,
+          validate: (value) => {
+            if (!required) return true;
+            if (isMulti) {
+              return (
+                (Array.isArray(value) && value.length > 0) ||
+                `${label || "This field"} is required!`
+              );
+            }
+            return value || `${label || "This field"} is required!`;
+          },
         }}
         render={({ field, fieldState }) => (
           <>
@@ -41,6 +51,7 @@ const AutoSelect = ({
               placeholder={placeholder}
               isMulti={isMulti}
               options={options}
+              isDisabled={disabled}
               className={`basic-multi-select ${
                 fieldState.error ? "border-danger" : ""
               }`}

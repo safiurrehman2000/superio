@@ -1,6 +1,6 @@
 'use client';
 import { useFetchEmployerJobsPaginated, deleteJob } from '@/APIs/auth/jobs';
-import { formatString } from '@/utils/constants';
+import { formatJobTypesDisplay, formatString } from '@/utils/constants';
 import { errorToast, successToast } from '@/utils/toast';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -204,7 +204,7 @@ const JobListingsTable = () => {
                       item?.jobLocation ??
                       '';
                     const displayJobType = rawJobType
-                      ? formatString(rawJobType)
+                      ? formatJobTypesDisplay(rawJobType)
                       : 'N/A';
                     const displayLocation =
                       [item?.address, item?.postalCode, rawLocation]
@@ -297,6 +297,21 @@ const JobListingsTable = () => {
                                   data-text='View Applicants'
                                 >
                                   <span className='la la-eye'></span>
+                                </button>
+                              </li>
+
+                              <li>
+                                <button
+                                  type='button'
+                                  onClick={() =>
+                                    push(
+                                      `/employers-dashboard/edit-job/${item.id}`,
+                                    )
+                                  }
+                                  data-text='Edit Job'
+                                  title='Edit job'
+                                >
+                                  <span className='la la-pencil'></span>
                                 </button>
                               </li>
 

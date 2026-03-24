@@ -2,7 +2,7 @@
 import Link from "next/link.js";
 import Image from "next/image.js";
 import { useSelector } from "react-redux";
-import { formatString } from "@/utils/constants";
+import { formatJobTypesDisplay, formatString } from "@/utils/constants";
 import { useState, useEffect } from "react";
 import { useGetSavedJobsPaginated } from "@/APIs/auth/jobs";
 
@@ -169,7 +169,7 @@ const JobFavouriteTable = () => {
                               <ul className="job-info">
                                 <li>
                                   <span className="icon flaticon-briefcase"></span>
-                                  {formatString(item?.jobType)}
+                                  {formatJobTypesDisplay(item?.jobType)}
                                 </li>
                                 <li>
                                   <span className="icon flaticon-map-locator"></span>

@@ -366,6 +366,15 @@ export const sanitizeFormData = (formData, fieldTypes) => {
         : null,
     company_type: (value) =>
       Array.isArray(value) ? sanitizeArray(value, sanitizeText) : null,
+    job_type_array: (value) => {
+      if (value == null || value === "") return [];
+      if (Array.isArray(value)) return sanitizeArray(value, sanitizeText);
+      if (typeof value === "string") {
+        const s = sanitizeText(value);
+        return s ? [s] : [];
+      }
+      return [];
+    },
     company_location: sanitizeText,
     // Special sanitizer for user IDs and other identifiers
     userid: (value) =>

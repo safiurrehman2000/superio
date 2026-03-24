@@ -34,7 +34,7 @@ export const useCreateJobPost = async (payload) => {
       schedule: 'description',
       email: 'email',
       location: 'text',
-      jobType: 'text',
+      jobType: 'job_type_array',
       address: 'company_location',
       postalCode: 'company_location',
       salary: 'company_location',
@@ -206,13 +206,18 @@ export const useGetAppliedJobs = async (candidateId, dispatch) => {
       status: doc.data().status,
     }));
 
-    // Fetch job details for each job ID
     const jobDetailsPromises = applications.map(
-      async ({ jobId, appliedAt }) => {
+      async ({ jobId, appliedAt, status: applicationStatus }) => {
         const jobDocRef = doc(db, 'jobs', jobId);
         const jobDocSnap = await getDoc(jobDocRef);
         if (jobDocSnap.exists()) {
-          return { id: jobId, appliedAt, status, ...jobDocSnap.data() };
+          const jobData = jobDocSnap.data();
+          return {
+            ...jobData,
+            id: jobId,
+            appliedAt,
+            status: applicationStatus ?? 'Active',
+          };
         }
         return null;
       },
@@ -752,7 +757,7 @@ export const deleteJob = async (jobId, employerId) => {
   }
 };
 
-export const updateJob = async (jobId, updateData) => {
+export const updateJob = async (jobId, updateData, userId) => {
   try {
     if (!jobId) {
       throw new Error('Job ID is required');
@@ -762,12 +767,30 @@ export const updateJob = async (jobId, updateData) => {
       throw new Error('Update data is required');
     }
 
-    // Verify the job exists
+    if (!userId) {
+      throw new Error('User authentication is required');
+    }
+
+    const userDoc = await getDoc(doc(db, 'users', userId));
+    if (!userDoc.exists()) {
+      throw new Error('User not found');
+    }
+
+    const userData = userDoc.data();
+    if (userData.userType !== 'Employer' && userData.userType !== 'Admin') {
+      throw new Error('Only employers or admins can update job postings');
+    }
+
     const jobRef = doc(db, 'jobs', jobId);
     const jobDoc = await getDoc(jobRef);
 
     if (!jobDoc.exists()) {
       throw new Error('Job not found');
+    }
+
+    const jobData = jobDoc.data();
+    if (userData.userType === 'Employer' && jobData.employerId !== userId) {
+      throw new Error('You can only update your own job postings');
     }
 
     const updatePayload = {
@@ -777,7 +800,6 @@ export const updateJob = async (jobId, updateData) => {
       updatedAt: Date.now(),
     };
 
-    // Update the job document
     await updateDoc(jobRef, updatePayload);
 
     successToast('Job updated successfully');
@@ -896,6 +918,7 @@ export const useGetJobListingPaginated = (params = {}) => {
         if (jobType) {
           jobs = jobs.filter((job) => {
             const raw = job.jobType ?? job.JobType;
+            if (Array.isArray(raw)) return raw.includes(jobType);
             return raw === jobType;
           });
         }
@@ -1059,16 +1082,17 @@ export const useGetAppliedJobsPaginated = async (
 
     // Fetch job details for paginated applications
     const jobDetailsPromises = paginatedApplications.map(
-      async ({ jobId, appliedAt, status }) => {
+      async ({ jobId, appliedAt, status: applicationStatus }) => {
         const jobDocRef = doc(db, 'jobs', jobId);
         const jobDocSnap = await getDoc(jobDocRef);
         if (jobDocSnap.exists()) {
+          const jobData = jobDocSnap.data();
           return {
+            ...jobData,
             id: jobId,
             appliedAt,
-            status,
-            createdAt: appliedAt, // Use appliedAt as createdAt for filtering
-            ...jobDocSnap.data(),
+            createdAt: appliedAt,
+            status: applicationStatus ?? 'Active',
           };
         }
         return null;
