@@ -94,20 +94,28 @@ const index = ({ footerStyle = "" }) => {
                       Volg onze Facebook groep
                     </h4>
 
-                    <a
-                      href="https://www.facebook.com/groups/1386674879413028/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label="Facebook groep Flexi-jobs in Vlaanderen"
-                      className="facebook-group-logo"
-                    >
-                      <Image
-                        width={130}
-                        height={130}
-                        src="/images/flexijobber-logo.jpg"
-                        alt="Flexi-jobs in Vlaanderen Facebook groep"
-                      />
-                    </a>
+                    <div className="facebook-group-flex">
+                      <a
+                        href="https://www.facebook.com/groups/1386674879413028/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="Facebook groep Flexi-jobs in Vlaanderen"
+                      >
+                        <Image
+                          width={130}
+                          height={130}
+                          src="/images/flexijobber-logo.jpg"
+                          alt="Flexi-jobs in Vlaanderen Facebook groep"
+                          style={{ minWidth: "130px" }} // voorkomt shrink
+                        />
+                      </a>
+
+                      <p className="facebook-group-text">
+                        Onze community telt meer dan <br />
+                        <span>35.000 actieve volgers</span>! <br />
+                        De snelst groeiende Facebookgroep van flexi's in Vlaanderen
+                      </p>
+                    </div>
                   </div>
                 </div>
 

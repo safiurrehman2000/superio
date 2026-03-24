@@ -64,7 +64,7 @@ const Register = ({ onRegisterSuccess }) => {
       {/* End form-group */}
 
       <div className="bottom-box">
-        <div className="text d-flex justify-content-center">
+        <div className="text d-flex justify-content-center" style={{ fontSize: "18px" }} >
           Heeft u al een account?&nbsp;
           <div
             style={{ cursor: "pointer" }}
@@ -77,7 +77,7 @@ const Register = ({ onRegisterSuccess }) => {
             Inloggen
           </div>
         </div>
-        <div className="divider">
+        <div className="divider" style={{ fontSize: "18px" }} >
           <span>of</span>
         </div>
         <LoginWithSocial />

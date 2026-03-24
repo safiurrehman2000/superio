@@ -163,7 +163,7 @@ const FormContent = () => {
       </FormProvider>
 
       <div className="bottom-box">
-        <div className="text d-flex justify-content-center">
+        <div className="text d-flex justify-content-center" style={{ fontSize: "18px" }} >
           Nog geen account?&nbsp;
           <div
             style={{

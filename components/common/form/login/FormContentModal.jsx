@@ -138,7 +138,7 @@ const FormContentModal = ({ onLoginSuccess }) => {
       <div className='bottom-box'>
         <div
           className='text d-flex justify-content-center'
-          style={{ fontWeight: 700 }}
+          style={{ fontSize: "18px" }}
         >
           Nog geen account?&nbsp;
           <div

@@ -218,3 +218,7 @@ Deep Blue – #0074E1 */
     transform: translateY(0);
   }
 }
+
+.facebook-group-widget p {
+  color: #ffffff;
+}
