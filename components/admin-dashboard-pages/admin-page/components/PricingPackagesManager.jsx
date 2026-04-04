@@ -17,7 +17,6 @@ const PricingPackagesManager = () => {
     defaultValues: {
       name: "",
       price: "",
-      currency: "eur",
       interval: "month",
       jobLimit: "",
       features: "",
@@ -71,6 +70,7 @@ const PricingPackagesManager = () => {
       const payload = {
         ...data,
         price: parseFloat(data.price),
+        currency: "eur",
         jobLimit: parseInt(data.jobLimit),
         features,
         isActive: data.isActive === "true" || data.isActive === true,
@@ -116,7 +116,6 @@ const PricingPackagesManager = () => {
     setEditingPackage(pkg);
     setValue("name", pkg.packageType || pkg.name || "");
     setValue("price", pkg.price.toString());
-    setValue("currency", pkg.currency || "eur");
     setValue("interval", pkg.interval || "month");
     setValue("jobLimit", (pkg.jobPosts || pkg.jobLimit || 0).toString());
 
@@ -217,16 +216,6 @@ const PricingPackagesManager = () => {
                   label="Price (€)"
                   name="price"
                   placeholder="29.99"
-                  required={true}
-                  fieldType="Text"
-                  disabled={submitting}
-                />
-              </div>
-              <div className="col-lg-6 col-md-6 col-sm-12">
-                <InputField
-                  label="Currency"
-                  name="currency"
-                  placeholder="eur"
                   required={true}
                   fieldType="Text"
                   disabled={submitting}
