@@ -94,16 +94,66 @@ export async function POST(request) {
       );
     }
 
+    const useAutomaticTax =
+      process.env.STRIPE_CHECKOUT_AUTOMATIC_TAX === 'true';
+    const vatTaxRateId = process.env.STRIPE_VAT_TAX_RATE_ID?.trim() || null;
+
+    const allowCheckoutWithoutVat =
+      process.env.STRIPE_ALLOW_CHECKOUT_WITHOUT_VAT === 'true';
+    if (!useAutomaticTax && !vatTaxRateId && !allowCheckoutWithoutVat) {
+      return NextResponse.json(
+        {
+          error:
+            'Server configuration: set STRIPE_VAT_TAX_RATE_ID to your 21% Stripe Tax rate id (Dashboard → Product catalog → Tax rates → copy id like txr_...), or set STRIPE_CHECKOUT_AUTOMATIC_TAX=true if you use Stripe Tax. (Optional: STRIPE_ALLOW_CHECKOUT_WITHOUT_VAT=true to bypass for testing.)',
+        },
+        { status: 500 },
+      );
+    }
+
+    if (!useAutomaticTax && vatTaxRateId) {
+      try {
+        const tr = await stripe.taxRates.retrieve(vatTaxRateId);
+        if (!tr.active) {
+          return NextResponse.json(
+            { error: 'The configured Stripe tax rate (STRIPE_VAT_TAX_RATE_ID) is inactive.' },
+            { status: 400 },
+          );
+        }
+      } catch (e) {
+        return NextResponse.json(
+          {
+            error: `Invalid STRIPE_VAT_TAX_RATE_ID: ${e.message}`,
+          },
+          { status: 400 },
+        );
+      }
+    }
+
+    const lineItem = {
+      price: priceId,
+      quantity: 1,
+    };
+    if (!useAutomaticTax && vatTaxRateId) {
+      lineItem.tax_rates = [vatTaxRateId];
+    }
+
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
       payment_method_types: ['card', 'bancontact'],
-      line_items: [
-        {
-          price: priceId,
-          quantity: 1,
-        },
-      ],
+      line_items: [lineItem],
       allow_promotion_codes: true,
+      tax_id_collection: {
+        enabled: true,
+        required: 'if_supported',
+      },
+      billing_address_collection: 'required',
+      ...(useAutomaticTax
+        ? {
+            automatic_tax: {
+              enabled: true,
+            },
+          }
+        : {}),
       subscription_data: {
         metadata: {
           userId,
@@ -117,7 +167,16 @@ export async function POST(request) {
       },
       success_url: successUrl,
       cancel_url: cancelUrl,
-      ...(stripeCustomerId ? { customer: stripeCustomerId } : {}),
+
+      ...(stripeCustomerId
+        ? {
+            customer: stripeCustomerId,
+            customer_update: {
+              name: 'auto',
+              address: 'auto',
+            },
+          }
+        : {}),
     });
 
     console.log('Stripe session created successfully:', session.id);

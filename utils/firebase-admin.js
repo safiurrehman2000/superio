@@ -30,6 +30,9 @@ if (!admin.apps.length) {
         clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
         privateKey: privateKey,
       }),
+      ...(process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+        ? { storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET }
+        : {}),
     });
 
     console.log("Firebase Admin initialized successfully");

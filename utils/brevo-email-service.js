@@ -272,3 +272,107 @@ export const sendApplicationConfirmationBrevo = async (
     return false;
   }
 };
+
+/**
+ * Send new application notification email to employer
+ * @param {string} employerEmail - Employer email address
+ * @param {string} employerName - Employer name
+ * @param {Object} payload - Application payload
+ * @returns {Promise<boolean>} - Success status
+ */
+export const sendEmployerApplicationNotificationBrevo = async (
+  employerEmail,
+  employerName = "",
+  payload = {}
+) => {
+  try {
+    const {
+      candidateName = "A candidate",
+      candidateEmail = "",
+      jobTitle = "your job posting",
+      candidateMessage = "",
+      resumeFileName = "",
+      applicationId = "",
+    } = payload || {};
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>New CV/Application Received - Flexijobber</title>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background-color: #007bff; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+          .content { background-color: white; padding: 20px; border: 1px solid #ddd; }
+          .info { background-color: #f8f9fa; padding: 15px; border-radius: 8px; margin: 16px 0; }
+          .footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid #ddd; font-size: 14px; color: #666; text-align: center; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>📄 New CV/Application Received</h1>
+            <p>A candidate has applied to your job post</p>
+          </div>
+          <div class="content">
+            <p>Hello ${employerName || "there"},</p>
+            <p>You have received a new application on Flexijobber.</p>
+            <div class="info">
+              <p><strong>Job:</strong> ${jobTitle}</p>
+              <p><strong>Candidate:</strong> ${candidateName}</p>
+              ${
+                candidateEmail
+                  ? `<p><strong>Candidate email:</strong> ${candidateEmail}</p>`
+                  : ""
+              }
+              ${
+                resumeFileName
+                  ? `<p><strong>CV file:</strong> ${resumeFileName}</p>`
+                  : ""
+              }
+              ${
+                applicationId
+                  ? `<p><strong>Application ID:</strong> ${applicationId}</p>`
+                  : ""
+              }
+              <p><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
+            </div>
+            ${
+              candidateMessage
+                ? `<p><strong>Candidate message:</strong><br>${candidateMessage}</p>`
+                : ""
+            }
+            <p>Please log in to your employer dashboard to review the full profile and CV.</p>
+          </div>
+          <div class="footer">
+            <p>Best regards,<br>The Flexijobber Team</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const emailData = {
+      to: [{ email: employerEmail, name: employerName }],
+      subject: `📄 New application received for ${jobTitle} - Flexijobber`,
+      htmlContent,
+      senderName: BREVO_CONFIG.senderName,
+      senderEmail: BREVO_CONFIG.senderEmail,
+      replyTo: BREVO_CONFIG.replyToEmail,
+    };
+
+    await sendBrevoEmail(emailData);
+    console.log(
+      `✅ Employer application notification sent successfully to: ${employerEmail}`
+    );
+    return true;
+  } catch (error) {
+    console.error(
+      `💥 Error sending employer application notification to ${employerEmail}:`,
+      error
+    );
+    return false;
+  }
+};

@@ -173,14 +173,23 @@ export const useApplyForJob = async (
       throw new Error('You have already applied to this job.');
     }
 
-    await addDoc(collection(db, 'applications'), {
-      candidateId,
-      jobId,
-      resumeId: selectedResume?.id,
-      message: message || '',
-      appliedAt: Date.now(),
-      status: 'Active',
+    const response = await fetch('/api/applications', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        candidateId,
+        jobId,
+        resumeId: selectedResume?.id || '',
+        message: message || '',
+      }),
     });
+
+    const result = await response.json();
+    if (!response.ok || !result?.success) {
+      throw new Error(result?.error || 'Failed to submit application.');
+    }
 
     successToast('Application submitted successfully!');
     return { success: true };
