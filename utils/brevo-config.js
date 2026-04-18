@@ -5,7 +5,7 @@ import * as SibApiV3Sdk from "@getbrevo/brevo";
 export const brevoApiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
 
 // Configure API key
-const apiKey = process.env.BREVO_API_KEY;
+const apiKey = (process.env.BREVO_API_KEY || "").trim();
 console.log(
   "🔑 Brevo API Key check:",
   apiKey ? `${apiKey.substring(0, 10)}...` : "NOT FOUND"
@@ -26,9 +26,13 @@ brevoApiInstance.setApiKey(
 
 // Email configuration
 export const BREVO_CONFIG = {
-  senderEmail: process.env.BREVO_SENDER_EMAIL || "noreply@de-flexi-jobber.be",
-  senderName: process.env.BREVO_SENDER_NAME || "Flexijobber",
-  replyToEmail: process.env.BREVO_REPLY_TO_EMAIL || "info@horecabenelux.com",
+  senderEmail:
+    (process.env.BREVO_SENDER_EMAIL || "").trim() ||
+    "noreply@de-flexi-jobber.be",
+  senderName: (process.env.BREVO_SENDER_NAME || "").trim() || "Flexijobber",
+  replyToEmail:
+    (process.env.BREVO_REPLY_TO_EMAIL || "").trim() ||
+    "info@horecabenelux.com",
 };
 
 // Email template IDs (you can create these in Brevo dashboard)

@@ -14,6 +14,7 @@ import {
 import { useRouter } from "next/navigation";
 import CircularLoader from "@/components/circular-loading/CircularLoading";
 import { errorToast, successToast } from "@/utils/toast";
+import { getCurrentUserToken } from "@/utils/auth-utils";
 
 const PackageDataTable = () => {
   const [receipts, setReceipts] = useState([]);
@@ -26,6 +27,7 @@ const PackageDataTable = () => {
   const [stripeSubscriptionId, setStripeSubscriptionId] = useState(null);
   const [hasArchivedJobs, setHasArchivedJobs] = useState(false);
   const [currentPeriodEnd, setCurrentPeriodEnd] = useState(null);
+  const [pdfLoadingId, setPdfLoadingId] = useState(null);
   const user = useSelector((state) => state.user.user);
   const router = useRouter();
 
@@ -141,6 +143,30 @@ const PackageDataTable = () => {
         )
       )
     : null;
+
+  const openReceiptPdf = async (receiptId) => {
+    setPdfLoadingId(receiptId);
+    try {
+      const token = await getCurrentUserToken();
+      const res = await fetch(
+        `/api/employer-receipt-pdf?receiptId=${encodeURIComponent(receiptId)}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        const msg = [err.error, err.detail].filter(Boolean).join(" — ");
+        throw new Error(msg || "Download mislukt");
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank", "noopener,noreferrer");
+      setTimeout(() => URL.revokeObjectURL(url), 120_000);
+    } catch (err) {
+      errorToast(err.message || "Kon PDF niet openen.");
+    } finally {
+      setPdfLoadingId(null);
+    }
+  };
 
   const handleCancelSubscription = async () => {
     setCancelLoading(true);
@@ -348,7 +374,23 @@ const PackageDataTable = () => {
                     : ""}
                 </td>
                 <td>
-                  {r.receipt_pdf_url ? (
+                  {r.invoiceId ? (
+                    <button
+                      type="button"
+                      className="btn btn-link p-0 border-0"
+                      onClick={() => openReceiptPdf(r.id)}
+                      disabled={pdfLoadingId === r.id}
+                      style={{
+                        color: "#fa5508",
+                        textDecoration: "underline",
+                        background: "none",
+                        cursor:
+                          pdfLoadingId === r.id ? "wait" : "pointer",
+                      }}
+                    >
+                      {pdfLoadingId === r.id ? "Laden…" : "Download PDF"}
+                    </button>
+                  ) : r.receipt_pdf_url ? (
                     <a
                       href={r.receipt_pdf_url}
                       target="_blank"

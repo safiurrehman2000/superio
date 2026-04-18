@@ -30,6 +30,9 @@ if (!admin.apps.length) {
         clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
         privateKey: privateKey,
       }),
+      ...(process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+        ? { storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET }
+        : {}),
     });
 
     console.log("Firebase Admin initialized successfully");
@@ -41,3 +44,4 @@ if (!admin.apps.length) {
 
 export const adminDb = admin.firestore();
 export const db = admin.firestore(); // Alias for compatibility
+export const adminAuth = admin.auth();

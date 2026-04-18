@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server";
-import Stripe from "stripe";
-import { adminDb } from "@/utils/firebase-admin";
+import { NextResponse } from 'next/server';
+import Stripe from 'stripe';
+import { adminDb } from '@/utils/firebase-admin';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -8,14 +8,14 @@ export async function POST(request) {
   const { userId } = await request.json();
 
   if (!userId) {
-    return NextResponse.json({ error: "Missing userId" }, { status: 400 });
+    return NextResponse.json({ error: 'Missing userId' }, { status: 400 });
   }
 
   try {
     // Get user document
-    const userDoc = await adminDb.collection("users").doc(userId).get();
+    const userDoc = await adminDb.collection('users').doc(userId).get();
     if (!userDoc.exists) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     const userData = userDoc.data();
@@ -24,7 +24,7 @@ export async function POST(request) {
     if (!stripeSubscriptionId && !stripeCustomerId) {
       return NextResponse.json({
         success: false,
-        message: "No subscription found for user",
+        message: 'No subscription found for user',
       });
     }
 
@@ -34,12 +34,11 @@ export async function POST(request) {
     // Try to get subscription by subscription ID first
     if (stripeSubscriptionId) {
       try {
-        subscription = await stripe.subscriptions.retrieve(
-          stripeSubscriptionId
-        );
-        console.log("Found subscription by ID:", subscription.id);
+        subscription =
+          await stripe.subscriptions.retrieve(stripeSubscriptionId);
+        console.log('Found subscription by ID:', subscription.id);
       } catch (error) {
-        console.log("Subscription not found by ID, trying customer lookup");
+        console.log('Subscription not found by ID, trying customer lookup');
       }
     }
 
@@ -48,16 +47,16 @@ export async function POST(request) {
       try {
         const subscriptions = await stripe.subscriptions.list({
           customer: stripeCustomerId,
-          status: "all",
+          status: 'all',
           limit: 1,
         });
 
         if (subscriptions.data.length > 0) {
           subscription = subscriptions.data[0];
-          console.log("Found subscription by customer ID:", subscription.id);
+          console.log('Found subscription by customer ID:', subscription.id);
         }
       } catch (error) {
-        console.error("Error finding subscription by customer ID:", error);
+        console.error('Error finding subscription by customer ID:', error);
       }
     }
 
@@ -68,14 +67,17 @@ export async function POST(request) {
 
       // Find matching pricing package
       if (stripePriceId) {
-        const packagesRef = adminDb.collection("pricingPackages");
+        const packagesRef = adminDb.collection('pricingPackages');
         const pkgQuery = await packagesRef
-          .where("stripePriceId", "==", stripePriceId)
+          .where('stripePriceId', '==', stripePriceId)
           .get();
 
         if (!pkgQuery.empty) {
-          planId = pkgQuery.docs[0].data().id;
-          console.log("Found plan ID:", planId);
+          const pkgDoc = pkgQuery.docs[0];
+          const pkgData = pkgDoc.data();
+
+          planId = pkgData?.id ?? pkgDoc.id ?? null;
+          console.log('Found plan ID:', planId);
         }
       }
 
@@ -83,9 +85,9 @@ export async function POST(request) {
       updatedData = {
         stripeSubscriptionId: subscription.id,
         subscriptionStatus: status,
-        planId: ["canceled", "incomplete_expired"].includes(status)
+        planId: ['canceled', 'incomplete_expired'].includes(status)
           ? null
-          : planId,
+          : (planId ?? null),
         subscriptionUpdatedAt: new Date(),
         // If this is a new plan (different from current), reset the start date
         ...(planId &&
@@ -94,11 +96,11 @@ export async function POST(request) {
           }),
       };
 
-      await adminDb.collection("users").doc(userId).update(updatedData);
+      await adminDb.collection('users').doc(userId).update(updatedData);
 
       return NextResponse.json({
         success: true,
-        message: "Subscription status refreshed successfully",
+        message: 'Subscription status refreshed successfully',
         subscription: {
           id: subscription.id,
           status: status,
@@ -109,18 +111,18 @@ export async function POST(request) {
     } else {
       return NextResponse.json({
         success: false,
-        message: "No active subscription found in Stripe",
+        message: 'No active subscription found in Stripe',
       });
     }
   } catch (error) {
-    console.error("Error refreshing subscription status:", error);
+    console.error('Error refreshing subscription status:', error);
     return NextResponse.json(
       {
         success: false,
-        message: "Failed to refresh subscription status",
+        message: 'Failed to refresh subscription status',
         error: error.message,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

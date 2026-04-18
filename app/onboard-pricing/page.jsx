@@ -267,7 +267,8 @@ const Pricing = () => {
                   <div className="price">{item.price}</div>
                 ) : (
                   <div className="price">
-                    ${item.price} <span className="duration">/ monthly</span>
+                    €{item.price}{" "}
+                    <span className="duration">/ monthly</span>
                   </div>
                 )}
 
