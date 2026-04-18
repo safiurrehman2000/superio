@@ -102,6 +102,8 @@ export async function POST(request) {
     let employerEmail = null;
     let employerEmailSource = null;
     let emailError = null;
+    let brevoErrorMessage = null;
+    let brevoErrorCode = null;
     try {
       const [jobSnap, candidateSnap] = await Promise.all([
         adminDb.collection('jobs').doc(sanitizedPayload.jobId).get(),
@@ -141,7 +143,7 @@ export async function POST(request) {
           console.log(
             `📧 Employer notify: sending to ${resolvedEmployerEmail} (source: ${source})`,
           );
-          employerEmailSent = await sendEmployerApplicationNotificationBrevo(
+          const notifyResult = await sendEmployerApplicationNotificationBrevo(
             resolvedEmployerEmail,
             employerName,
             {
@@ -153,10 +155,17 @@ export async function POST(request) {
               applicationId: applicationRef.id,
             },
           );
+          employerEmailSent = Boolean(notifyResult?.success);
           if (!employerEmailSent) {
-            emailError = 'BREVO_SEND_FAILED';
+            brevoErrorMessage = notifyResult?.errorMessage || null;
+            brevoErrorCode = notifyResult?.errorCode || null;
+            emailError = brevoErrorMessage
+              ? `BREVO_SEND_FAILED: ${brevoErrorMessage}`
+              : 'BREVO_SEND_FAILED';
             console.error(
-              '⚠️ Brevo returned failure for employer notification — check BREVO_API_KEY and sender domain verification',
+              '⚠️ Brevo employer notification failed:',
+              brevoErrorCode,
+              brevoErrorMessage,
             );
           }
         } else {
@@ -179,6 +188,8 @@ export async function POST(request) {
       employerEmail: employerEmail || null,
       employerEmailSource: employerEmailSource || null,
       emailError: emailError || null,
+      brevoErrorMessage: brevoErrorMessage || null,
+      brevoErrorCode: brevoErrorCode || null,
       emailAttemptedAt: Date.now(),
     });
 
@@ -189,6 +200,8 @@ export async function POST(request) {
       employerEmail: employerEmail || null,
       employerEmailSource: employerEmailSource || null,
       emailError: emailError || null,
+      brevoErrorMessage: brevoErrorMessage || null,
+      brevoErrorCode: brevoErrorCode || null,
     });
   } catch (error) {
     console.error('💥 Error creating application:', error);
