@@ -92,7 +92,9 @@ export async function POST(request) {
         .where('stripePriceId', '==', stripePriceId)
         .get();
       if (!pkgQuery.empty) {
-        planId = pkgQuery.docs[0].data().id;
+        const pkgDoc = pkgQuery.docs[0];
+        const pkgData = pkgDoc.data();
+        planId = pkgData?.id ?? pkgDoc.id ?? null;
       }
     }
     console.log('planId is set', planId);
@@ -121,7 +123,7 @@ export async function POST(request) {
           subscriptionStatus: status,
           planId: ['canceled', 'incomplete_expired'].includes(status)
             ? null
-            : planId,
+            : (planId ?? null),
           subscriptionUpdatedAt: new Date(),
           ...(planId &&
             planId !== prevPlanId && {
@@ -320,19 +322,24 @@ export async function POST(request) {
           .where('stripePriceId', '==', stripePriceId)
           .get();
         if (!pkgQuery.empty) {
-          planId = pkgQuery.docs[0].data().id;
+          const pkgDoc = pkgQuery.docs[0];
+          const pkgData = pkgDoc.data();
+          planId = pkgData?.id ?? pkgDoc.id ?? null;
         }
       }
 
       // Update user with subscription details
-      await adminDb.collection('users').doc(userId).update({
-        stripeSubscriptionId: subscriptionId,
-        subscriptionStatus: status,
-        planId: planId, // Set planId to the local package id
-        subscriptionUpdatedAt: new Date(), // This resets the job count
-        subscriptionStartDate: new Date(), // Track when this subscription started
-        isFirstTime: false, // Mark onboarding as complete after subscription
-      });
+      await adminDb
+        .collection('users')
+        .doc(userId)
+        .update({
+          stripeSubscriptionId: subscriptionId,
+          subscriptionStatus: status,
+          planId: planId ?? null,
+          subscriptionUpdatedAt: new Date(), // This resets the job count
+          subscriptionStartDate: new Date(), // Track when this subscription started
+          isFirstTime: false, // Mark onboarding as complete after subscription
+        });
       console.log(
         'stripeSubscriptionId and planId set for user',
         userId,

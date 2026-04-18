@@ -1,7 +1,51 @@
-import { NextResponse } from "next/server";
-import { adminDb } from "@/utils/firebase-admin";
-import { sanitizeFormData } from "@/utils/sanitization";
-import { sendEmployerApplicationNotificationBrevo } from "@/utils/brevo-email-service";
+import { NextResponse } from 'next/server';
+import { adminAuth, adminDb } from '@/utils/firebase-admin';
+import { sanitizeEmail, sanitizeFormData } from '@/utils/sanitization';
+import { sendEmployerApplicationNotificationBrevo } from '@/utils/brevo-email-service';
+
+async function resolveEmployerNotificationEmail(employerId, jobData) {
+  const jobContact = sanitizeEmail(jobData?.email);
+
+  if (!employerId) {
+    return {
+      email: jobContact || null,
+      employerName: '',
+      source: jobContact ? 'job' : null,
+    };
+  }
+
+  const employerSnap = await adminDb.collection('users').doc(employerId).get();
+  const employerData = employerSnap.exists ? employerSnap.data() || {} : {};
+  const employerName = employerData.name || employerData.company_name || '';
+
+  const fromProfile = sanitizeEmail(employerData.email);
+  if (fromProfile) {
+    return { email: fromProfile, employerName, source: 'firestore' };
+  }
+
+  try {
+    const userRecord = await adminAuth.getUser(employerId);
+    const fromAuth = sanitizeEmail(userRecord.email);
+    if (fromAuth) {
+      return { email: fromAuth, employerName, source: 'auth' };
+    }
+  } catch (authErr) {
+    console.error(
+      'resolveEmployerNotificationEmail: Firebase Auth getUser failed:',
+      authErr?.message || authErr,
+    );
+  }
+
+  if (jobContact) {
+    return { email: jobContact, employerName, source: 'job' };
+  }
+
+  console.error(
+    'resolveEmployerNotificationEmail: No email found for employer',
+    employerId,
+  );
+  return { email: null, employerName, source: null };
+}
 
 export async function POST(request) {
   try {
@@ -9,112 +53,148 @@ export async function POST(request) {
 
     if (!candidateId || !jobId) {
       return NextResponse.json(
-        { success: false, error: "candidateId and jobId are required" },
-        { status: 400 }
+        { success: false, error: 'candidateId and jobId are required' },
+        { status: 400 },
       );
     }
 
     const fieldTypes = {
-      candidateId: "candidateid",
-      jobId: "text",
-      resumeId: "text",
-      message: "description",
+      candidateId: 'candidateid',
+      jobId: 'text',
+      resumeId: 'text',
+      message: 'description',
     };
     const sanitizedPayload = sanitizeFormData(
-      { candidateId, jobId, resumeId: resumeId || "", message: message || "" },
-      fieldTypes
+      { candidateId, jobId, resumeId: resumeId || '', message: message || '' },
+      fieldTypes,
     );
 
     if (!sanitizedPayload.candidateId || !sanitizedPayload.jobId) {
       return NextResponse.json(
-        { success: false, error: "Invalid application data" },
-        { status: 400 }
+        { success: false, error: 'Invalid application data' },
+        { status: 400 },
       );
     }
 
     const existingSnap = await adminDb
-      .collection("applications")
-      .where("candidateId", "==", sanitizedPayload.candidateId)
-      .where("jobId", "==", sanitizedPayload.jobId)
+      .collection('applications')
+      .where('candidateId', '==', sanitizedPayload.candidateId)
+      .where('jobId', '==', sanitizedPayload.jobId)
       .limit(1)
       .get();
     if (!existingSnap.empty) {
       return NextResponse.json(
-        { success: false, error: "You have already applied to this job." },
-        { status: 409 }
+        { success: false, error: 'You have already applied to this job.' },
+        { status: 409 },
       );
     }
 
-    const applicationRef = await adminDb.collection("applications").add({
+    const applicationRef = await adminDb.collection('applications').add({
       candidateId: sanitizedPayload.candidateId,
       jobId: sanitizedPayload.jobId,
       resumeId: sanitizedPayload.resumeId || null,
-      message: sanitizedPayload.message || "",
+      message: sanitizedPayload.message || '',
       appliedAt: Date.now(),
-      status: "Active",
+      status: 'Active',
     });
 
     let employerEmailSent = false;
+    let employerEmail = null;
+    let employerEmailSource = null;
+    let emailError = null;
     try {
       const [jobSnap, candidateSnap] = await Promise.all([
-        adminDb.collection("jobs").doc(sanitizedPayload.jobId).get(),
-        adminDb.collection("users").doc(sanitizedPayload.candidateId).get(),
+        adminDb.collection('jobs').doc(sanitizedPayload.jobId).get(),
+        adminDb.collection('users').doc(sanitizedPayload.candidateId).get(),
       ]);
 
       if (jobSnap.exists) {
         const jobData = jobSnap.data() || {};
         const employerId = jobData.employerId;
-        if (employerId) {
-          const employerSnap = await adminDb.collection("users").doc(employerId).get();
-          if (employerSnap.exists) {
-            const employerData = employerSnap.data() || {};
-            const candidateData = candidateSnap.exists ? candidateSnap.data() || {} : {};
+        const candidateData = candidateSnap.exists
+          ? candidateSnap.data() || {}
+          : {};
 
-            let resumeFileName = "";
-            if (sanitizedPayload.resumeId) {
-              const resumeSnap = await adminDb
-                .collection("users")
-                .doc(sanitizedPayload.candidateId)
-                .collection("resumes")
-                .doc(sanitizedPayload.resumeId)
-                .get();
-              if (resumeSnap.exists) {
-                const resumeData = resumeSnap.data() || {};
-                resumeFileName = resumeData.fileName || "";
-              }
-            }
-
-            if (employerData.email) {
-              employerEmailSent = await sendEmployerApplicationNotificationBrevo(
-                employerData.email,
-                employerData.name || employerData.company_name || "",
-                {
-                  candidateName: candidateData.name || "Candidate",
-                  candidateEmail: candidateData.email || "",
-                  jobTitle: jobData.title || "your job posting",
-                  candidateMessage: sanitizedPayload.message || "",
-                  resumeFileName,
-                  applicationId: applicationRef.id,
-                }
-              );
-            }
+        let resumeFileName = '';
+        if (sanitizedPayload.resumeId) {
+          const resumeSnap = await adminDb
+            .collection('users')
+            .doc(sanitizedPayload.candidateId)
+            .collection('resumes')
+            .doc(sanitizedPayload.resumeId)
+            .get();
+          if (resumeSnap.exists) {
+            const resumeData = resumeSnap.data() || {};
+            resumeFileName = resumeData.fileName || '';
           }
         }
+
+        const {
+          email: resolvedEmployerEmail,
+          employerName,
+          source,
+        } = await resolveEmployerNotificationEmail(employerId, jobData);
+        employerEmail = resolvedEmployerEmail || null;
+        employerEmailSource = source || null;
+
+        if (resolvedEmployerEmail) {
+          console.log(
+            `📧 Employer notify: sending to ${resolvedEmployerEmail} (source: ${source})`,
+          );
+          employerEmailSent = await sendEmployerApplicationNotificationBrevo(
+            resolvedEmployerEmail,
+            employerName,
+            {
+              candidateName: candidateData.name || 'Candidate',
+              candidateEmail: candidateData.email || '',
+              jobTitle: jobData.title || 'your job posting',
+              candidateMessage: sanitizedPayload.message || '',
+              resumeFileName,
+              applicationId: applicationRef.id,
+            },
+          );
+          if (!employerEmailSent) {
+            emailError = 'BREVO_SEND_FAILED';
+            console.error(
+              '⚠️ Brevo returned failure for employer notification — check BREVO_API_KEY and sender domain verification',
+            );
+          }
+        } else {
+          emailError = 'NO_EMPLOYER_EMAIL_RESOLVED';
+          console.error(
+            '⚠️ No employer email resolved (missing employerId on job, user profile, Auth, and job contact email)',
+          );
+        }
       }
-    } catch (emailError) {
-      console.error("⚠️ Application saved but employer email failed:", emailError);
+    } catch (emailSendError) {
+      emailError = emailSendError?.message || 'UNKNOWN_EMAIL_ERROR';
+      console.error(
+        '⚠️ Application saved but employer email failed:',
+        emailSendError,
+      );
     }
+
+    await applicationRef.update({
+      employerEmailSent,
+      employerEmail: employerEmail || null,
+      employerEmailSource: employerEmailSource || null,
+      emailError: emailError || null,
+      emailAttemptedAt: Date.now(),
+    });
 
     return NextResponse.json({
       success: true,
       applicationId: applicationRef.id,
       employerEmailSent,
+      employerEmail: employerEmail || null,
+      employerEmailSource: employerEmailSource || null,
+      emailError: emailError || null,
     });
   } catch (error) {
-    console.error("💥 Error creating application:", error);
+    console.error('💥 Error creating application:', error);
     return NextResponse.json(
-      { success: false, error: "Failed to submit application" },
-      { status: 500 }
+      { success: false, error: 'Failed to submit application' },
+      { status: 500 },
     );
   }
 }

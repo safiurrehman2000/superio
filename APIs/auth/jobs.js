@@ -191,6 +191,13 @@ export const useApplyForJob = async (
       throw new Error(result?.error || 'Failed to submit application.');
     }
 
+    if (result?.employerEmailSent === false) {
+      console.warn(
+        'Application saved but employer email failed:',
+        result?.emailError || 'UNKNOWN_EMAIL_ERROR',
+      );
+    }
+
     successToast('Application submitted successfully!');
     return { success: true };
   } catch (err) {

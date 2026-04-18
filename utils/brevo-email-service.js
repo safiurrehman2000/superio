@@ -36,8 +36,17 @@ export const sendBrevoEmail = async (emailData) => {
     console.log("✅ Brevo email sent successfully:", response);
     return { success: true, messageId: response.messageId };
   } catch (error) {
-    console.error("❌ Error sending Brevo email:", error);
-    throw error;
+    const errorMessage =
+      error?.response?.body?.message ||
+      error?.message ||
+      "Unknown Brevo error";
+    const errorCode = error?.response?.statusCode || error?.code || "UNKNOWN";
+    console.error("❌ Error sending Brevo email:", {
+      errorCode,
+      errorMessage,
+      details: error?.response?.body || null,
+    });
+    return { success: false, errorCode, errorMessage };
   }
 };
 
@@ -82,11 +91,16 @@ export const sendJobAlertEmailBrevo = async (
 
     // Send email
     const result = await sendBrevoEmail(emailData);
-
+    if (!result.success) {
+      console.error(
+        `❌ Job alert email failed for ${userEmail}:`,
+        result.errorMessage
+      );
+      return false;
+    }
     console.log(`✅ Job alert email sent successfully to: ${userEmail}`);
     console.log(`📧 Jobs included: ${jobs.length}`);
     console.log(`📧 Message ID: ${result.messageId}`);
-
     return true;
   } catch (error) {
     console.error(`💥 Error sending job alert email to ${userEmail}:`, error);
@@ -180,6 +194,13 @@ export const sendWelcomeEmailBrevo = async (
     };
 
     const result = await sendBrevoEmail(emailData);
+    if (!result.success) {
+      console.error(
+        `❌ Welcome email failed for ${userEmail}:`,
+        result.errorMessage
+      );
+      return false;
+    }
     console.log(`✅ Welcome email sent successfully to: ${userEmail}`);
     return true;
   } catch (error) {
@@ -260,6 +281,13 @@ export const sendApplicationConfirmationBrevo = async (
     };
 
     const result = await sendBrevoEmail(emailData);
+    if (!result.success) {
+      console.error(
+        `❌ Application confirmation email failed for ${candidateEmail}:`,
+        result.errorMessage
+      );
+      return false;
+    }
     console.log(
       `✅ Application confirmation email sent successfully to: ${candidateEmail}`
     );
@@ -363,7 +391,14 @@ export const sendEmployerApplicationNotificationBrevo = async (
       replyTo: BREVO_CONFIG.replyToEmail,
     };
 
-    await sendBrevoEmail(emailData);
+    const result = await sendBrevoEmail(emailData);
+    if (!result.success) {
+      console.error(
+        `❌ Employer application notification failed for ${employerEmail}:`,
+        result.errorMessage
+      );
+      return false;
+    }
     console.log(
       `✅ Employer application notification sent successfully to: ${employerEmail}`
     );
