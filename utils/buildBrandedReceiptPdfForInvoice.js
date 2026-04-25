@@ -45,9 +45,11 @@ export async function buildBrandedReceiptPdfForInvoice(invoice, planId, userId) 
     ud.address ||
     ud.street ||
     "";
+  const phoneLine = ud.phone || ud.phone_number || invoice.customer_phone || "";
   const customerLines = [
     customerName || "",
     addressLine || ud.company_location || "",
+    phoneLine,
     ud.vat_number || ud.btw_number || ud.btw || "",
   ].map((s) => (s == null ? "" : String(s).trim()));
 
