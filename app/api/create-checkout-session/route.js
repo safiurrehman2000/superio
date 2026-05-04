@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { adminDb } from '@/utils/firebase-admin';
+import { isEmployerCompanyProfileComplete } from '@/utils/isEmployerCompanyProfileComplete';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -43,6 +44,18 @@ export async function POST(request) {
     }
 
     const userData = userDoc.exists ? userDoc.data() : {};
+    if (
+      userData.userType === 'Employer' &&
+      !isEmployerCompanyProfileComplete(userData)
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            'Complete your company profile (name, phone, location, company type, and description) before subscribing.',
+        },
+        { status: 400 },
+      );
+    }
     const stripeCustomerId = userData.stripeCustomerId || null;
     const userEmail = userData.email || null;
     const companyName = userData.company_name || null;

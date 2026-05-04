@@ -8,6 +8,7 @@ import {
   removeUser,
 } from "@/slices/userSlice";
 import { LOGO } from "@/utils/constants";
+import { isEmployerCompanyProfileComplete } from "@/utils/isEmployerCompanyProfileComplete";
 import { auth, db } from "@/utils/firebase";
 import { authProtectedPublicRoutes, privateRoutes } from "@/utils/routes";
 import { onAuthStateChanged } from "firebase/auth";
@@ -158,29 +159,42 @@ const RouteGuard = ({ children }) => {
             (userData.isFirstTime ?? true) && selector.isFirstTime !== false;
 
           if (isOnboardingRequired) {
-            // Store the last valid onboarding page
-            const validOnboardingPages = [
-              "/onboard-pricing",
-              "/onboard-order-completed",
-              "/escape-onboarding",
-            ];
-            const lastValidPage = validOnboardingPages.find(
-              (page) => pathname === page
-            );
+            const employerProfileComplete =
+              isEmployerCompanyProfileComplete(userData);
 
-            if (
-              !lastValidPage &&
-              pathname !== "/contact" &&
-              !pathname.startsWith("/blog-details")
-            ) {
-              // If current page is not a valid onboarding page, redirect to the last valid page or default to pricing
-              const lastPage =
-                localStorage.getItem(`lastOnboardingPage_${uid}`) ||
-                "/onboard-pricing";
-              push(lastPage);
+            if (!employerProfileComplete) {
+              if (
+                pathname !== "/onboard-company-profile" &&
+                pathname !== "/contact" &&
+                !pathname.startsWith("/blog-details")
+              ) {
+                push("/onboard-company-profile");
+              } else if (pathname === "/onboard-company-profile") {
+                localStorage.setItem(`lastOnboardingPage_${uid}`, pathname);
+              }
             } else {
-              // If current page is valid, store it
-              localStorage.setItem(`lastOnboardingPage_${uid}`, pathname);
+              const validOnboardingPages = [
+                "/onboard-company-profile",
+                "/onboard-pricing",
+                "/onboard-order-completed",
+                "/escape-onboarding",
+              ];
+              const lastValidPage = validOnboardingPages.find(
+                (page) => pathname === page
+              );
+
+              if (
+                !lastValidPage &&
+                pathname !== "/contact" &&
+                !pathname.startsWith("/blog-details")
+              ) {
+                const lastPage =
+                  localStorage.getItem(`lastOnboardingPage_${uid}`) ||
+                  "/onboard-pricing";
+                push(lastPage);
+              } else if (lastValidPage) {
+                localStorage.setItem(`lastOnboardingPage_${uid}`, pathname);
+              }
             }
           } else if (
             !(userData.hasPostedJob ?? false) &&

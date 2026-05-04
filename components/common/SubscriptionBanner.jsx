@@ -25,6 +25,7 @@ const SubscriptionBanner = () => {
     const excludedRoutes = [
       "/create-profile-employer",
       "/create-profile-candidate",
+      "/onboard-company-profile",
       "/onboard-pricing",
       "/onboard-order-completed",
       "/register",

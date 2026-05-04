@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { adminDb } from "@/utils/firebase-admin";
+import { isEmployerCompanyProfileComplete } from "@/utils/isEmployerCompanyProfileComplete";
 
 /**
  * POST /api/complete-onboarding-skip
@@ -21,6 +22,20 @@ export async function POST(request) {
     const userDoc = await userRef.get();
     if (!userDoc.exists) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    const userData = userDoc.data();
+    if (
+      userData?.userType === "Employer" &&
+      !isEmployerCompanyProfileComplete(userData)
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Complete your company profile before skipping or subscribing.",
+        },
+        { status: 403 }
+      );
     }
 
     await userRef.update({
