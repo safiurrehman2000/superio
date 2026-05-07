@@ -310,7 +310,7 @@ const Pricing = () => {
                       handleSubmit(item?.stripePriceId, item?.id);
                     }}
                   >
-                    Buy
+                    ADVERTEER
                   </button>
                 </div>
               </div>
