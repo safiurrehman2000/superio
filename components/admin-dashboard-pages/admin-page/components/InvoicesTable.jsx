@@ -24,6 +24,41 @@ export default function InvoicesTable() {
     dateTo: "",
   });
 
+  const formatInvoiceDate = (created) => {
+    if (!created) return "-";
+
+    let dateValue = null;
+
+    if (created instanceof Date) {
+      dateValue = created;
+    } else if (typeof created === "number") {
+      dateValue = new Date(created < 1e12 ? created * 1000 : created);
+    } else if (typeof created === "string") {
+      const numericValue = Number(created);
+      if (!Number.isNaN(numericValue) && created.trim() !== "") {
+        dateValue = new Date(
+          numericValue < 1e12 ? numericValue * 1000 : numericValue,
+        );
+      } else {
+        dateValue = new Date(created);
+      }
+    } else if (typeof created === "object") {
+      if (typeof created.toDate === "function") {
+        dateValue = created.toDate();
+      } else if (typeof created.seconds === "number") {
+        dateValue = new Date(created.seconds * 1000);
+      } else if (typeof created._seconds === "number") {
+        dateValue = new Date(created._seconds * 1000);
+      }
+    }
+
+    if (!(dateValue instanceof Date) || Number.isNaN(dateValue.getTime())) {
+      return "-";
+    }
+
+    return dateValue.toLocaleString();
+  };
+
   const fetchInvoices = async (targetPage = page) => {
     setLoading(true);
     try {
@@ -218,13 +253,7 @@ export default function InvoicesTable() {
                     : "-"}
                 </td>
                 <td>
-                  {invoice.created
-                    ? new Date(
-                        invoice.created.seconds
-                          ? invoice.created.seconds * 1000
-                          : invoice.created,
-                      ).toLocaleString()
-                    : "-"}
+                  {formatInvoiceDate(invoice.created)}
                 </td>
                 <td>
                   {invoice.receipt_pdf_url ? (
