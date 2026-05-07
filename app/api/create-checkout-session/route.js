@@ -210,8 +210,9 @@ export async function POST(request) {
       });
     }
 
+    const isRecurringPrice = !!price?.recurring;
     const session = await stripe.checkout.sessions.create({
-      mode: 'subscription',
+      mode: isRecurringPrice ? 'subscription' : 'payment',
       payment_method_types: ['card', 'bancontact'],
       line_items: [lineItem],
       allow_promotion_codes: true,
@@ -230,12 +231,16 @@ export async function POST(request) {
             },
           }
         : {}),
-      subscription_data: {
-        metadata: {
-          userId,
-          planId,
-        },
-      },
+      ...(isRecurringPrice
+        ? {
+            subscription_data: {
+              metadata: {
+                userId,
+                planId,
+              },
+            },
+          }
+        : {}),
       client_reference_id: userId, // your user ID
       metadata: {
         userId, // your user ID from your DB

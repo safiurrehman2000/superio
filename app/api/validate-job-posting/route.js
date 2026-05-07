@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server";
-import Stripe from "stripe";
-import { adminDb } from "@/utils/firebase-admin";
+import { NextResponse } from 'next/server';
+import Stripe from 'stripe';
+import { adminDb } from '@/utils/firebase-admin';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -8,31 +8,37 @@ export async function POST(request) {
   const { userId, jobData } = await request.json();
 
   if (!userId) {
-    return NextResponse.json({ error: "Missing userId" }, { status: 400 });
+    return NextResponse.json({ error: 'Missing userId' }, { status: 400 });
   }
 
   try {
     // Fetch user to get current subscriptionId
-    const userDoc = await adminDb.collection("users").doc(userId).get();
+    const userDoc = await adminDb.collection('users').doc(userId).get();
     if (!userDoc.exists) {
       return NextResponse.json(
         {
           canPost: false,
-          message: "User not found",
+          message: 'User not found',
         },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     const userData = userDoc.data();
-    const { stripeSubscriptionId, planId } = userData;
+    const { stripeSubscriptionId, planId, oneTimeAccessUntil } = userData;
+    const now = Date.now();
+    const oneTimeEnd = oneTimeAccessUntil
+      ? oneTimeAccessUntil.toDate
+        ? oneTimeAccessUntil.toDate().getTime()
+        : new Date(oneTimeAccessUntil).getTime()
+      : null;
+    const hasActiveOneTimeAccess = Boolean(oneTimeEnd && oneTimeEnd > now);
 
-    // Check if user has active subscription
-    if (!stripeSubscriptionId) {
+    if (!stripeSubscriptionId && !hasActiveOneTimeAccess) {
       return NextResponse.json({
         canPost: false,
         message:
-          "You need an active subscription to post jobs. Please subscribe to a plan first.",
+          'You need an active subscription to post jobs. Please subscribe to a plan first.',
       });
     }
 
@@ -40,33 +46,36 @@ export async function POST(request) {
     let subscription;
     let stripePriceId;
 
-    try {
-      subscription = await stripe.subscriptions.retrieve(stripeSubscriptionId);
-      if (
-        subscription.status !== "active" &&
-        subscription.status !== "trialing"
-      ) {
+    if (stripeSubscriptionId) {
+      try {
+        subscription =
+          await stripe.subscriptions.retrieve(stripeSubscriptionId);
+        if (
+          subscription.status !== 'active' &&
+          subscription.status !== 'trialing'
+        ) {
+          return NextResponse.json({
+            canPost: false,
+            message:
+              'Your subscription is not active. Please check your subscription status.',
+          });
+        }
+        stripePriceId = subscription.items.data[0]?.price?.id;
+      } catch (stripeError) {
+        console.error('Stripe subscription error:', stripeError);
         return NextResponse.json({
           canPost: false,
           message:
-            "Your subscription is not active. Please check your subscription status.",
+            'Unable to verify subscription status. Please contact support.',
         });
       }
-      stripePriceId = subscription.items.data[0]?.price?.id;
-    } catch (stripeError) {
-      console.error("Stripe subscription error:", stripeError);
-      return NextResponse.json({
-        canPost: false,
-        message:
-          "Unable to verify subscription status. Please contact support.",
-      });
     }
     let jobLimit = 0;
 
     if (stripePriceId) {
-      const packagesRef = adminDb.collection("pricingPackages");
+      const packagesRef = adminDb.collection('pricingPackages');
       const pkgQuery = await packagesRef
-        .where("stripePriceId", "==", stripePriceId)
+        .where('stripePriceId', '==', stripePriceId)
         .get();
 
       if (!pkgQuery.empty) {
@@ -77,7 +86,7 @@ export async function POST(request) {
 
     // If we couldn't find the package by stripePriceId, try using planId
     if (jobLimit === 0 && planId) {
-      const packageRef = adminDb.collection("pricingPackages").doc(planId);
+      const packageRef = adminDb.collection('pricingPackages').doc(planId);
       const packageDoc = await packageRef.get();
 
       if (packageDoc.exists) {
@@ -88,9 +97,9 @@ export async function POST(request) {
 
     // Count current active jobs for this user
     const jobsQuery = await adminDb
-      .collection("jobs")
-      .where("employerId", "==", userId)
-      .where("status", "==", "active")
+      .collection('jobs')
+      .where('employerId', '==', userId)
+      .where('status', '==', 'active')
       .get();
 
     // Get user's subscription start date to determine which jobs to count
@@ -141,15 +150,19 @@ export async function POST(request) {
       jobLimit,
       jobsPosted,
       remainingJobs,
+      accessType: stripeSubscriptionId ? 'subscription' : 'one_time',
+      oneTimeAccessUntil: hasActiveOneTimeAccess
+        ? new Date(oneTimeEnd).toISOString()
+        : null,
     });
   } catch (error) {
-    console.error("Error validating job posting:", error);
+    console.error('Error validating job posting:', error);
     return NextResponse.json(
       {
         canPost: false,
-        message: "Failed to validate job posting permission",
+        message: 'Failed to validate job posting permission',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -174,11 +187,11 @@ function extractJobLimitFromPackage(packageData) {
   // Default mapping based on package type
   const packageType = packageData.packageType?.toLowerCase();
   switch (packageType) {
-    case "basic":
+    case 'basic':
       return 30;
-    case "standard":
+    case 'standard':
       return 40;
-    case "extended":
+    case 'extended':
       return 50;
     default:
       return 0; // No subscription or unknown package

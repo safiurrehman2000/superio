@@ -3,6 +3,7 @@ import { db } from '@/utils/firebase-admin';
 import Stripe from 'stripe';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+const ALLOWED_INTERVALS = ['week', 'month', 'year', 'one_time'];
 
 export async function GET(request) {
   try {
@@ -57,6 +58,12 @@ export async function POST(request) {
         { status: 400 },
       );
     }
+    if (!ALLOWED_INTERVALS.includes(interval)) {
+      return NextResponse.json(
+        { error: 'Invalid billing interval' },
+        { status: 400 },
+      );
+    }
 
     // Validate Stripe secret key
     if (!process.env.STRIPE_SECRET_KEY) {
@@ -78,14 +85,19 @@ export async function POST(request) {
     });
 
     // Create Stripe price
-    const stripePrice = await stripe.prices.create({
+    const stripePricePayload = {
       product: stripeProduct.id,
       unit_amount: Math.round(price * 100), // Convert to cents
       currency,
-      recurring: {
-        interval: interval, // monthly, yearly, etc.
-      },
-    });
+      ...(interval !== 'one_time'
+        ? {
+            recurring: {
+              interval, // weekly, monthly, yearly
+            },
+          }
+        : {}),
+    };
+    const stripePrice = await stripe.prices.create(stripePricePayload);
 
     // Handle features - ensure it's properly formatted as an array
     let processedFeatures = [];
@@ -164,6 +176,12 @@ export async function PUT(request) {
         { status: 400 },
       );
     }
+    if (interval !== undefined && !ALLOWED_INTERVALS.includes(interval)) {
+      return NextResponse.json(
+        { error: 'Invalid billing interval' },
+        { status: 400 },
+      );
+    }
 
     const packageRef = db.collection('pricingPackages').doc(id);
     const packageDoc = await packageRef.get();
@@ -238,14 +256,19 @@ export async function PUT(request) {
           },
         });
 
-        const stripePrice = await stripe.prices.create({
+        const stripePricePayload = {
           product: stripeProduct.id,
           unit_amount: Math.round(newPrice * 100),
           currency: newCurrency,
-          recurring: {
-            interval: newInterval,
-          },
-        });
+          ...(newInterval !== 'one_time'
+            ? {
+                recurring: {
+                  interval: newInterval,
+                },
+              }
+            : {}),
+        };
+        const stripePrice = await stripe.prices.create(stripePricePayload);
 
         updateData.stripeProductId = stripeProduct.id;
         updateData.stripePriceId = stripePrice.id;
@@ -253,14 +276,19 @@ export async function PUT(request) {
         updateData.currency = newCurrency;
         updateData.interval = newInterval;
       } else {
-        const stripePrice = await stripe.prices.create({
+        const stripePricePayload = {
           product: existingPackage.stripeProductId,
           unit_amount: Math.round(newPrice * 100),
           currency: newCurrency,
-          recurring: {
-            interval: newInterval,
-          },
-        });
+          ...(newInterval !== 'one_time'
+            ? {
+                recurring: {
+                  interval: newInterval,
+                },
+              }
+            : {}),
+        };
+        const stripePrice = await stripe.prices.create(stripePricePayload);
 
         // Update Stripe product
         await stripe.products.update(existingPackage.stripeProductId, {

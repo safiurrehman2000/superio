@@ -1,46 +1,54 @@
-import { NextResponse } from "next/server";
-import Stripe from "stripe";
-import { adminDb } from "@/utils/firebase-admin";
+import { NextResponse } from 'next/server';
+import Stripe from 'stripe';
+import { adminDb } from '@/utils/firebase-admin';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export async function POST(request) {
   const { userId } = await request.json();
   if (!userId) {
-    return NextResponse.json({ error: "Missing userId" }, { status: 400 });
+    return NextResponse.json({ error: 'Missing userId' }, { status: 400 });
   }
 
   try {
     // Fetch user to get current subscriptionId
-    const userDoc = await adminDb.collection("users").doc(userId).get();
+    const userDoc = await adminDb.collection('users').doc(userId).get();
     if (!userDoc.exists) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     const userData = userDoc.data();
-    const { stripeSubscriptionId, planId } = userData;
+    const { stripeSubscriptionId, planId, oneTimeAccessUntil } = userData;
+    const now = Date.now();
+    const oneTimeEnd = oneTimeAccessUntil
+      ? oneTimeAccessUntil.toDate
+        ? oneTimeAccessUntil.toDate().getTime()
+        : new Date(oneTimeAccessUntil).getTime()
+      : null;
+    const hasActiveOneTimeAccess = Boolean(oneTimeEnd && oneTimeEnd > now);
 
-    if (!stripeSubscriptionId) {
+    if (!stripeSubscriptionId && !hasActiveOneTimeAccess) {
       return NextResponse.json({
         jobLimit: 0,
         jobsPosted: 0,
         remainingJobs: 0,
-        message: "No active subscription",
+        message: 'No active subscription',
       });
     }
 
-    // Get subscription details from Stripe
-    const subscription = await stripe.subscriptions.retrieve(
-      stripeSubscriptionId
-    );
-    const stripePriceId = subscription.items.data[0]?.price?.id;
+    let stripePriceId = null;
+    if (stripeSubscriptionId) {
+      const subscription =
+        await stripe.subscriptions.retrieve(stripeSubscriptionId);
+      stripePriceId = subscription.items.data[0]?.price?.id;
+    }
 
     // Get the pricing package that matches this Stripe price
     let jobLimit = 0;
     if (stripePriceId) {
-      const packagesRef = adminDb.collection("pricingPackages");
+      const packagesRef = adminDb.collection('pricingPackages');
       const pkgQuery = await packagesRef
-        .where("stripePriceId", "==", stripePriceId)
+        .where('stripePriceId', '==', stripePriceId)
         .get();
 
       if (!pkgQuery.empty) {
@@ -52,7 +60,7 @@ export async function POST(request) {
 
     // If we couldn't find the package by stripePriceId, try using planId
     if (jobLimit === 0 && planId) {
-      const packageRef = adminDb.collection("pricingPackages").doc(planId);
+      const packageRef = adminDb.collection('pricingPackages').doc(planId);
       const packageDoc = await packageRef.get();
 
       if (packageDoc.exists) {
@@ -63,9 +71,9 @@ export async function POST(request) {
 
     // Count current active jobs for this user
     const jobsQuery = await adminDb
-      .collection("jobs")
-      .where("employerId", "==", userId)
-      .where("status", "==", "active")
+      .collection('jobs')
+      .where('employerId', '==', userId)
+      .where('status', '==', 'active')
       .get();
 
     // Get user's subscription start date to determine which jobs to count
@@ -106,9 +114,13 @@ export async function POST(request) {
       remainingJobs,
       planId,
       stripePriceId,
+      accessType: stripeSubscriptionId ? 'subscription' : 'one_time',
+      oneTimeAccessUntil: hasActiveOneTimeAccess
+        ? new Date(oneTimeEnd).toISOString()
+        : null,
     });
   } catch (error) {
-    console.error("Error fetching job posting limits:", error);
+    console.error('Error fetching job posting limits:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
@@ -133,11 +145,11 @@ function extractJobLimitFromPackage(packageData) {
   // Default mapping based on package type
   const packageType = packageData.packageType?.toLowerCase();
   switch (packageType) {
-    case "basic":
+    case 'basic':
       return 30;
-    case "standard":
+    case 'standard':
       return 40;
-    case "extended":
+    case 'extended':
       return 50;
     default:
       return 0; // No subscription or unknown package

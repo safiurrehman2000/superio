@@ -176,6 +176,7 @@ export async function POST(request) {
     const userId =
       session.metadata?.userId || session.client_reference_id || null;
     const customerId = session.customer;
+    const planId = session.metadata?.planId || null;
 
     if (userId && customerId) {
       // Fetch user doc
@@ -202,6 +203,29 @@ export async function POST(request) {
           );
         }
       }
+    }
+
+    if (
+      userId &&
+      session.mode === 'payment' &&
+      session.payment_status === 'paid'
+    ) {
+      const accessStart = new Date();
+      const accessUntil = new Date(
+        accessStart.getTime() + 30 * 24 * 60 * 60 * 1000,
+      );
+      await adminDb.collection('users').doc(userId).set(
+        {
+          subscriptionStatus: 'one_time_active',
+          planId,
+          subscriptionUpdatedAt: accessStart,
+          subscriptionStartDate: accessStart,
+          oneTimePurchaseAt: accessStart,
+          oneTimeAccessUntil: accessUntil,
+          isFirstTime: false,
+        },
+        { merge: true },
+      );
     }
     // No longer create a receipt here for subscriptions
     // Only handle any logic you need for one-time payments if required

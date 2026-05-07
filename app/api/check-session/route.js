@@ -12,13 +12,28 @@ export async function POST(request) {
 
     if (session.payment_status === "paid") {
       const userId = session.client_reference_id;
-      const planId = session.metadata.planId;
+      const planId = session.metadata?.planId || null;
 
-      await adminDb.collection("users").doc(userId).update({
-        subscriptionStatus: "active",
-        planId: planId,
-        subscriptionUpdatedAt: new Date(),
-      });
+      if (session.mode === "payment") {
+        const accessStart = new Date();
+        const accessUntil = new Date(
+          accessStart.getTime() + 30 * 24 * 60 * 60 * 1000,
+        );
+        await adminDb.collection("users").doc(userId).update({
+          subscriptionStatus: "one_time_active",
+          planId,
+          subscriptionUpdatedAt: accessStart,
+          subscriptionStartDate: accessStart,
+          oneTimePurchaseAt: accessStart,
+          oneTimeAccessUntil: accessUntil,
+        });
+      } else {
+        await adminDb.collection("users").doc(userId).update({
+          subscriptionStatus: "active",
+          planId,
+          subscriptionUpdatedAt: new Date(),
+        });
+      }
     }
 
     return NextResponse.json({ session });
