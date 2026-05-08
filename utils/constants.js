@@ -309,10 +309,10 @@ export const PROFILE_VISIBILITY_OPTIONS = [
 ];
 
 export const JOB_TYPE_OPTIONS = [
-  { value: 'english_speaking_job', label: 'Engels sprekend werk' },
-  { value: 'flexijobber', label: 'Flexijobber' },
-  { value: 'retired_people', label: 'Ouderen' },
-  { value: 'student_job', label: 'Student werk' },
+  { value: 'flexijobber', label: 'Flexijob' },
+  { value: 'retired_people', label: 'Flexijob gepensioneerden' },
+  { value: 'student_job', label: 'Studentenjob' },
+  { value: 'english_speaking_job', label: 'English speaking job' },
 ];
 
 export const formatString = (str) => {

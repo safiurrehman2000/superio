@@ -87,19 +87,11 @@ const ChatBoxContentField = () => {
 
       <div className="card-footer">
         <div className="form-group mb-0">
-          <form>
-            <textarea
-              className="form-control type_msg"
-              placeholder="Type a message..."
-              required
-            ></textarea>
-            <button
-              type="submit"
-              className="theme-btn btn-style-one submit-btn"
-            >
-              Send Message
-            </button>
-          </form>
+          <textarea
+            className="form-control type_msg"
+            placeholder="Messaging is not available yet."
+            disabled
+          ></textarea>
         </div>
       </div>
       {/* End .card-footer */}

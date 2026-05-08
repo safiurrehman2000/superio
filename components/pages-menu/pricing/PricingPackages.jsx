@@ -7,6 +7,12 @@ import { useSelector } from "react-redux";
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
 );
+const INTERVAL_LABELS = {
+  week: "weekly",
+  month: "monthly",
+  year: "yearly",
+  one_time: "one-time",
+};
 const PricingPackages = () => {
   const [pricingContent, setPricingContent] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -163,7 +169,11 @@ const PricingPackages = () => {
                 ) : (
                   <div className="price">
                     €{item.price}{" "}
-                    <span className="duration">/ monthly</span>
+                    {item?.interval !== "one_time" && (
+                      <span className="duration">
+                        / {INTERVAL_LABELS[item?.interval] || "monthly"}
+                      </span>
+                    )}
                   </div>
                 )}
 
@@ -184,7 +194,7 @@ const PricingPackages = () => {
                       handleSubmit(item?.stripePriceId, item?.id);
                     }}
                   >
-                    Buy
+                    ADVERTEER
                   </button>
                 </div>
               </div>

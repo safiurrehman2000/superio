@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server";
-import { adminDb } from "@/utils/firebase-admin";
-import { sendJobAlertEmailBrevo } from "@/utils/brevo-email-service";
+import { NextResponse } from 'next/server';
+import { adminDb } from '@/utils/firebase-admin';
+import { sendJobAlertEmailBrevo } from '@/utils/brevo-email-service';
 
 /**
  * Send job alert email to a candidate
@@ -9,9 +9,29 @@ const sendJobAlertEmail = async (
   userEmail,
   userName,
   jobs = [],
-  alertKeywords = ""
+  alertKeywords = '',
 ) => {
   return await sendJobAlertEmailBrevo(userEmail, userName, jobs, alertKeywords);
+};
+
+const toEpochMs = (value) => {
+  if (value == null) return null;
+
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+
+  if (typeof value?.toMillis === 'function') {
+    const millis = value.toMillis();
+    return Number.isFinite(millis) ? millis : null;
+  }
+
+  if (typeof value?.toDate === 'function') {
+    const date = value.toDate();
+    const millis = date?.getTime?.();
+    return Number.isFinite(millis) ? millis : null;
+  }
+
+  const parsed = new Date(value).getTime();
+  return Number.isFinite(parsed) ? parsed : null;
 };
 
 /**
@@ -19,23 +39,26 @@ const sendJobAlertEmail = async (
  */
 const getMatchingJobs = async (alertData) => {
   try {
-    const jobsRef = adminDb.collection("jobs");
-    let query = jobsRef.where("status", "==", "active");
+    const jobsRef = adminDb.collection('jobs');
+    let query = jobsRef.where('status', '==', 'active');
 
     // Filter by date (last 30 days to be more lenient for testing)
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     const thirtyDaysAgoTimestamp = thirtyDaysAgo.getTime();
     console.log(
-      `📅 Looking for jobs created after: ${thirtyDaysAgo.toISOString()} (${thirtyDaysAgoTimestamp})`
+      `📅 Looking for jobs created after: ${thirtyDaysAgo.toISOString()} (${thirtyDaysAgoTimestamp})`,
     );
-    query = query.where("createdAt", ">=", thirtyDaysAgoTimestamp);
-
     const snapshot = await query.get();
     let jobs = snapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
     }));
+
+    jobs = jobs.filter((job) => {
+      const createdAtMs = toEpochMs(job.createdAt);
+      return createdAtMs != null && createdAtMs >= thirtyDaysAgoTimestamp;
+    });
 
     console.log(`📊 Total jobs found: ${jobs.length}`);
     if (jobs.length > 0) {
@@ -52,7 +75,8 @@ const getMatchingJobs = async (alertData) => {
     if (alertData.categories && alertData.categories.length > 0) {
       jobs = jobs.filter(
         (job) =>
-          job.tags && job.tags.some((tag) => alertData.categories.includes(tag))
+          job.tags &&
+          job.tags.some((tag) => alertData.categories.includes(tag)),
       );
       console.log(`🏷️  After category filter: ${jobs.length} jobs`);
     }
@@ -60,7 +84,7 @@ const getMatchingJobs = async (alertData) => {
     // Filter by locations in memory
     if (alertData.locations && alertData.locations.length > 0) {
       jobs = jobs.filter(
-        (job) => job.location && alertData.locations.includes(job.location)
+        (job) => job.location && alertData.locations.includes(job.location),
       );
     }
 
@@ -68,21 +92,21 @@ const getMatchingJobs = async (alertData) => {
     if (alertData.keywords && alertData.keywords.trim()) {
       const keywords = alertData.keywords
         .toLowerCase()
-        .split(",")
+        .split(',')
         .map((k) => k.trim());
       console.log(`🔍 Keywords to search for:`, keywords);
 
       jobs = jobs.filter((job) => {
         const jobText = [
-          job.title || "",
-          job.description || "",
+          job.title || '',
+          job.description || '',
           ...(job.tags || []),
         ]
-          .join(" ")
+          .join(' ')
           .toLowerCase();
 
         const matches = keywords.some(
-          (keyword) => keyword && jobText.includes(keyword)
+          (keyword) => keyword && jobText.includes(keyword),
         );
 
         if (matches) {
@@ -95,10 +119,14 @@ const getMatchingJobs = async (alertData) => {
     }
 
     // Sort by creation date (newest first) and limit to 20 jobs
-    jobs.sort((a, b) => b.createdAt - a.createdAt);
+    jobs.sort((a, b) => {
+      const aMs = toEpochMs(a.createdAt) ?? 0;
+      const bMs = toEpochMs(b.createdAt) ?? 0;
+      return bMs - aMs;
+    });
     return jobs.slice(0, 20);
   } catch (error) {
-    console.error("Error getting matching jobs:", error);
+    console.error('Error getting matching jobs:', error);
     return [];
   }
 };
@@ -107,30 +135,30 @@ export async function POST(request) {
   try {
     const { userId, testMode = false } = await request.json();
 
-    console.log("🚀 Starting job alerts process...");
-    console.log("Test mode:", testMode);
+    console.log('🚀 Starting job alerts process...');
+    console.log('Test mode:', testMode);
 
     // Get all candidates or specific user
-    const usersRef = adminDb.collection("users");
+    const usersRef = adminDb.collection('users');
     let candidatesSnapshot;
 
     if (userId) {
       // Send to specific user
       const userDoc = await usersRef.doc(userId).get();
       if (!userDoc.exists) {
-        return NextResponse.json({ error: "User not found" }, { status: 404 });
+        return NextResponse.json({ error: 'User not found' }, { status: 404 });
       }
       candidatesSnapshot = { docs: [userDoc] };
     } else {
       // Send to all candidates
       candidatesSnapshot = await usersRef
-        .where("userType", "==", "Candidate")
+        .where('userType', '==', 'Candidate')
         .get();
     }
 
     if (candidatesSnapshot.empty) {
-      console.log("No candidates found");
-      return NextResponse.json({ message: "No candidates found" });
+      console.log('No candidates found');
+      return NextResponse.json({ message: 'No candidates found' });
     }
 
     let totalEmailsSent = 0;
@@ -143,10 +171,20 @@ export async function POST(request) {
       const userId = userDoc.id;
 
       try {
+        if (!userData?.email) {
+          results.push({
+            userId,
+            email: null,
+            status: 'skipped',
+            reason: 'Missing user email',
+          });
+          continue;
+        }
+
         // Check if user has job alerts enabled
         const alertsSnapshot = await adminDb
           .collection(`users/${userId}/jobAlerts`)
-          .where("status", "==", "active")
+          .where('status', '==', 'active')
           .get();
 
         if (alertsSnapshot.empty) {
@@ -154,8 +192,8 @@ export async function POST(request) {
           results.push({
             userId,
             email: userData.email,
-            status: "skipped",
-            reason: "No active job alerts",
+            status: 'skipped',
+            reason: 'No active job alerts',
           });
           continue;
         }
@@ -179,8 +217,8 @@ export async function POST(request) {
           results.push({
             userId,
             email: userData.email,
-            status: "skipped",
-            reason: "No matching jobs",
+            status: 'skipped',
+            reason: 'No matching jobs',
             debug: {
               alertData,
               totalJobsChecked: 0, // We'll add this later
@@ -194,9 +232,9 @@ export async function POST(request) {
         if (!testMode) {
           emailSent = await sendJobAlertEmail(
             userData.email,
-            userData.name || userData.email.split("@")[0],
+            userData.name || userData.email.split('@')[0],
             matchingJobs,
-            alertData.keywords || ""
+            alertData.keywords || '',
           );
         }
 
@@ -206,7 +244,7 @@ export async function POST(request) {
           results.push({
             userId,
             email: userData.email,
-            status: "sent",
+            status: 'sent',
             jobsCount: matchingJobs.length,
           });
         } else {
@@ -215,8 +253,8 @@ export async function POST(request) {
           results.push({
             userId,
             email: userData.email,
-            status: "failed",
-            reason: "Email sending failed",
+            status: 'failed',
+            reason: 'Email sending failed',
           });
         }
 
@@ -228,7 +266,7 @@ export async function POST(request) {
         results.push({
           userId,
           email: userData.email,
-          status: "error",
+          status: 'error',
           reason: error.message,
         });
       }
@@ -246,7 +284,7 @@ export async function POST(request) {
       testMode,
     });
   } catch (error) {
-    console.error("💥 Error in send-job-alerts API:", error);
+    console.error('💥 Error in send-job-alerts API:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

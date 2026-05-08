@@ -1,12 +1,21 @@
-"use client";
-import { errorToast, successToast } from "@/utils/toast";
-import React, { useState, useEffect } from "react";
-import { useForm, FormProvider } from "react-hook-form";
-import { InputField } from "@/components/inputfield/InputField";
-import { TextAreaField } from "@/components/textarea/TextArea";
-import RichTextArea from "@/components/textarea/RichTextArea";
+'use client';
+import { errorToast, successToast } from '@/utils/toast';
+import React, { useState, useEffect } from 'react';
+import { useForm, FormProvider } from 'react-hook-form';
+import { InputField } from '@/components/inputfield/InputField';
+import { TextAreaField } from '@/components/textarea/TextArea';
+import RichTextArea from '@/components/textarea/RichTextArea';
 
 const PricingPackagesManager = () => {
+  const intervalLabel = (interval) => {
+    const labels = {
+      week: 'Weekly',
+      month: 'Monthly',
+      year: 'Yearly',
+      one_time: 'One-time',
+    };
+    return labels[interval] || interval || 'One-time';
+  };
   const [packages, setPackages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -15,11 +24,11 @@ const PricingPackagesManager = () => {
   // Form setup
   const methods = useForm({
     defaultValues: {
-      name: "",
-      price: "",
-      interval: "month",
-      jobLimit: "",
-      features: "",
+      name: '',
+      price: '',
+      interval: 'one_time',
+      jobLimit: '',
+      features: '',
       isActive: true,
     },
   });
@@ -33,18 +42,18 @@ const PricingPackagesManager = () => {
   const fetchPackages = async () => {
     try {
       setLoading(true);
-      const response = await fetch("/api/admin/manage-pricing-packages");
+      const response = await fetch('/api/admin/manage-pricing-packages');
       const data = await response.json();
 
       if (response.ok) {
-        console.log("Fetched packages:", data.data); // Debug log
+        console.log('Fetched packages:', data.data); // Debug log
         setPackages(data.data || []);
       } else {
-        errorToast(data.error || "Failed to fetch packages");
+        errorToast(data.error || 'Failed to fetch packages');
       }
     } catch (error) {
-      console.error("Error fetching packages:", error);
-      errorToast("Failed to fetch packages");
+      console.error('Error fetching packages:', error);
+      errorToast('Failed to fetch packages');
     } finally {
       setLoading(false);
     }
@@ -58,11 +67,11 @@ const PricingPackagesManager = () => {
       let features = [];
       if (
         data.features &&
-        typeof data.features === "string" &&
+        typeof data.features === 'string' &&
         data.features.trim()
       ) {
         features = data.features
-          .split("\n")
+          .split('\n')
           .map((feature) => feature.trim())
           .filter((feature) => feature.length > 0);
       }
@@ -70,17 +79,17 @@ const PricingPackagesManager = () => {
       const payload = {
         ...data,
         price: parseFloat(data.price),
-        currency: "eur",
+        currency: 'eur',
         jobLimit: parseInt(data.jobLimit),
         features,
-        isActive: data.isActive === "true" || data.isActive === true,
+        isActive: data.isActive === 'true' || data.isActive === true,
       };
 
       const url = editingPackage
-        ? "/api/admin/manage-pricing-packages"
-        : "/api/admin/manage-pricing-packages";
+        ? '/api/admin/manage-pricing-packages'
+        : '/api/admin/manage-pricing-packages';
 
-      const method = editingPackage ? "PUT" : "POST";
+      const method = editingPackage ? 'PUT' : 'POST';
 
       if (editingPackage) {
         payload.id = editingPackage.id;
@@ -89,7 +98,7 @@ const PricingPackagesManager = () => {
       const response = await fetch(url, {
         method,
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(payload),
       });
@@ -97,16 +106,16 @@ const PricingPackagesManager = () => {
       const responseData = await response.json();
 
       if (response.ok) {
-        successToast(responseData.message || "Package saved successfully");
+        successToast(responseData.message || 'Package saved successfully');
         reset();
         setEditingPackage(null);
         fetchPackages();
       } else {
-        errorToast(responseData.error || "Failed to save package");
+        errorToast(responseData.error || 'Failed to save package');
       }
     } catch (error) {
-      console.error("Error saving package:", error);
-      errorToast("Failed to save package");
+      console.error('Error saving package:', error);
+      errorToast('Failed to save package');
     } finally {
       setSubmitting(false);
     }
@@ -114,35 +123,35 @@ const PricingPackagesManager = () => {
 
   const handleEdit = (pkg) => {
     setEditingPackage(pkg);
-    setValue("name", pkg.packageType || pkg.name || "");
-    setValue("price", pkg.price.toString());
-    setValue("interval", pkg.interval || "month");
-    setValue("jobLimit", (pkg.jobPosts || pkg.jobLimit || 0).toString());
+    setValue('name', pkg.packageType || pkg.name || '');
+    setValue('price', pkg.price.toString());
+    setValue('interval', pkg.interval || 'one_time');
+    setValue('jobLimit', (pkg.jobPosts || pkg.jobLimit || 0).toString());
 
     // Handle features - convert array to newline-separated text
     if (Array.isArray(pkg.features)) {
-      setValue("features", pkg.features.join("\n"));
-    } else if (typeof pkg.features === "string") {
+      setValue('features', pkg.features.join('\n'));
+    } else if (typeof pkg.features === 'string') {
       // If it's a string, check if it's HTML or plain text
-      if (pkg.features.includes("<")) {
+      if (pkg.features.includes('<')) {
         // It's HTML, convert to plain text for display
-        const tempDiv = document.createElement("div");
+        const tempDiv = document.createElement('div');
         tempDiv.innerHTML = pkg.features;
-        setValue("features", tempDiv.textContent || tempDiv.innerText || "");
+        setValue('features', tempDiv.textContent || tempDiv.innerText || '');
       } else {
-        setValue("features", pkg.features);
+        setValue('features', pkg.features);
       }
     } else {
-      setValue("features", "");
+      setValue('features', '');
     }
 
-    setValue("isActive", pkg.isActive.toString());
+    setValue('isActive', pkg.isActive.toString());
   };
 
   const handleDelete = async (id) => {
     if (
       !confirm(
-        "Are you sure you want to delete this package? This will also archive the Stripe product."
+        'Are you sure you want to delete this package? This will also archive the Stripe product.',
       )
     ) {
       return;
@@ -152,21 +161,21 @@ const PricingPackagesManager = () => {
       const response = await fetch(
         `/api/admin/manage-pricing-packages?id=${id}`,
         {
-          method: "DELETE",
-        }
+          method: 'DELETE',
+        },
       );
 
       const data = await response.json();
 
       if (response.ok) {
-        successToast("Package deleted successfully");
+        successToast('Package deleted successfully');
         fetchPackages();
       } else {
-        errorToast(data.error || "Failed to delete package");
+        errorToast(data.error || 'Failed to delete package');
       }
     } catch (error) {
-      console.error("Error deleting package:", error);
-      errorToast("Failed to delete package");
+      console.error('Error deleting package:', error);
+      errorToast('Failed to delete package');
     }
   };
 
@@ -177,117 +186,118 @@ const PricingPackagesManager = () => {
 
   if (loading) {
     return (
-      <div className="ls-widget">
-        <div className="widget-title">
+      <div className='ls-widget'>
+        <div className='widget-title'>
           <h4>Manage Pricing Packages</h4>
         </div>
-        <div className="widget-content">
-          <div className="loading">Loading packages...</div>
+        <div className='widget-content'>
+          <div className='loading'>Loading packages...</div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="ls-widget">
-      <div className="widget-title">
+    <div className='ls-widget'>
+      <div className='widget-title'>
         <h4>Manage Pricing Packages</h4>
       </div>
-      <div className="widget-content">
+      <div className='widget-content'>
         {/* Add/Edit Package Form */}
-        <div className="form-group" style={{ marginBottom: "30px" }}>
-          <h5 style={{ marginBottom: "20px", color: "#1967d2" }}>
-            {editingPackage ? "Edit Package" : "Add New Package"}
+        <div className='form-group' style={{ marginBottom: '30px' }}>
+          <h5 style={{ marginBottom: '20px', color: '#1967d2' }}>
+            {editingPackage ? 'Edit Package' : 'Add New Package'}
           </h5>
           <FormProvider {...methods}>
-            <form onSubmit={handleSubmit(onSubmit)} className="row">
-              <div className="col-lg-6 col-md-6 col-sm-12">
+            <form onSubmit={handleSubmit(onSubmit)} className='row'>
+              <div className='col-lg-6 col-md-6 col-sm-12'>
                 <InputField
-                  label="Package Name"
-                  name="name"
-                  placeholder="e.g., Basic Plan"
+                  label='Package Name'
+                  name='name'
+                  placeholder='e.g., Basic Plan'
                   required={true}
-                  fieldType="Text"
+                  fieldType='Text'
                   disabled={submitting}
                 />
               </div>
-              <div className="col-lg-6 col-md-6 col-sm-12">
+              <div className='col-lg-6 col-md-6 col-sm-12'>
                 <InputField
-                  label="Price (€)"
-                  name="price"
-                  placeholder="29.99"
+                  label='Price (€)'
+                  name='price'
+                  placeholder='29.99'
                   required={true}
-                  fieldType="Text"
+                  fieldType='Text'
                   disabled={submitting}
                 />
               </div>
-              <div className="col-lg-6 col-md-6 col-sm-12">
+              <div className='col-lg-6 col-md-6 col-sm-12'>
                 <select
-                  className="form-control"
-                  {...methods.register("interval")}
+                  className='form-control'
+                  {...methods.register('interval')}
                   disabled={submitting}
-                  style={{ height: "45px" }}
+                  style={{ height: '45px' }}
                 >
-                  <option value="month">Monthly</option>
-                  <option value="year">Yearly</option>
-                  <option value="week">Weekly</option>
+                  <option value='month'>Monthly</option>
+                  <option value='year'>Yearly</option>
+                  <option value='week'>Weekly</option>
+                  <option value='one_time'>One-time</option>
                 </select>
-                <label style={{ fontWeight: "600", marginBottom: "8px" }}>
+                <label style={{ fontWeight: '600', marginBottom: '8px' }}>
                   Billing Interval
                 </label>
               </div>
-              <div className="col-lg-6 col-md-6 col-sm-12">
+              <div className='col-lg-6 col-md-6 col-sm-12'>
                 <InputField
-                  label="Job Limit"
-                  name="jobLimit"
-                  placeholder="10"
+                  label='Job Limit'
+                  name='jobLimit'
+                  placeholder='10'
                   required={true}
-                  fieldType="Text"
+                  fieldType='Text'
                   disabled={submitting}
                 />
               </div>
-              <div className="col-lg-6 col-md-6 col-sm-12">
+              <div className='col-lg-6 col-md-6 col-sm-12'>
                 <select
-                  className="form-control"
-                  {...methods.register("isActive")}
+                  className='form-control'
+                  {...methods.register('isActive')}
                   disabled={submitting}
-                  style={{ height: "45px" }}
+                  style={{ height: '45px' }}
                 >
-                  <option value="true">Active</option>
-                  <option value="false">Inactive</option>
+                  <option value='true'>Active</option>
+                  <option value='false'>Inactive</option>
                 </select>
-                <label style={{ fontWeight: "600", marginBottom: "8px" }}>
+                <label style={{ fontWeight: '600', marginBottom: '8px' }}>
                   Status
                 </label>
               </div>
 
-              <div className="col-lg-12 col-md-12 col-sm-12">
+              <div className='col-lg-12 col-md-12 col-sm-12'>
                 <TextAreaField
-                  label="Features (one per line)"
-                  name="features"
-                  placeholder="Enter features, one per line:&#10;• Feature 1&#10;• Feature 2&#10;• Feature 3"
+                  label='Features (one per line)'
+                  name='features'
+                  placeholder='Enter features, one per line:&#10;• Feature 1&#10;• Feature 2&#10;• Feature 3'
                   required={false}
                   maxLength={2000}
                   rows={6}
                 />
               </div>
-              <div className="col-lg-12 col-md-12 col-sm-12 form-group">
-                <div className="d-flex gap-3" style={{ marginTop: "20px" }}>
+              <div className='col-lg-12 col-md-12 col-sm-12 form-group'>
+                <div className='d-flex gap-3' style={{ marginTop: '20px' }}>
                   <button
-                    type="submit"
-                    className="theme-btn btn-style-one"
+                    type='submit'
+                    className='theme-btn btn-style-one'
                     disabled={submitting}
                   >
                     {submitting
-                      ? "Saving..."
+                      ? 'Saving...'
                       : editingPackage
-                      ? "Update Package"
-                      : "Create Package"}
+                        ? 'Update Package'
+                        : 'Create Package'}
                   </button>
                   {editingPackage && (
                     <button
-                      type="button"
-                      className="theme-btn btn-style-two"
+                      type='button'
+                      className='theme-btn btn-style-two'
                       onClick={handleCancel}
                       disabled={submitting}
                     >
@@ -301,38 +311,38 @@ const PricingPackagesManager = () => {
         </div>
 
         {/* Packages List */}
-        <div className="form-group" style={{ marginTop: "40px" }}>
-          <h5 style={{ marginBottom: "20px", color: "#1967d2" }}>
+        <div className='form-group' style={{ marginTop: '40px' }}>
+          <h5 style={{ marginBottom: '20px', color: '#1967d2' }}>
             Current Packages ({packages.length})
           </h5>
           {packages.length === 0 ? (
-            <div className="alert alert-info">
+            <div className='alert alert-info'>
               No packages found. Create your first package using the form above.
             </div>
           ) : (
-            <div className="table-responsive">
+            <div className='table-responsive'>
               <table
-                className="table table-striped"
-                style={{ marginTop: "10px" }}
+                className='table table-striped'
+                style={{ marginTop: '10px' }}
               >
                 <thead>
                   <tr>
-                    <th style={{ fontWeight: "600", color: "#1967d2" }}>
+                    <th style={{ fontWeight: '600', color: '#1967d2' }}>
                       Name
                     </th>
-                    <th style={{ fontWeight: "600", color: "#1967d2" }}>
+                    <th style={{ fontWeight: '600', color: '#1967d2' }}>
                       Price
                     </th>
-                    <th style={{ fontWeight: "600", color: "#1967d2" }}>
+                    <th style={{ fontWeight: '600', color: '#1967d2' }}>
                       Interval
                     </th>
-                    <th style={{ fontWeight: "600", color: "#1967d2" }}>
+                    <th style={{ fontWeight: '600', color: '#1967d2' }}>
                       Job Limit
                     </th>
-                    <th style={{ fontWeight: "600", color: "#1967d2" }}>
+                    <th style={{ fontWeight: '600', color: '#1967d2' }}>
                       Status
                     </th>
-                    <th style={{ fontWeight: "600", color: "#1967d2" }}>
+                    <th style={{ fontWeight: '600', color: '#1967d2' }}>
                       Actions
                     </th>
                   </tr>
@@ -342,15 +352,15 @@ const PricingPackagesManager = () => {
                     <tr key={pkg.id}>
                       <td>
                         <strong>
-                          {pkg.packageType || pkg.name || "Unnamed Package"}
+                          {pkg.packageType || pkg.name || 'Unnamed Package'}
                         </strong>
                         {pkg.tag && (
-                          <span className="badge bg-warning ms-2">
+                          <span className='badge bg-warning ms-2'>
                             {pkg.tag}
                           </span>
                         )}
                         <br />
-                        <small style={{ color: "#666" }}>
+                        <small style={{ color: '#666' }}>
                           {pkg.description ? (
                             <div
                               dangerouslySetInnerHTML={{
@@ -359,52 +369,52 @@ const PricingPackagesManager = () => {
                             />
                           ) : pkg.features && pkg.features.length > 0 ? (
                             Array.isArray(pkg.features) ? (
-                              pkg.features.slice(0, 2).join(", ") +
-                              (pkg.features.length > 2 ? "..." : "")
+                              pkg.features.slice(0, 2).join(', ') +
+                              (pkg.features.length > 2 ? '...' : '')
                             ) : (
                               <div
                                 dangerouslySetInnerHTML={{
                                   __html:
                                     pkg.features.length > 100
-                                      ? pkg.features.substring(0, 100) + "..."
+                                      ? pkg.features.substring(0, 100) + '...'
                                       : pkg.features,
                                 }}
                               />
                             )
                           ) : (
-                            "No description"
+                            'No description'
                           )}
                         </small>
                       </td>
                       <td>
-                        {pkg.price === "Free" ? "Free" : `€${pkg.price}`}{" "}
+                        {pkg.price === 'Free' ? 'Free' : `€${pkg.price}`}{' '}
                         {pkg.interval &&
-                          pkg.interval !== "month" &&
-                          `/ ${pkg.interval}`}
+                          pkg.interval !== 'month' &&
+                          `/ ${intervalLabel(pkg.interval).toLowerCase()}`}
                       </td>
-                      <td>{pkg.interval || "One-time"}</td>
+                      <td>{intervalLabel(pkg.interval)}</td>
                       <td>{pkg.jobPosts || pkg.jobLimit || 0} jobs</td>
                       <td>
                         <span
                           className={`badge ${
-                            pkg.isActive ? "bg-success" : "bg-secondary"
+                            pkg.isActive ? 'bg-success' : 'bg-secondary'
                           }`}
                         >
-                          {pkg.isActive ? "Active" : "Inactive"}
+                          {pkg.isActive ? 'Active' : 'Inactive'}
                         </span>
                       </td>
                       <td>
-                        <div className="d-flex gap-2">
+                        <div className='d-flex gap-2'>
                           <button
                             onClick={() => handleEdit(pkg)}
-                            className="btn btn-sm btn-primary"
+                            className='btn btn-sm btn-primary'
                             disabled={submitting}
                           >
                             Edit
                           </button>
                           <button
                             onClick={() => handleDelete(pkg.id)}
-                            className="btn btn-sm btn-danger"
+                            className='btn btn-sm btn-danger'
                             disabled={submitting}
                           >
                             Delete

@@ -15,15 +15,35 @@ export async function POST(request) {
   if (!userDoc.exists) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
-  const { stripeSubscriptionId } = userDoc.data();
-  if (!stripeSubscriptionId) {
-    return NextResponse.json({
-      active: false,
-      message: "No active subscription",
-    });
-  }
+  const userData = userDoc.data();
+  const { stripeSubscriptionId, oneTimeAccessUntil } = userData;
 
   try {
+    if (!stripeSubscriptionId) {
+      const now = Date.now();
+      const oneTimeEnd = oneTimeAccessUntil
+        ? oneTimeAccessUntil.toDate
+          ? oneTimeAccessUntil.toDate().getTime()
+          : new Date(oneTimeAccessUntil).getTime()
+        : null;
+
+      if (oneTimeEnd && oneTimeEnd > now) {
+        return NextResponse.json({
+          active: true,
+          status: "one_time_active",
+          accessType: "one_time",
+          current_period_end: Math.floor(oneTimeEnd / 1000),
+          message: "One-time access is active",
+          planName: "One-time package",
+        });
+      }
+
+      return NextResponse.json({
+        active: false,
+        message: "No active subscription",
+      });
+    }
+
     const subscription = await stripe.subscriptions.retrieve(
       stripeSubscriptionId
     );
@@ -46,6 +66,7 @@ export async function POST(request) {
       active: true,
       current_period_end: periodEnd,
       status,
+      accessType: "subscription",
       planName,
     });
   } catch (error) {

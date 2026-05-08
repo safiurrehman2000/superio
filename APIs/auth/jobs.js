@@ -72,10 +72,24 @@ export const useCreateJobPost = async (payload) => {
       );
     }
 
-    const docRef = await addDoc(collection(db, 'jobs'), sanitizedPayload);
+    const createJobResponse = await fetch('/api/jobs', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(sanitizedPayload),
+    });
+
+    const createJobResult = await createJobResponse.json();
+    if (!createJobResponse.ok || !createJobResult?.success) {
+      throw new Error(createJobResult?.error || 'Failed to create job');
+    }
+
     const jobData = {
-      id: docRef.id,
+      id: createJobResult.jobId,
       ...sanitizedPayload,
+      status: 'active',
+      createdAt: Date.now(),
     };
     successToast('Job Created Successfully');
     return { success: true, job: jobData };

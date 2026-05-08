@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { adminDb } from '@/utils/firebase-admin';
+import { isEmployerCompanyProfileComplete } from '@/utils/isEmployerCompanyProfileComplete';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -42,9 +43,24 @@ export async function POST(request) {
       );
     }
 
-    const stripeCustomerId = userDoc.exists
-      ? userDoc.data().stripeCustomerId
-      : null;
+    const userData = userDoc.exists ? userDoc.data() : {};
+    if (
+      userData.userType === 'Employer' &&
+      !isEmployerCompanyProfileComplete(userData)
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            'Complete your company profile (name, phone, location, company type, and description) before subscribing.',
+        },
+        { status: 400 },
+      );
+    }
+    const stripeCustomerId = userData.stripeCustomerId || null;
+    const userEmail = userData.email || null;
+    const companyName = userData.company_name || null;
+    const companyPhone = userData.phone || userData.phone_number || null;
+    const companyLocation = userData.company_location || null;
     const origin = request.headers.get('origin');
     const isOnboarding = source === 'onboarding';
     const successUrl = isOnboarding
@@ -115,7 +131,10 @@ export async function POST(request) {
         const tr = await stripe.taxRates.retrieve(vatTaxRateId);
         if (!tr.active) {
           return NextResponse.json(
-            { error: 'The configured Stripe tax rate (STRIPE_VAT_TAX_RATE_ID) is inactive.' },
+            {
+              error:
+                'The configured Stripe tax rate (STRIPE_VAT_TAX_RATE_ID) is inactive.',
+            },
             { status: 400 },
           );
         }
@@ -137,14 +156,72 @@ export async function POST(request) {
       lineItem.tax_rates = [vatTaxRateId];
     }
 
+    let validStripeCustomerId = null;
+    if (stripeCustomerId) {
+      try {
+        const customer = await stripe.customers.retrieve(stripeCustomerId);
+        if (!customer.deleted) {
+          validStripeCustomerId = stripeCustomerId;
+        }
+      } catch (customerError) {
+        console.warn(
+          'Stored Stripe customer is invalid, continuing without it:',
+          {
+            userId,
+            stripeCustomerId,
+            message: customerError.message,
+          },
+        );
+      }
+    }
+
+    if (!validStripeCustomerId) {
+      const createdCustomer = await stripe.customers.create({
+        ...(userEmail ? { email: userEmail } : {}),
+        ...(companyName ? { name: companyName } : {}),
+        ...(companyPhone ? { phone: companyPhone } : {}),
+        ...(companyLocation
+          ? {
+              address: {
+                line1: companyLocation,
+              },
+            }
+          : {}),
+        metadata: {
+          userId,
+        },
+      });
+      validStripeCustomerId = createdCustomer.id;
+    }
+
+    // Keep invoice-relevant customer fields in sync for existing/new customers.
+    if (validStripeCustomerId) {
+      await stripe.customers.update(validStripeCustomerId, {
+        ...(userEmail ? { email: userEmail } : {}),
+        ...(companyName ? { name: companyName } : {}),
+        ...(companyPhone ? { phone: companyPhone } : {}),
+        ...(companyLocation
+          ? {
+              address: {
+                line1: companyLocation,
+              },
+            }
+          : {}),
+      });
+    }
+
+    const isRecurringPrice = !!price?.recurring;
     const session = await stripe.checkout.sessions.create({
-      mode: 'subscription',
+      mode: isRecurringPrice ? 'subscription' : 'payment',
       payment_method_types: ['card', 'bancontact'],
       line_items: [lineItem],
       allow_promotion_codes: true,
       tax_id_collection: {
         enabled: true,
         required: 'if_supported',
+      },
+      phone_number_collection: {
+        enabled: true,
       },
       billing_address_collection: 'required',
       ...(useAutomaticTax
@@ -154,12 +231,16 @@ export async function POST(request) {
             },
           }
         : {}),
-      subscription_data: {
-        metadata: {
-          userId,
-          planId,
-        },
-      },
+      ...(isRecurringPrice
+        ? {
+            subscription_data: {
+              metadata: {
+                userId,
+                planId,
+              },
+            },
+          }
+        : {}),
       client_reference_id: userId, // your user ID
       metadata: {
         userId, // your user ID from your DB
@@ -168,15 +249,12 @@ export async function POST(request) {
       success_url: successUrl,
       cancel_url: cancelUrl,
 
-      ...(stripeCustomerId
-        ? {
-            customer: stripeCustomerId,
-            customer_update: {
-              name: 'auto',
-              address: 'auto',
-            },
-          }
-        : {}),
+      customer: validStripeCustomerId,
+      customer_update: {
+        name: 'auto',
+        address: 'auto',
+        shipping: 'auto',
+      },
     });
 
     console.log('Stripe session created successfully:', session.id);

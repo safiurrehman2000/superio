@@ -4,6 +4,7 @@ import BreadCrumb from "@/components/dashboard-pages/BreadCrumb";
 import { LOGO } from "@/utils/constants";
 import { updateIsFirstTime, updateHasPostedJob } from "@/slices/userSlice";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { loadStripe } from "@stripe/stripe-js";
@@ -12,6 +13,13 @@ import { useDispatch, useSelector } from "react-redux";
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
 );
+
+const INTERVAL_LABELS = {
+  week: "weekly",
+  month: "monthly",
+  year: "yearly",
+  one_time: "one-time",
+};
 const Pricing = () => {
   const [pricingContent, setPricingContent] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -72,8 +80,9 @@ const Pricing = () => {
 
       if (!response.ok) {
         console.error("API Error:", data.error);
-        // Handle the error appropriately - you might want to show a toast or alert
-        alert("Failed to create checkout session. Please try again.");
+        alert(
+          data.error || "Failed to create checkout session. Please try again."
+        );
         return;
       }
 
@@ -218,7 +227,15 @@ const Pricing = () => {
         </div>
       </header>
       <BreadCrumb title="Pricing Packages" />
-      <p>Choose a package or skip for now—you can subscribe later from your dashboard.</p>
+      <p>
+        Choose a subscription plan. Your company details are saved for billing.
+        You can skip for now and subscribe later from your dashboard.
+      </p>
+      <p style={{ marginTop: "-4px", marginBottom: "8px" }}>
+        <Link href="/onboard-company-profile" className="text-decoration-underline">
+          Edit company information
+        </Link>
+      </p>
 
       {/* Button to initialize pricing */}
       {/* <div style={{ marginBottom: "20px" }}>
@@ -268,7 +285,11 @@ const Pricing = () => {
                 ) : (
                   <div className="price">
                     €{item.price}{" "}
-                    <span className="duration">/ monthly</span>
+                    {item?.interval !== "one_time" && (
+                      <span className="duration">
+                        / {INTERVAL_LABELS[item?.interval] || "monthly"}
+                      </span>
+                    )}
                   </div>
                 )}
 
@@ -289,7 +310,7 @@ const Pricing = () => {
                       handleSubmit(item?.stripePriceId, item?.id);
                     }}
                   >
-                    Buy
+                    ADVERTEER
                   </button>
                 </div>
               </div>

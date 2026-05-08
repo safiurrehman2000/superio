@@ -2,7 +2,6 @@
 import { useGetUserById } from '@/APIs/auth/database';
 import { useGetCompanyJobListings } from '@/APIs/auth/jobs';
 import LoginPopup from '@/components/common/form/login/LoginPopup';
-import PrivateMessageBox from '@/components/employer-single-pages/shared-components/PrivateMessageBox';
 import DefaulHeader2 from '@/components/header/DefaulHeader2';
 import MobileMenu from '@/components/header/MobileMenu';
 import Loading from '@/components/loading/Loading';
@@ -126,49 +125,11 @@ const EmployersSingleV1 = () => {
                 {/* End .content */}
 
                 <div className='btn-box'>
-                  <button
-                    className='theme-btn btn-style-one'
-                    data-bs-toggle='modal'
-                    data-bs-target='#privateMessage'
-                  >
-                    Private Message
-                  </button>
                   <button className='bookmark-btn'>
                     <i className='flaticon-bookmark'></i>
                   </button>
                 </div>
                 {/* End btn-box */}
-
-                {/* <!-- Modal --> */}
-                <div
-                  className='modal fade'
-                  id='privateMessage'
-                  tabIndex='-1'
-                  aria-hidden='true'
-                >
-                  <div className='modal-dialog modal-dialog-centered modal-dialog-scrollable'>
-                    <div className='apply-modal-content modal-content'>
-                      <div className='text-center'>
-                        <h3 className='title'>
-                          Send message to{' '}
-                          {formatString(data?.company_name) || 'N/A'}
-                        </h3>
-                        <button
-                          type='button'
-                          className='closed-modal'
-                          data-bs-dismiss='modal'
-                          aria-label='Close'
-                        ></button>
-                      </div>
-                      {/* End modal-header */}
-
-                      <PrivateMessageBox />
-                      {/* End PrivateMessageBox */}
-                    </div>
-                    {/* End .send-private-message-wrapper */}
-                  </div>
-                </div>
-                {/* End .modal */}
               </div>
             </div>
             {/* <!-- Job Block --> */}
