@@ -20,11 +20,27 @@ const INTERVAL_LABELS = {
   year: "yearly",
   one_time: "one-time",
 };
+
+const getPriceDurationLabel = (item) => {
+  const normalizedInterval = item?.interval?.toLowerCase?.();
+  if (normalizedInterval && INTERVAL_LABELS[normalizedInterval]) {
+    return INTERVAL_LABELS[normalizedInterval];
+  }
+
+  const normalizedType = item?.packageType?.toLowerCase?.() || "";
+  if (normalizedType.includes("bundle")) return "bundle";
+  if (normalizedType.includes("one-time") || normalizedType.includes("onetime")) {
+    return "one-time";
+  }
+
+  return "";
+};
 const Pricing = () => {
   const [pricingContent, setPricingContent] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [skipLoading, setSkipLoading] = useState(false);
+  const [checkoutLoadingId, setCheckoutLoadingId] = useState(null);
   const selector = useSelector((store) => store.user);
   const dispatch = useDispatch();
   const router = useRouter();
@@ -60,6 +76,7 @@ const Pricing = () => {
   };
 
   const handleSubmit = async (priceId, planId) => {
+    setCheckoutLoadingId(planId);
     const stripe = await stripePromise;
 
     try {
@@ -103,6 +120,8 @@ const Pricing = () => {
     } catch (error) {
       console.error("Error in handleSubmit:", error);
       alert("An error occurred. Please try again.");
+    } finally {
+      setCheckoutLoadingId(null);
     }
   };
   useEffect(() => {
@@ -285,9 +304,9 @@ const Pricing = () => {
                 ) : (
                   <div className="price">
                     €{item.price}{" "}
-                    {item?.interval !== "one_time" && (
+                    {getPriceDurationLabel(item) && (
                       <span className="duration">
-                        / {INTERVAL_LABELS[item?.interval] || "monthly"}
+                        / {getPriceDurationLabel(item)}
                       </span>
                     )}
                   </div>
@@ -305,12 +324,18 @@ const Pricing = () => {
                 <div style={{ width: "100%" }}>
                   <button
                     className="theme-btn btn-style-three"
-                    style={{ margin: "auto" }}
+                    style={{
+                      margin: "auto",
+                      opacity: checkoutLoadingId === item?.id ? 0.7 : 1,
+                    }}
+                    disabled={checkoutLoadingId !== null}
                     onClick={() => {
                       handleSubmit(item?.stripePriceId, item?.id);
                     }}
                   >
-                    ADVERTEER
+                    {checkoutLoadingId === item?.id
+                      ? "Bezig met laden..."
+                      : "ADVERTEER"}
                   </button>
                 </div>
               </div>
