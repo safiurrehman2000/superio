@@ -317,7 +317,21 @@ export const JOB_TYPE_OPTIONS = [
 
 export const formatString = (str) => {
   if (!str) return '';
-  return str
+  const normalized =
+    typeof str === 'string'
+      ? str
+      : Array.isArray(str)
+        ? str.filter((value) => value != null).join(' ')
+        : typeof str === 'object'
+          ? str.label ||
+            str.value ||
+            str.type ||
+            str.name ||
+            str.title ||
+            String(str)
+          : String(str);
+
+  return normalized
     .replace(/[-_]/g, ' ')
     .split(' ')
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
