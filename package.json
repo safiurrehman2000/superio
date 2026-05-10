@@ -14,7 +14,6 @@
     "stripe:trigger-delete-updated": "stripe trigger customer.subscription.updated"
   },
   "dependencies": {
-    "@emailjs/browser": "^4.4.1",
     "@faker-js/faker": "^8.1.0",
     "@getbrevo/brevo": "^3.0.1",
     "@next-auth/firebase-adapter": "^2.0.1",

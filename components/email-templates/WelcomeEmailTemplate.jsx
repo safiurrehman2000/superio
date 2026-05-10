@@ -1,7 +1,7 @@
 /**
  * Welcome Email Template Component
  * This component provides the structure for welcome emails
- * Note: This is primarily for reference as EmailJS uses its own templates
+ * Note: This is primarily for reference for server-rendered email templates
  */
 
 const WelcomeEmailTemplate = ({ userType = 'User', userName = 'User' }) => {
