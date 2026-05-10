@@ -36,3 +36,4 @@ export const useOptionsFromFirebase = (type) => {
 // Convenience hooks for specific option types
 export const useStates = () => useOptionsFromFirebase("states");
 export const useSectors = () => useOptionsFromFirebase("sectors");
+export const useJobTypes = () => useOptionsFromFirebase("job_types");
