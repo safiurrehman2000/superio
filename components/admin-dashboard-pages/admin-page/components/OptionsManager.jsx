@@ -7,6 +7,7 @@ import { InputField } from "@/components/inputfield/InputField";
 const OptionsManager = () => {
   const [states, setStates] = useState([]);
   const [sectors, setSectors] = useState([]);
+  const [jobTypes, setJobTypes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("states");
   const [submitting, setSubmitting] = useState(false);
@@ -50,6 +51,14 @@ const OptionsManager = () => {
       if (sectorsData.data) {
         setSectors(sectorsData.data);
       }
+
+      const jobTypesResponse = await fetch(
+        "/api/admin/manage-options?type=job_types"
+      );
+      const jobTypesData = await jobTypesResponse.json();
+      if (jobTypesData.data) {
+        setJobTypes(jobTypesData.data);
+      }
     } catch (error) {
       console.error("Error fetching options:", error);
       errorToast("Failed to fetch options");
@@ -78,7 +87,11 @@ const OptionsManager = () => {
 
       if (response.ok) {
         successToast(
-          `${activeTab === "states" ? "State" : "Sector"} added successfully`
+          activeTab === "states"
+            ? "State added successfully"
+            : activeTab === "sectors"
+              ? "Sector added successfully"
+              : "Job type added successfully"
         );
         reset(); // Reset form
         fetchOptions(); // Refresh the list
@@ -110,7 +123,11 @@ const OptionsManager = () => {
 
       if (response.ok) {
         successToast(
-          `${activeTab === "states" ? "State" : "Sector"} deleted successfully`
+          activeTab === "states"
+            ? "State deleted successfully"
+            : activeTab === "sectors"
+              ? "Sector deleted successfully"
+              : "Job type deleted successfully"
         );
         fetchOptions(); // Refresh the list
       } else {
@@ -122,7 +139,12 @@ const OptionsManager = () => {
     }
   };
 
-  const currentOptions = activeTab === "states" ? states : sectors;
+  const currentOptions =
+    activeTab === "states"
+      ? states
+      : activeTab === "sectors"
+        ? sectors
+        : jobTypes;
 
   // Debug logging
   console.log("Current states:", states);
@@ -154,8 +176,8 @@ const OptionsManager = () => {
           <h5 style={{ marginBottom: "15px", color: "#1967d2" }}>
             Select Option Type
           </h5>
-          <div className="row">
-            <div className="col-md-6">
+          <div className="row g-2">
+            <div className="col-md-4">
               <button
                 className={`btn btn-lg w-100 ${
                   activeTab === "states" ? "btn-primary" : "btn-outline-primary"
@@ -173,7 +195,7 @@ const OptionsManager = () => {
                 📍 States ({states.length})
               </button>
             </div>
-            <div className="col-md-6">
+            <div className="col-md-4">
               <button
                 className={`btn btn-lg w-100 ${
                   activeTab === "sectors"
@@ -193,6 +215,26 @@ const OptionsManager = () => {
                 🏢 Sectors ({sectors.length})
               </button>
             </div>
+            <div className="col-md-4">
+              <button
+                className={`btn btn-lg w-100 ${
+                  activeTab === "job_types"
+                    ? "btn-primary"
+                    : "btn-outline-primary"
+                }`}
+                onClick={() => setActiveTab("job_types")}
+                style={{
+                  padding: "15px 20px",
+                  fontSize: "16px",
+                  fontWeight: "600",
+                  borderRadius: "8px",
+                  border: "2px solid",
+                  transition: "all 0.3s ease",
+                }}
+              >
+                💼 Job types ({jobTypes.length})
+              </button>
+            </div>
           </div>
         </div>
 
@@ -207,14 +249,23 @@ const OptionsManager = () => {
           }}
         >
           <strong>Currently Managing:</strong>{" "}
-          {activeTab === "states" ? "States" : "Sectors"}(
-          {currentOptions.length} items)
+          {activeTab === "states"
+            ? "States"
+            : activeTab === "sectors"
+              ? "Sectors"
+              : "Job types"}{" "}
+          ({currentOptions.length} items)
         </div>
 
         {/* Add New Option Form */}
         <div className="form-group" style={{ marginTop: "30px" }}>
           <h5 style={{ marginBottom: "20px", color: "#1967d2" }}>
-            Add New {activeTab === "states" ? "State" : "Sector"}
+            Add New{" "}
+            {activeTab === "states"
+              ? "State"
+              : activeTab === "sectors"
+                ? "Sector"
+                : "Job Type"}
           </h5>
           <FormProvider {...methods}>
             <form onSubmit={handleSubmit(handleAddOption)} className="row">
@@ -247,7 +298,13 @@ const OptionsManager = () => {
                 >
                   {submitting
                     ? "Adding..."
-                    : `Add ${activeTab === "states" ? "State" : "Sector"}`}
+                    : `Add ${
+                        activeTab === "states"
+                          ? "State"
+                          : activeTab === "sectors"
+                            ? "Sector"
+                            : "Job Type"
+                      }`}
                 </button>
               </div>
             </form>
@@ -257,7 +314,12 @@ const OptionsManager = () => {
         {/* Options List */}
         <div className="form-group" style={{ marginTop: "40px" }}>
           <h5 style={{ marginBottom: "20px", color: "#1967d2" }}>
-            Current {activeTab === "states" ? "States" : "Sectors"}
+            Current{" "}
+            {activeTab === "states"
+              ? "States"
+              : activeTab === "sectors"
+                ? "Sectors"
+                : "Job Types"}
           </h5>
           {currentOptions.length === 0 ? (
             <div className="alert alert-info">

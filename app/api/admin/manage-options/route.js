@@ -1,12 +1,14 @@
 import { NextResponse } from "next/server";
 import { db } from "@/utils/firebase-admin";
 
+const OPTION_DOC_TYPES = ["states", "sectors", "job_types"];
+
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
-    const type = searchParams.get("type"); // 'states' or 'sectors'
+    const type = searchParams.get("type");
 
-    if (!type || !["states", "sectors"].includes(type)) {
+    if (!type || !OPTION_DOC_TYPES.includes(type)) {
       return NextResponse.json(
         { error: "Invalid type parameter" },
         { status: 400 }
@@ -34,7 +36,7 @@ export async function POST(request) {
   try {
     const { type, value, label } = await request.json();
 
-    if (!type || !["states", "sectors"].includes(type)) {
+    if (!type || !OPTION_DOC_TYPES.includes(type)) {
       return NextResponse.json(
         { error: "Invalid type parameter" },
         { status: 400 }
@@ -85,7 +87,7 @@ export async function DELETE(request) {
     const type = searchParams.get("type");
     const value = searchParams.get("value");
 
-    if (!type || !["states", "sectors"].includes(type)) {
+    if (!type || !OPTION_DOC_TYPES.includes(type)) {
       return NextResponse.json(
         { error: "Invalid type parameter" },
         { status: 400 }
