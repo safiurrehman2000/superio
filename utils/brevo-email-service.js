@@ -104,8 +104,19 @@ export const sendBrevoEmail = async (emailData) => {
 
     // Send the email
     const response = await brevoApiInstance.sendTransacEmail(sendSmtpEmail);
-    console.log('✅ Brevo email sent successfully:', response);
-    return { success: true, messageId: response.messageId };
+    const messageId = response?.body?.messageId || response?.messageId || null;
+    const requestId =
+      response?.response?.headers?.['sib-request-id'] ||
+      response?.response?.headers?.['SIB-REQUEST-ID'] ||
+      null;
+    console.log('✅ Brevo email sent successfully:', {
+      to: emailData.to,
+      subject: emailData.subject,
+      messageId,
+      requestId,
+      statusCode: response?.response?.statusCode || null,
+    });
+    return { success: true, messageId, requestId };
   } catch (error) {
     const { errorMessage, errorCode } = extractBrevoApiError(error);
     console.error('❌ Error sending Brevo email:', {
@@ -167,7 +178,7 @@ export const sendJobAlertEmailBrevo = async (
     }
     console.log(`✅ Job alert email sent successfully to: ${userEmail}`);
     console.log(`📧 Jobs included: ${jobs.length}`);
-    console.log(`📧 Message ID: ${result.messageId}`);
+    console.log(`📧 Message ID: ${result.messageId || 'N/A'}`);
     return true;
   } catch (error) {
     console.error(`💥 Error sending job alert email to ${userEmail}:`, error);
