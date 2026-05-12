@@ -35,23 +35,6 @@ const BlogDetailsDynamic = ({ params }) => {
         <div className="auto-container">
           <div className="upper-box">
             <h3>{blog?.blogSingleTitle}</h3>
-
-            <ul className="post-info">
-              <li>
-                <span className="thumb">
-                  <Image
-                    width={30}
-                    height={30}
-                    src={"/images/resource/thumb-1.png"}
-                    alt="resource"
-                  />
-                </span>
-                Alison Dawn
-              </li>
-              <li>August 31, 2021</li>
-              <li>12 Comment</li>
-            </ul>
-            {/* End post info */}
           </div>
         </div>
         {/* End auto-container */}

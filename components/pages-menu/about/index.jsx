@@ -26,7 +26,7 @@ const index = () => {
       <MobileMenu />
       {/* End MobileMenu */}
 
-      <Breadcrumb title="Over Ons" meta="Over Ons" />
+      {/* <Breadcrumb title="Over Ons" meta="Over Ons" /> */}
       {/* <!--End Page Title--> */}
 
       <section className="about-section-three">

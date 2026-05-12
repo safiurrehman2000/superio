@@ -20,7 +20,7 @@ const index = () => {
       <MobileMenu />
       {/* End MobileMenu */}
 
-      <Breadcrumb title="Wetgeving" meta="Wetgeving" />
+      {/* <Breadcrumb title="Wetgeving" meta="Wetgeving" /> */}
       {/* <!--End Page Title--> */}
 
       <section className="tnc-section">

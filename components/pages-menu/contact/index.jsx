@@ -13,7 +13,7 @@ const index = () => {
       <LoginPopup />
       <DefaulHeader />
       <MobileMenu />
-      <Breadcrumb title="Contact" meta="Contact" />
+      {/* <Breadcrumb title="Contact" meta="Contact" /> */}
 
       <section className="contact-section">
         <div className="auto-container">

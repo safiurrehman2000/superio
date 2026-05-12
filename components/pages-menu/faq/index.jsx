@@ -17,7 +17,7 @@ const index = () => {
       <MobileMenu />
       {/* End MobileMenu */}
 
-      <Breadcrumb title="Faq's" meta="Faq's" />
+      {/* <Breadcrumb title="Faq's" meta="Faq's" /> */}
       {/* <!--End Page Title--> */}
 
       <section className="faqs-section">
