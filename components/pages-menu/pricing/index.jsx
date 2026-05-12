@@ -17,13 +17,13 @@ const index = () => {
       <MobileMenu />
       {/* End MobileMenu */}
 
-      <Breadcrumb title="Pricing" meta="Pricing" />
+      <Breadcrumb title="Prijzen" meta="Prijzen" />
       {/* <!--End Page Title--> */}
 
       <section className="pricing-section">
         <div className="auto-container">
           <div className="sec-title text-center">
-            <h2>Adverteren</h2>
+            <h2>Vacature Adverteren</h2>
             <div className="text">
               <PricingPackages />
             </div>
