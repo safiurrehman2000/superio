@@ -35,8 +35,8 @@ Via De Flexijobber vergroot je jouw bereik aanzienlijk.`,
     • Stel vacature-alerts in via het dashboard
     • Vergroot jouw bereik bij werkgevers via De Flexijobber`,
       avatar: "/images/resource/flexijobber.jpg",
-      link: "https://www.de-flexi-jobber.be/pricing",
-      buttonText: "Adverteer Vacature",
+      link: "https://www.de-flexi-jobber.be/register",
+      buttonText: "Account Aanmaken",
     },
   ];
 
