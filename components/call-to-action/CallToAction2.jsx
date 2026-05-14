@@ -12,16 +12,7 @@ const CallToAction2 = () => {
         overflow: "hidden",
       }}
     >
-      {/* Overlay */}
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          background:
-            "linear-gradient(45deg, rgba(16,231,220,0.45) 0%, rgba(0,116,225,0.7) 70%)",
-          zIndex: 1,
-        }}
-      />
+      
 
       {/* Content */}
       <div
