@@ -243,7 +243,7 @@ export default function InvoicesTable() {
         <thead>
           <tr>
             <th>Type</th>
-            <th>Reference</th>
+            <th>Factuurnr.</th>
             <th>Company</th>
             <th>Email</th>
             <th>Amount</th>

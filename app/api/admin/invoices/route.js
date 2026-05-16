@@ -74,7 +74,11 @@ export async function GET(request) {
       .map((invoice) => ({
         ...invoice,
         user: usersMap[invoice.userId] || null,
-        referenceId: invoice.invoiceId || invoice.checkoutSessionId || null,
+        referenceId:
+          invoice.receiptNumber ||
+          invoice.invoiceId ||
+          invoice.checkoutSessionId ||
+          null,
         receiptTypeLabel:
           invoice.type === "one_time"
             ? "One-time"
@@ -108,6 +112,7 @@ export async function GET(request) {
         }
 
         const haystack = [
+          invoice.receiptNumber || "",
           invoice.invoiceId || "",
           invoice.checkoutSessionId || "",
           invoice.referenceId || "",

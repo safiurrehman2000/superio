@@ -137,3 +137,95 @@ export const createJobAlertEmailContent = (userName, jobs, alertKeywords) => {
     </html>
   `;
 };
+
+const WELCOME_EMAIL_BASE_URL =
+  process.env.NEXT_PUBLIC_BASE_URL || "https://de-flexi-jobber.be";
+
+const welcomeEmailContactFooter = `
+  <p style="color: #666; line-height: 1.6; font-size: 16px; margin-top: 24px;">
+    <a href="mailto:info@de-flexi-jobber.be" style="color: #1967d2; font-weight: bold; text-decoration: underline;">info@de-flexi-jobber.be</a>
+  </p>
+  <ul style="color: #666; line-height: 1.8; font-size: 16px; padding-left: 20px;">
+    <li>WhatsApp 0491 100 143 of via de chat: Algemene vragen?</li>
+    <li>Automatisch vacature plaatsen werkgevers via de chat: Direct vacature plaatsen</li>
+    <li>Contactformulier via de website.</li>
+  </ul>
+`;
+
+/** Dutch welcome email HTML for employers and candidates */
+export const createWelcomeEmailContent = (userType = "User") => {
+  const isCandidate = userType === "Candidate";
+  const dashboardUrl = isCandidate
+    ? `${WELCOME_EMAIL_BASE_URL}/candidates-dashboard/applied-jobs`
+    : `${WELCOME_EMAIL_BASE_URL}/employers-dashboard/dashboard`;
+
+  const employerBody = `
+    <h2 style="color: #333; margin-top: 0;">Beste Werkgever,</h2>
+    <p style="color: #666; line-height: 1.6; font-size: 16px;">
+      Bedankt voor uw registratie bij De Flexijobber. Wij helpen u graag bij het vinden van gemotiveerde versterking voor uw team.
+    </p>
+    <p style="color: #666; line-height: 1.6; font-size: 16px; font-weight: bold;">Wat kunt u nu doen?</p>
+    <ul style="color: #666; line-height: 1.8; font-size: 16px;">
+      <li><strong>Plaats een vacature:</strong> Trek direct de aandacht van actieve flexijobbers.</li>
+      <li><strong>Uw dashboard:</strong> Beheer uw vacatures en volg binnengekomen sollicitaties eenvoudig op één centrale plek.</li>
+    </ul>
+    <p style="color: #666; line-height: 1.6; font-size: 16px;">
+      Heeft u hulp nodig bij het opstarten? Wij kijken mee via uw account om alles vlot te laten verlopen.
+    </p>
+    <p style="color: #666; line-height: 1.6; font-size: 16px;">
+      Gebruik de Whats-app knop voor onmiddellijk contact op al jouw vragen!
+    </p>
+    <p style="color: #666; line-height: 1.6; font-size: 16px;">
+      Met vriendelijke groet,<br />
+      Team De Flexijobber
+    </p>
+  `;
+
+  const candidateBody = `
+    <h2 style="color: #333; margin-top: 0;">Beste Kandidaat,</h2>
+    <p style="color: #666; line-height: 1.6; font-size: 16px;">
+      Welkom bij de community! Vanaf nu is het vinden van de perfecte flexijob of studentenjob makkelijker dan ooit. Jouw profiel staat klaar, dus je kunt direct aan de slag:
+    </p>
+    <ul style="color: #666; line-height: 1.8; font-size: 16px;">
+      <li><strong>Solliciteer direct:</strong> Bekijk vacatures die bij jou passen en reageer met één klik.</li>
+      <li><strong>Beheer je profiel:</strong> Houd je gegevens up-to-date via jouw persoonlijke dashboard.</li>
+      <li><strong>Volg alles op:</strong> In je dashboard zie je precies wat de status van je sollicitaties is.</li>
+    </ul>
+    <p style="color: #666; line-height: 1.6; font-size: 16px;">
+      Gebruik de Whats-app knop voor onmiddellijk contact op al jouw vragen!
+    </p>
+    <p style="color: #666; line-height: 1.6; font-size: 16px;">
+      Veel succes met je zoektocht!<br />
+      Team De Flexijobber
+    </p>
+  `;
+
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>Welkom bij De Flexijobber!</title>
+    </head>
+    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f9f9f9;">
+      <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background-color: #1967d2; color: white; padding: 30px 20px; text-align: center; border-radius: 8px 8px 0 0;">
+          <h1 style="margin: 0; font-size: 28px;">Welkom bij De Flexijobber!</h1>
+        </div>
+        <div style="background-color: white; padding: 30px; border-radius: 0 0 8px 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+          ${isCandidate ? candidateBody : employerBody}
+          <div style="text-align: center; margin: 28px 0;">
+            <a href="${dashboardUrl}" style="background-color: #1967d2; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-size: 16px; font-weight: bold; display: inline-block;">
+              Ga naar jouw dashboard
+            </a>
+          </div>
+          ${welcomeEmailContactFooter}
+        </div>
+        <p style="text-align: center; padding: 20px; color: #999; font-size: 14px; margin: 0;">
+          © ${new Date().getFullYear()} De Flexijobber
+        </p>
+      </div>
+    </body>
+    </html>
+  `;
+};

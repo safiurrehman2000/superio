@@ -333,7 +333,7 @@ const PackageDataTable = () => {
         <thead>
           <tr>
             <th>#</th>
-            <th>Receipt ID</th>
+            <th>Factuurnr.</th>
             <th>Package</th>
             <th>Amount</th>
             <th>Date</th>
@@ -357,7 +357,7 @@ const PackageDataTable = () => {
             receipts.map((r, idx) => (
               <tr key={r.id}>
                 <td>{idx + 1}</td>
-                <td>{r.id}</td>
+                <td>{r.receiptNumber || r.id}</td>
                 <td>{packages[r.planId] || r.planId || "N/A"}</td>{" "}
                 {/* Package name or planId */}
                 <td>
