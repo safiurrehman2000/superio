@@ -1,3 +1,8 @@
+import {
+  allocateReceiptNumber,
+  receiptCreatedToDate,
+  receiptPdfFilename,
+} from '@/utils/allocateReceiptNumber';
 import { adminDb } from '@/utils/firebase-admin';
 import { buildBrandedReceiptPdfForInvoice } from '@/utils/buildBrandedReceiptPdfForInvoice';
 import { buildBrandedReceiptPdfForOneTimeSession } from '@/utils/buildBrandedReceiptPdfForOneTimeSession';
@@ -43,6 +48,10 @@ export async function processOneTimeCheckoutReceipt(stripe, session) {
     ? new Date(session.created * 1000)
     : new Date();
 
+  const { receiptNumber } = await allocateReceiptNumber(
+    receiptCreatedToDate(created),
+  );
+
   let receipt_pdf_url = null;
 
   if (process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET) {
@@ -54,8 +63,9 @@ export async function processOneTimeCheckoutReceipt(stripe, session) {
         sessionFull,
         planId,
         userId,
+        receiptNumber,
       );
-      const storageKey = `one-time-${session.id}`;
+      const storageKey = receiptNumber.replace(/\//g, '-');
       receipt_pdf_url = await uploadBrandedReceiptPdf({
         userId,
         invoiceId: storageKey,
@@ -79,6 +89,7 @@ export async function processOneTimeCheckoutReceipt(stripe, session) {
       stripe_invoice_pdf_url: null,
       created,
       checkoutSessionId: session.id,
+      receiptNumber,
       type: 'one_time',
     });
     console.log('One-time receipt written to Firestore', session.id);
@@ -160,6 +171,10 @@ export async function processPaidInvoiceReceipt(stripe, invoice) {
     return;
   }
 
+  const { receiptNumber } = await allocateReceiptNumber(
+    receiptCreatedToDate(created),
+  );
+
   let receipt_pdf_url = stripe_invoice_pdf_url;
 
   if (process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET) {
@@ -168,10 +183,12 @@ export async function processPaidInvoiceReceipt(stripe, invoice) {
         invoice,
         planId,
         userId,
+        receiptNumber,
       );
+      const storageKey = receiptNumber.replace(/\//g, '-');
       receipt_pdf_url = await uploadBrandedReceiptPdf({
         userId,
-        invoiceId,
+        invoiceId: storageKey,
         pdfBuffer,
       });
     } catch (err) {
@@ -193,6 +210,7 @@ export async function processPaidInvoiceReceipt(stripe, invoice) {
       stripe_invoice_pdf_url,
       created,
       invoiceId,
+      receiptNumber,
       type: 'invoice',
     });
     console.log('Invoice receipt successfully written to Firestore', invoiceId);

@@ -6,6 +6,7 @@ import {
 } from "@/utils/buildBrandedReceiptPdfForInvoice";
 import { getCheckoutSessionDisplayAmounts } from "@/utils/checkoutSessionDisplayAmounts";
 import { generateBrandedReceiptPdf } from "@/utils/generateBrandedReceiptPdf";
+import { formatReceiptInvoiceTitle } from "@/utils/allocateReceiptNumber";
 import { resolvePricingPackageLabel } from "@/utils/resolvePricingPackageLabel";
 
 /**
@@ -31,12 +32,14 @@ function checkoutAddressToStripeShape(addr) {
  * @param {import("stripe").Stripe.Checkout.Session} session Expanded session (e.g. `customer.tax_ids`).
  * @param {string|null|undefined} planId
  * @param {string} userId
+ * @param {string} receiptNumber e.g. `2026/1`
  * @returns {Promise<Buffer>}
  */
 export async function buildBrandedReceiptPdfForOneTimeSession(
   session,
   planId,
   userId,
+  receiptNumber,
 ) {
   const packageName = await resolvePricingPackageLabel(planId);
   const userSnap = await adminDb.collection("users").doc(userId).get();
@@ -117,8 +120,7 @@ export async function buildBrandedReceiptPdfForOneTimeSession(
     process.env.RECEIPT_TERMS_URL ||
     "https://www.de-flexi-jobber.be/algemene-voorwaarden";
 
-  const ref = String(session.id || "").replace(/^cs_/, "").slice(0, 18);
-  const invoiceTitle = `FACTUUR ${ref}`;
+  const invoiceTitle = formatReceiptInvoiceTitle(receiptNumber);
 
   return generateBrandedReceiptPdf({
     invoiceTitle,

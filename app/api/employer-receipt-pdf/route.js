@@ -44,7 +44,9 @@ export async function GET(request) {
   }
 
   try {
-    const { buffer, filename } = await generateReceiptPdfForRecord(data);
+    const { buffer, filename } = await generateReceiptPdfForRecord(data, {
+      receiptDocId: receiptId,
+    });
     return new NextResponse(new Uint8Array(buffer), {
       status: 200,
       headers: {
