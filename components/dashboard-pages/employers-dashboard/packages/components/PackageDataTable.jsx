@@ -374,7 +374,7 @@ const PackageDataTable = () => {
                     : ""}
                 </td>
                 <td>
-                  {r.invoiceId ? (
+                  {r.invoiceId || r.checkoutSessionId ? (
                     <button
                       type="button"
                       className="btn btn-link p-0 border-0"

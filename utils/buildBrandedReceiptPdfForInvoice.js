@@ -20,7 +20,7 @@ function regionDisplayNameNl(iso2) {
  * @param {import("stripe").Stripe.Address | null | undefined} addr
  * @returns {string[]}
  */
-function linesFromStripeCustomerAddress(addr) {
+export function linesFromStripeCustomerAddress(addr) {
   if (!addr || typeof addr !== "object") return [];
   const out = [];
   const l1 = String(addr.line1 || "").trim();
@@ -48,7 +48,7 @@ function linesFromStripeCustomerAddress(addr) {
  * @param {Record<string, unknown>} ud
  * @returns {string[]}
  */
-function linesFromUserProfile(ud) {
+export function linesFromUserProfile(ud) {
   const out = [];
   const street = String(ud.address || ud.street || "").trim();
   const street2 = String(ud.address_line2 || ud.addressLine2 || "").trim();
@@ -81,7 +81,7 @@ function linesFromUserProfile(ud) {
  * @param {import("stripe").Stripe.Customer | null | undefined} customer
  * @param {Record<string, unknown>} ud
  */
-function buyerVatLine(customer, ud) {
+export function buyerVatLine(customer, ud) {
   const fromProfile =
     ud.vat_number || ud.btw_number || ud.btw || ud.company_vat || "";
   let fromStripe = "";
