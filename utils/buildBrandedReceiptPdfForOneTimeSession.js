@@ -4,6 +4,7 @@ import {
   linesFromStripeCustomerAddress,
   linesFromUserProfile,
 } from "@/utils/buildBrandedReceiptPdfForInvoice";
+import { getCheckoutSessionDisplayAmounts } from "@/utils/checkoutSessionDisplayAmounts";
 import { generateBrandedReceiptPdf } from "@/utils/generateBrandedReceiptPdf";
 import { resolvePricingPackageLabel } from "@/utils/resolvePricingPackageLabel";
 
@@ -101,24 +102,8 @@ export async function buildBrandedReceiptPdfForOneTimeSession(
       })
     : "";
 
-  const totalCents = session.amount_total ?? 0;
-  const taxCents =
-    session.total_details?.amount_tax != null
-      ? session.total_details.amount_tax
-      : 0;
-  const sub =
-    session.amount_subtotal != null
-      ? session.amount_subtotal
-      : Math.max(0, totalCents - taxCents);
-  const lineExclCents = sub;
-
-  let vatRateLabel = "BTW (volgens Stripe Checkout)";
-  if (taxCents > 0 && lineExclCents > 0) {
-    const pct = (taxCents / lineExclCents) * 100;
-    if (Number.isFinite(pct)) {
-      vatRateLabel = `${pct.toFixed(0).replace(".", ",")}% BTW`;
-    }
-  }
+  const { lineExclCents, taxCents, totalCents, vatRateLabel } =
+    getCheckoutSessionDisplayAmounts(session);
 
   const seller = {
     logoText: process.env.RECEIPT_LOGO_TEXT || "DE FLEXIJOBBER",

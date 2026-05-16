@@ -2,12 +2,7 @@ import { NextResponse } from "next/server";
 import "@/utils/firebase-admin";
 import admin from "firebase-admin";
 import { adminDb } from "@/utils/firebase-admin";
-import Stripe from "stripe";
-import { buildBrandedReceiptPdfForInvoice } from "@/utils/buildBrandedReceiptPdfForInvoice";
-import { buildBrandedReceiptPdfForOneTimeSession } from "@/utils/buildBrandedReceiptPdfForOneTimeSession";
-import { uploadBrandedReceiptPdf } from "@/utils/uploadBrandedReceiptPdf";
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+import { generateReceiptPdfForRecord } from "@/utils/generateReceiptPdfForRecord";
 
 /** PDFKit + fs must run in Node, not Edge. */
 export const runtime = "nodejs";
@@ -48,90 +43,9 @@ export async function GET(request) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const checkoutSessionId = data.checkoutSessionId;
-  const invoiceId = data.invoiceId;
-
-  if (checkoutSessionId && !invoiceId) {
-    const safeId = String(checkoutSessionId).replace(/[^\w.-]/g, "_");
-    const filename = `factuur-${safeId}.pdf`;
-
-    try {
-      const sessionFull = await stripe.checkout.sessions.retrieve(checkoutSessionId, {
-        expand: ["customer", "customer.tax_ids"],
-      });
-      const branded = await buildBrandedReceiptPdfForOneTimeSession(
-        sessionFull,
-        data.planId,
-        uid,
-      );
-
-      if (!branded || branded.length === 0) {
-        throw new Error("Generated PDF buffer is empty");
-      }
-
-      const bucketName = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
-      if (bucketName) {
-        try {
-          await uploadBrandedReceiptPdf({
-            userId: uid,
-            invoiceId: `one-time-${checkoutSessionId}`,
-            pdfBuffer: branded,
-          });
-        } catch (cacheErr) {
-          console.error("employer-receipt-pdf: storage cache upload failed", cacheErr);
-        }
-      }
-
-      return new NextResponse(new Uint8Array(branded), {
-        status: 200,
-        headers: {
-          "Content-Type": "application/pdf",
-          "Content-Disposition": `inline; filename="${filename}"`,
-          "Cache-Control": "private, no-store",
-        },
-      });
-    } catch (err) {
-      console.error("employer-receipt-pdf: one-time PDF failed", err);
-      return NextResponse.json(
-        {
-          error:
-            "De factuur-PDF kon niet worden gegenereerd. Probeer later opnieuw of neem contact op.",
-          detail: process.env.NODE_ENV === "development" ? String(err?.message || err) : undefined,
-        },
-        { status: 502 },
-      );
-    }
-  }
-
-  if (!invoiceId) {
-    return NextResponse.json({ error: "No invoice or checkout session on receipt" }, { status: 404 });
-  }
-
-  const safeInvoiceId = String(invoiceId).replace(/[^\w.-]/g, "_");
-  const filename = `factuur-${safeInvoiceId}.pdf`;
-
   try {
-    const inv = await stripe.invoices.retrieve(invoiceId);
-    const branded = await buildBrandedReceiptPdfForInvoice(inv, data.planId, uid);
-
-    if (!branded || branded.length === 0) {
-      throw new Error("Generated PDF buffer is empty");
-    }
-
-    const bucketName = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
-    if (bucketName) {
-      try {
-        await uploadBrandedReceiptPdf({
-          userId: uid,
-          invoiceId,
-          pdfBuffer: branded,
-        });
-      } catch (cacheErr) {
-        console.error("employer-receipt-pdf: storage cache upload failed", cacheErr);
-      }
-    }
-
-    return new NextResponse(new Uint8Array(branded), {
+    const { buffer, filename } = await generateReceiptPdfForRecord(data);
+    return new NextResponse(new Uint8Array(buffer), {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",
@@ -147,7 +61,7 @@ export async function GET(request) {
           "De factuur-PDF kon niet worden gegenereerd. Probeer later opnieuw of neem contact op.",
         detail: process.env.NODE_ENV === "development" ? String(err?.message || err) : undefined,
       },
-      { status: 502 }
+      { status: 502 },
     );
   }
 }
