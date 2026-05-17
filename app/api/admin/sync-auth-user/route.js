@@ -5,6 +5,7 @@ import {
   authenticateAdmin,
   createAuthErrorResponse,
 } from '@/utils/admin-auth-middleware';
+import { buildUserProfile, profileNeedsSetup } from '@/utils/createUserProfile';
 
 const ALLOWED_TYPES = ['Candidate', 'Employer', 'Admin'];
 
@@ -36,7 +37,7 @@ export async function POST(request) {
     const userRef = adminDb.collection('users').doc(authUser.uid);
     const existing = await userRef.get();
 
-    if (existing.exists) {
+    if (!profileNeedsSetup(existing)) {
       return NextResponse.json({
         success: true,
         created: false,
@@ -46,22 +47,19 @@ export async function POST(request) {
       });
     }
 
-    const now = new Date();
-    const profile = {
+    const profile = buildUserProfile({
       email: authUser.email || email || '',
       userType,
-      createdAt: now,
-      isFirstTime: true,
       createdBy: 'admin_sync',
-      lastUpdatedBy: authResult.user.uid,
-      lastUpdatedAt: now,
-    };
+      emailVerified: authUser.emailVerified,
+    });
+    profile.lastUpdatedBy = authResult.user.uid;
 
     if (userType === 'Admin') {
       profile.isFirstTime = false;
     }
 
-    await userRef.set(profile);
+    await userRef.set(profile, { merge: true });
 
     return NextResponse.json({
       success: true,

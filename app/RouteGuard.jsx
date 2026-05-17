@@ -35,7 +35,10 @@ const RouteGuard = ({ children }) => {
         let userDoc = await getDoc(doc(db, "users", uid));
         let userData = userDoc.exists() ? userDoc.data() : {};
 
-        if (!userDoc.exists()) {
+        const profileIncomplete =
+          !userDoc.exists() || !userData?.email || !userData?.userType;
+
+        if (profileIncomplete) {
           const pendingType =
             selector.userType === "Employer" ||
             selector.userType === "Candidate"
@@ -58,14 +61,14 @@ const RouteGuard = ({ children }) => {
               if (repairRes.ok) {
                 userDoc = await getDoc(doc(db, "users", uid));
                 userData = userDoc.exists() ? userDoc.data() : {};
-                console.log("RouteGuard - repaired missing Firestore profile");
+                console.log("RouteGuard - repaired Firestore profile");
               }
             } catch (repairError) {
               console.error("RouteGuard - profile repair failed:", repairError);
             }
           } else {
             console.warn(
-              "RouteGuard - Auth user has no Firestore profile. Log out and register again, or contact support.",
+              "RouteGuard - Auth user has no complete Firestore profile.",
             );
           }
         }

@@ -19,3 +19,9 @@ export function buildUserProfile({
     lastUpdatedAt: now,
   };
 }
+
+export function profileNeedsSetup(snap) {
+  if (!snap?.exists) return true;
+  const data = snap.data() || {};
+  return !data.email || !data.userType;
+}

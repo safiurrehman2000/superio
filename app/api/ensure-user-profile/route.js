@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import admin from 'firebase-admin';
 import { adminDb } from '@/utils/firebase-admin';
-import { buildUserProfile } from '@/utils/createUserProfile';
+import { buildUserProfile, profileNeedsSetup } from '@/utils/createUserProfile';
 
 const ALLOWED_TYPES = ['Candidate', 'Employer'];
 
@@ -23,7 +23,7 @@ export async function POST(request) {
     const userRef = adminDb.collection('users').doc(decoded.uid);
     const existing = await userRef.get();
 
-    if (existing.exists) {
+    if (!profileNeedsSetup(existing)) {
       return NextResponse.json({
         success: true,
         created: false,
@@ -39,7 +39,7 @@ export async function POST(request) {
       emailVerified: authUser.emailVerified,
     });
 
-    await userRef.set(profile);
+    await userRef.set(profile, { merge: true });
 
     return NextResponse.json({
       success: true,

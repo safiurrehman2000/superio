@@ -46,7 +46,10 @@ export const ensureFirestoreProfile = async (user, userType) => {
   if (!user?.uid || !userType) return { success: false };
   try {
     const profileDoc = await getDoc(doc(db, "users", user.uid));
-    if (profileDoc.exists()) return { success: true, created: false };
+    const profileData = profileDoc.exists() ? profileDoc.data() : null;
+    if (profileData?.email && profileData?.userType) {
+      return { success: true, created: false };
+    }
 
     const idToken = await user.getIdToken();
     const res = await fetch("/api/ensure-user-profile", {
@@ -57,8 +60,8 @@ export const ensureFirestoreProfile = async (user, userType) => {
       },
       body: JSON.stringify({ userType }),
     });
-    const data = await res.json();
-    return { success: res.ok, created: data.created };
+    const result = await res.json();
+    return { success: res.ok, created: result.created };
   } catch (error) {
     console.error("ensureFirestoreProfile failed:", error);
     return { success: false };

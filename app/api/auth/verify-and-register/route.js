@@ -2,7 +2,10 @@ import { NextResponse } from 'next/server';
 import admin from 'firebase-admin';
 import { adminDb } from '@/utils/firebase-admin';
 import { sendWelcomeEmailBrevo } from '@/utils/brevo-email-service';
-import { buildUserProfile } from '@/utils/createUserProfile';
+import {
+  buildUserProfile,
+  profileNeedsSetup,
+} from '@/utils/createUserProfile';
 import {
   emailVerificationDocId,
   hashOtpCode,
@@ -110,8 +113,9 @@ export async function POST(request) {
 
     const userRef = adminDb.collection('users').doc(uid);
     const profileSnap = await userRef.get();
+    let profileCreated = false;
 
-    if (!profileSnap.exists) {
+    if (profileNeedsSetup(profileSnap)) {
       await userRef.set(
         buildUserProfile({
           email: normalized,
@@ -119,7 +123,9 @@ export async function POST(request) {
           createdBy: repaired ? 'auth_repair' : 'email_verification',
           emailVerified: true,
         }),
+        { merge: true },
       );
+      profileCreated = true;
     }
 
     try {
@@ -136,6 +142,7 @@ export async function POST(request) {
       success: true,
       uid,
       repaired,
+      profileCreated,
       message: repaired
         ? 'Account gerepareerd. U kunt nu inloggen.'
         : 'Account aangemaakt. U kunt nu inloggen.',
