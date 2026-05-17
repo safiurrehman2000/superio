@@ -32,8 +32,43 @@ const RouteGuard = ({ children }) => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         const { uid, email } = user;
-        const userDoc = await getDoc(doc(db, "users", uid));
-        const userData = userDoc.exists() ? userDoc.data() : {};
+        let userDoc = await getDoc(doc(db, "users", uid));
+        let userData = userDoc.exists() ? userDoc.data() : {};
+
+        if (!userDoc.exists()) {
+          const pendingType =
+            selector.userType === "Employer" ||
+            selector.userType === "Candidate"
+              ? selector.userType
+              : typeof window !== "undefined"
+                ? localStorage.getItem("registrationUserType")
+                : null;
+
+          if (pendingType) {
+            try {
+              const idToken = await user.getIdToken();
+              const repairRes = await fetch("/api/ensure-user-profile", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${idToken}`,
+                },
+                body: JSON.stringify({ userType: pendingType }),
+              });
+              if (repairRes.ok) {
+                userDoc = await getDoc(doc(db, "users", uid));
+                userData = userDoc.exists() ? userDoc.data() : {};
+                console.log("RouteGuard - repaired missing Firestore profile");
+              }
+            } catch (repairError) {
+              console.error("RouteGuard - profile repair failed:", repairError);
+            }
+          } else {
+            console.warn(
+              "RouteGuard - Auth user has no Firestore profile. Log out and register again, or contact support.",
+            );
+          }
+        }
 
         // Debug logging
         console.log("RouteGuard - User data:", userData);

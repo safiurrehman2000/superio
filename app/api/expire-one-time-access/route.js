@@ -18,27 +18,36 @@ export async function GET(request) {
 
   try {
     const now = Date.now();
-    const snapshot = await adminDb
-      .collection('users')
-      .where('subscriptionStatus', '==', 'one_time_active')
-      .get();
-
+    const statuses = ['one_time_active', 'admin_active'];
+    const seen = new Set();
     let usersExpired = 0;
     let totalJobsArchived = 0;
 
-    for (const userDoc of snapshot.docs) {
-      const userData = userDoc.data();
-      const end = getOneTimeAccessEndMs(userData.oneTimeAccessUntil);
-      if (!end || end > now) continue;
+    for (const status of statuses) {
+      const snapshot = await adminDb
+        .collection('users')
+        .where('subscriptionStatus', '==', status)
+        .get();
 
-      const result = await expireOneTimeAccessIfNeeded(
-        adminDb,
-        userDoc.id,
-        userData,
-      );
-      if (result.expired) {
-        usersExpired++;
-        totalJobsArchived += result.jobsArchived;
+      for (const userDoc of snapshot.docs) {
+        if (seen.has(userDoc.id)) continue;
+        seen.add(userDoc.id);
+
+        const userData = userDoc.data();
+        if (userData.stripeSubscriptionId) continue;
+
+        const end = getOneTimeAccessEndMs(userData.oneTimeAccessUntil);
+        if (!end || end > now) continue;
+
+        const result = await expireOneTimeAccessIfNeeded(
+          adminDb,
+          userDoc.id,
+          userData,
+        );
+        if (result.expired) {
+          usersExpired++;
+          totalJobsArchived += result.jobsArchived;
+        }
       }
     }
 

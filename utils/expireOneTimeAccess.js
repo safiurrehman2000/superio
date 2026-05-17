@@ -80,11 +80,12 @@ export async function expireOneTimeAccessIfNeeded(adminDb, userId, userData) {
   }
 
   const alreadyMarkedExpired =
-    userData.subscriptionStatus === 'one_time_expired';
+    userData.subscriptionStatus === 'one_time_expired' ||
+    userData.subscriptionStatus === 'expired';
 
   if (!alreadyMarkedExpired) {
     await adminDb.collection('users').doc(userId).update({
-      subscriptionStatus: 'one_time_expired',
+      subscriptionStatus: 'expired',
       planId: null,
       subscriptionUpdatedAt: new Date(),
     });

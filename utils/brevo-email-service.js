@@ -3,6 +3,7 @@ import {
   brevoApiInstance,
   BREVO_CONFIG,
   createJobAlertEmailContent,
+  createVerificationEmailContent,
   createWelcomeEmailContent,
 } from './brevo-config.js';
 
@@ -194,6 +195,37 @@ export const sendJobAlertEmailBrevo = async (
  * @param {string} userType - Type of user (Candidate/Employer)
  * @returns {Promise<boolean>} - Success status
  */
+export const sendVerificationCodeEmailBrevo = async (
+  userEmail,
+  code,
+  userType = 'Candidate',
+) => {
+  try {
+    const htmlContent = createVerificationEmailContent(code, userType);
+    const emailData = {
+      to: [toRecipient(userEmail)],
+      subject: `${code} is uw verificatiecode – De Flexijobber`,
+      htmlContent,
+      senderName: BREVO_CONFIG.senderName,
+      senderEmail: BREVO_CONFIG.senderEmail,
+      replyTo: BREVO_CONFIG.replyToEmail,
+    };
+
+    const result = await sendBrevoEmail(emailData);
+    if (!result.success) {
+      console.error(
+        `Verification email failed for ${userEmail}:`,
+        result.errorMessage,
+      );
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error(`Error sending verification email to ${userEmail}:`, error);
+    return false;
+  }
+};
+
 export const sendWelcomeEmailBrevo = async (
   userEmail,
   userName = '',

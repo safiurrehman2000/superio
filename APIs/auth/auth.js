@@ -1,80 +1,94 @@
 import { getFirebaseErrorMessage } from "@/utils/constants";
 import { auth, db } from "@/utils/firebase";
 import { errorToast, successToast } from "@/utils/toast";
-import { sendWelcomeEmail } from "@/utils/email-service";
 import {
-  createUserWithEmailAndPassword,
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signOut,
 } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 
-export const useSignUp = async (email, password, userType) => {
+export const sendVerificationCode = async (email, userType) => {
   try {
-    // SECURITY: Prevent admin creation during registration
-    if (userType === "Admin") {
-      console.error(
-        "🚨 SECURITY ALERT: Attempted to create admin account during registration"
-      );
-      errorToast("Invalid user type selected");
-      return { success: false, apiError: "Invalid user type" };
-    }
-
-    // Validate userType is one of the allowed types
-    const allowedUserTypes = ["Candidate", "Employer"];
-    if (!allowedUserTypes.includes(userType)) {
-      console.error(
-        "🚨 SECURITY ALERT: Invalid user type attempted:",
-        userType
-      );
-      errorToast("Invalid user type selected");
-      return { success: false, apiError: "Invalid user type" };
-    }
-
-    const userCredential = await createUserWithEmailAndPassword(
-      auth,
-      email,
-      password
-    );
-    const user = userCredential.user;
-
-    // Create user document with validated userType
-    await setDoc(doc(db, "users", user.uid), {
-      email: user.email,
-      userType: userType, // This is now guaranteed to be safe
-      createdAt: new Date(),
-      isFirstTime: true,
-      // Add security metadata
-      createdBy: "self_registration",
-      lastUpdatedBy: "self_registration",
-      lastUpdatedAt: new Date(),
+    const res = await fetch("/api/auth/send-verification-code", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, userType }),
     });
-
-    // Send welcome email (don't block registration if email fails)
-    try {
-      await sendWelcomeEmail(user.email, user.email.split("@")[0], userType);
-      console.log("Welcome email sent successfully to:", user.email);
-    } catch (emailError) {
-      console.error("Welcome email failed to send:", emailError);
-      // Continue with successful registration even if email fails
+    const data = await res.json();
+    if (!res.ok) {
+      return { success: false, apiError: data.error || "Kon code niet verzenden" };
     }
-
-    successToast("User Successfully Registered!");
-    return { success: true, user: userCredential.user };
+    return { success: true };
   } catch (error) {
-    errorToast("Registration failed, Please try again");
     return { success: false, apiError: getFirebaseErrorMessage(error) };
   }
 };
 
-export const useLogIn = async (email, password) => {
+export const verifyAndRegister = async (email, password, userType, code) => {
+  try {
+    const res = await fetch("/api/auth/verify-and-register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password, userType, code }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      return { success: false, apiError: data.error || "Registratie mislukt" };
+    }
+    return { success: true, repaired: data.repaired };
+  } catch (error) {
+    return { success: false, apiError: getFirebaseErrorMessage(error) };
+  }
+};
+
+export const ensureFirestoreProfile = async (user, userType) => {
+  if (!user?.uid || !userType) return { success: false };
+  try {
+    const profileDoc = await getDoc(doc(db, "users", user.uid));
+    if (profileDoc.exists()) return { success: true, created: false };
+
+    const idToken = await user.getIdToken();
+    const res = await fetch("/api/ensure-user-profile", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${idToken}`,
+      },
+      body: JSON.stringify({ userType }),
+    });
+    const data = await res.json();
+    return { success: res.ok, created: data.created };
+  } catch (error) {
+    console.error("ensureFirestoreProfile failed:", error);
+    return { success: false };
+  }
+};
+
+export const useLogIn = async (email, password, userTypeHint = null) => {
   try {
     const userCredential = await signInWithEmailAndPassword(
       auth,
       email,
       password
     );
+
+    const pendingType =
+      userTypeHint ||
+      (typeof window !== "undefined"
+        ? localStorage.getItem("registrationUserType")
+        : null);
+
+    if (pendingType === "Candidate" || pendingType === "Employer") {
+      const repair = await ensureFirestoreProfile(
+        userCredential.user,
+        pendingType
+      );
+      if (repair.created) {
+        successToast("Account hersteld. Welkom terug!");
+      }
+    }
+
     successToast("Login Successful");
     return { success: true, user: userCredential.user };
   } catch (error) {

@@ -10,6 +10,7 @@ import {
   getDocs,
 } from "firebase/firestore";
 import { successToast, errorToast } from "@/utils/toast";
+import { getCurrentUserToken } from "@/utils/auth-utils";
 import styles from "./admin-tables.module.scss";
 
 const PAGE_SIZE = 10;
@@ -86,15 +87,20 @@ export default function ActiveSubscriptionsTable() {
         map[doc.id] = data.packageType;
         if (data.id) map[data.id] = data.packageType;
       }
-      if (data.stripePriceId && data.packageType) {
+      if (data.packageType && !types.includes(data.packageType)) {
+        types.push(data.packageType);
+      }
+      if (data.stripePriceId) {
         map[data.stripePriceId] = data.packageType;
-        if (!types.includes(data.packageType)) types.push(data.packageType);
+      }
+      if (data.packageType) {
         plans.push({
           id: doc.id,
-          priceId: data.stripePriceId,
+          packageId: doc.id,
+          priceId: data.stripePriceId || null,
           name: data.packageType,
           price: data.price,
-          interval: data.interval,
+          interval: data.interval || "month",
         });
       }
     });
@@ -142,8 +148,11 @@ export default function ActiveSubscriptionsTable() {
         if (statusData.planName && planMap[statusData.planName]) {
           return planMap[statusData.planName];
         }
-        if (statusData.accessType === "one_time") {
-          return "One-time package";
+        if (
+          statusData.accessType === "one_time" ||
+          statusData.accessType === "admin"
+        ) {
+          return statusData.planName || "Granted package";
         }
         return statusData.planName || user.planId || "-";
       };
@@ -285,6 +294,35 @@ export default function ActiveSubscriptionsTable() {
     setShowCancelModal(true);
   };
 
+  const handleRevokePlan = async (user) => {
+    if (!user) return;
+
+    setCancellingUserId(user.id);
+    try {
+      const token = await getCurrentUserToken();
+      const res = await fetch("/api/admin/revoke-plan", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ userId: user.id }),
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        successToast("Plan access revoked");
+        fetchActiveUsers();
+      } else {
+        errorToast(data.error || "Failed to revoke plan access");
+      }
+    } catch (error) {
+      errorToast(error.message || "Error revoking plan access");
+    } finally {
+      setCancellingUserId(null);
+    }
+  };
+
   const handleCancelSubscription = async () => {
     if (!userToCancel) return;
 
@@ -306,7 +344,7 @@ export default function ActiveSubscriptionsTable() {
         fetchActiveUsers(); // Refresh the list
       } else {
         const error = await res.json();
-        errorToast(error.message || "Failed to cancel subscription");
+        errorToast(error.error || error.message || "Failed to cancel subscription");
       }
     } catch (error) {
       errorToast("Error cancelling subscription");
@@ -320,7 +358,42 @@ export default function ActiveSubscriptionsTable() {
     setUserToCancel(null);
   };
 
-  const handlePlanChange = async (newPlanId) => {
+  const grantPlanToUser = async (packageId) => {
+    if (!selectedUser) return;
+
+    setChangingUserId(selectedUser.id);
+    try {
+      const token = await getCurrentUserToken();
+      const res = await fetch("/api/admin/grant-plan", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          userId: selectedUser.id,
+          packageId,
+        }),
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        successToast(
+          `Plan granted: ${data.packageName || "package"} (${data.interval})`
+        );
+        setShowChangeModal(false);
+        fetchActiveUsers();
+      } else {
+        errorToast(data.error || "Failed to grant plan");
+      }
+    } catch (error) {
+      errorToast(error.message || "Error granting plan");
+    } finally {
+      setChangingUserId(null);
+    }
+  };
+
+  const handlePlanChange = async (stripePriceId) => {
     if (!selectedUser) return;
 
     setChangingUserId(selectedUser.id);
@@ -331,17 +404,17 @@ export default function ActiveSubscriptionsTable() {
         body: JSON.stringify({
           userId: selectedUser.id,
           action: "change",
-          newPlanId,
+          newPlanId: stripePriceId,
         }),
       });
+      const data = await res.json();
 
       if (res.ok) {
         successToast("Subscription changed successfully");
         setShowChangeModal(false);
-        fetchActiveUsers(); // Refresh the list
+        fetchActiveUsers();
       } else {
-        const error = await res.json();
-        errorToast(error.message || "Failed to change subscription");
+        errorToast(data.error || "Failed to change subscription");
       }
     } catch (error) {
       errorToast("Error changing subscription");
@@ -350,33 +423,22 @@ export default function ActiveSubscriptionsTable() {
     }
   };
 
-  const handleSetSubscription = async (newPlanId) => {
-    if (!selectedUser) return;
+  const shouldUseStripeChange = (user) =>
+    Boolean(user?.stripeSubscriptionId) &&
+    user?.accessType !== "one_time" &&
+    user?.accessType !== "admin";
 
-    setChangingUserId(selectedUser.id);
-    try {
-      const res = await fetch("/api/change-subscription", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: selectedUser.id,
-          action: "set",
-          newPlanId,
-        }),
-      });
+  const handleSelectPlan = (plan) => {
+    if (!selectedUser || changingUserId) return;
 
-      if (res.ok) {
-        successToast("Subscription set successfully");
-        setShowChangeModal(false);
-        fetchActiveUsers(); // Refresh the list
-      } else {
-        const error = await res.json();
-        errorToast(error.message || "Failed to set subscription");
+    if (shouldUseStripeChange(selectedUser)) {
+      if (!plan.priceId) {
+        errorToast("This package has no Stripe price. Use grant for manual access.");
+        return;
       }
-    } catch (error) {
-      errorToast("Error setting subscription");
-    } finally {
-      setChangingUserId(null);
+      handlePlanChange(plan.priceId);
+    } else {
+      grantPlanToUser(plan.packageId);
     }
   };
 
@@ -502,7 +564,8 @@ export default function ActiveSubscriptionsTable() {
                     <span>
                       {user.daysLeft}{" "}
                       {user.daysLeft === 1 ? "day" : "days"} left
-                      {user.accessType === "one_time" && (
+                      {(user.accessType === "one_time" ||
+                        user.accessType === "admin") && (
                         <span
                           style={{
                             display: "block",
@@ -510,7 +573,9 @@ export default function ActiveSubscriptionsTable() {
                             color: "#666",
                           }}
                         >
-                          one-time
+                          {user.accessType === "admin"
+                            ? "admin granted"
+                            : "one-time"}
                         </span>
                       )}
                     </span>
@@ -521,10 +586,41 @@ export default function ActiveSubscriptionsTable() {
                 <td>
                   <div style={{ display: "flex", gap: 8 }}>
                     {user.hasActiveSubscription &&
-                    user.accessType === "one_time" ? (
-                      <span style={{ fontSize: "12px", color: "#666" }}>
-                        One-time purchase
-                      </span>
+                    (user.accessType === "one_time" ||
+                      user.accessType === "admin") ? (
+                      <>
+                        <button
+                          onClick={() => handleChangeSubscription(user)}
+                          className={styles["admin-table-btn"]}
+                          style={{ fontSize: "12px", padding: "4px 8px" }}
+                          disabled={
+                            changingUserId === user.id ||
+                            cancellingUserId === user.id
+                          }
+                        >
+                          {changingUserId === user.id
+                            ? "Updating..."
+                            : "Change plan"}
+                        </button>
+                        <button
+                          onClick={() => handleRevokePlan(user)}
+                          className={styles["admin-table-btn"]}
+                          style={{
+                            fontSize: "12px",
+                            padding: "4px 8px",
+                            backgroundColor: "#dc3545",
+                            color: "white",
+                          }}
+                          disabled={
+                            changingUserId === user.id ||
+                            cancellingUserId === user.id
+                          }
+                        >
+                          {cancellingUserId === user.id
+                            ? "Revoking..."
+                            : "Revoke"}
+                        </button>
+                      </>
                     ) : user.hasActiveSubscription ? (
                       <>
                         <button
@@ -573,7 +669,7 @@ export default function ActiveSubscriptionsTable() {
                       >
                         {changingUserId === user.id
                           ? "Setting..."
-                          : "Set Subscription"}
+                          : "Set plan"}
                       </button>
                     )}
                   </div>
@@ -637,13 +733,13 @@ export default function ActiveSubscriptionsTable() {
           <div className={styles["admin-modal"]}>
             <h3>
               {selectedUser.hasActiveSubscription
-                ? `Change Subscription for ${selectedUser.email}`
-                : `Set Subscription for ${selectedUser.email}`}
+                ? `Change plan for ${selectedUser.email}`
+                : `Set plan for ${selectedUser.email}`}
             </h3>
             <p>
               {selectedUser.hasActiveSubscription
-                ? `Current Plan: ${selectedUser.planName}`
-                : "No active subscription"}
+                ? `Current plan: ${selectedUser.planName}`
+                : "No active plan — select a package to grant access (no Stripe payment required)."}
             </p>
 
             <div style={{ marginTop: 16 }}>
@@ -668,15 +764,7 @@ export default function ActiveSubscriptionsTable() {
                           : "pointer",
                       opacity: changingUserId === selectedUser?.id ? 0.6 : 1,
                     }}
-                    onClick={() => {
-                      if (!changingUserId) {
-                        if (selectedUser.hasActiveSubscription) {
-                          handlePlanChange(plan.priceId);
-                        } else {
-                          handleSetSubscription(plan.priceId);
-                        }
-                      }
-                    }}
+                    onClick={() => handleSelectPlan(plan)}
                   >
                     <strong>{plan.name}</strong>
                     <br />${plan.price}/{plan.interval}
@@ -688,9 +776,9 @@ export default function ActiveSubscriptionsTable() {
                           marginTop: "4px",
                         }}
                       >
-                        {selectedUser.hasActiveSubscription
-                          ? "Changing subscription..."
-                          : "Setting subscription..."}
+                        {shouldUseStripeChange(selectedUser)
+                          ? "Updating Stripe subscription..."
+                          : "Granting plan access..."}
                       </div>
                     )}
                   </div>
