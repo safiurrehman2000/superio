@@ -90,7 +90,6 @@ export async function POST(request) {
         oneTimePurchaseAt: interval === 'one_time' ? accessStart : null,
         oneTimeAccessUntil: accessUntil,
         adminGrantedAt: accessStart,
-        isFirstTime: false,
       });
 
     await reactivateArchivedEmployerJobs(adminDb, userId);
