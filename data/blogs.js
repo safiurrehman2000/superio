@@ -2,6 +2,7 @@ import image1 from "@/public/blog1.webp";
 import image2 from "@/public/blog2.webp";
 import image3 from "@/public/blog3.png";
 import image4 from "@/public//blog4.webp";
+import image5 from "@/public/blog5.jpg";
 
 export const blogs = [
   {
@@ -11,6 +12,7 @@ export const blogs = [
     blogSingleTitle: "Flexijobbers inzetten zonder administratieve kopzorgen",
     blogText: `Zo pak je dat slim aan. Je zaak draait goed en je zoekt...`,
     date: "April 10, 2025",
+    sortDate: "2025-04-10",
   },
   {
     id: 2,
@@ -21,6 +23,7 @@ export const blogs = [
       "Flexibele Krachten voor de Eventsector: Salons De Boeck & Flexijobber",
     blogText: `Salons De Boeck en Flexijobber bundelen krachten voor flexibele personeelsoplossingen Salons De Boeck, ...`,
     date: "Maart 21, 2025",
+    sortDate: "2025-03-21",
   },
   {
     id: 3,
@@ -30,6 +33,7 @@ export const blogs = [
       "Hoe Upxero en De Flexijobber horecaondernemers helpen groeien",
     blogText: `Sinds vandaag een must: een sterke online aanwezigheid en flexibele medewerkers in de ...`,
     date: "Maart 18, 2025",
+    sortDate: "2025-03-18",
   },
   {
     id: 4,
@@ -39,6 +43,18 @@ export const blogs = [
       "Flexi-Jobs en Studentenarbeid: De Grote Hervormingen van 2025",
     blogText: `Flexi-Jobs Regeerakkoord 2025 Het regeerakkoord 2025 van Bart de Wever brengt aanzienlijke veranderingen ...`,
     date: "Februari 28, 2025",
+    sortDate: "2025-02-28",
+  },
+  {
+    id: 5,
+    img: image5,
+    title:
+      "Grote doorbraak voor Antwerpse ondernemer Tibor (43): flexi-jobs binnenkort in alle sectoren mogelijk",
+    blogSingleTitle:
+      "Grote doorbraak voor Antwerpse ondernemer Tibor (43): flexi-jobs binnenkort in alle sectoren mogelijk",
+    blogText: `Wat begon als een ambitieus idee van Antwerpenaar Tibor Babori krijgt nu steun vanuit de federale regering. Flexi-jobs zullen binnenkort in alle sectoren mogelijk zijn...`,
+    date: "April 24, 2026",
+    sortDate: "2026-04-24",
   },
   // home 10 blog
 ];
@@ -433,6 +449,88 @@ export const blogContent = {
     {
       type: "paragraph",
       content: "!",
+    },
+  ],
+  5: [
+    {
+      type: "heading",
+      content:
+        "Grote doorbraak voor Antwerpse ondernemer Tibor (43): flexi-jobs binnenkort in alle sectoren mogelijk",
+    },
+    {
+      type: "paragraph",
+      content:
+        "Wat begon als een ambitieus idee van Antwerpenaar Tibor Babori (43), krijgt nu steun vanuit de federale regering. Flexi-jobs zullen binnenkort in alle sectoren mogelijk zijn. “Dit is exact waar ik op mikte”, reageert de oprichter van platform De Flexijobber tevreden.",
+    },
+    {
+      type: "paragraph",
+      content:
+        "De beslissing werd genomen tijdens de ministerraad van 5 december 2025. In een antwoord aan Babori bevestigt minister van Werk David Clarinval dat het systeem wordt uitgebreid naar zowel de publieke als private sector.",
+    },
+    {
+      type: "paragraph",
+      content:
+        "“Werkgevers kunnen zo op een flexibele en rendabele manier extra personeel inzetten, terwijl werknemers een extra inkomen verwerven”, klinkt het.",
+    },
+    {
+      type: "heading",
+      content: "Van horeca naar alle sectoren",
+    },
+    {
+      type: "paragraph",
+      content:
+        "Tot nu toe waren flexi-jobs vooral bekend in sectoren zoals horeca en retail, maar daar komt verandering in. De regering wil het systeem openstellen voor alle sectoren, met uitzondering van bepaalde beschermde beroepen. Sociale partners behouden wel de mogelijkheid om flexi-jobs te beperken of uit te sluiten.",
+    },
+    {
+      type: "paragraph",
+      content:
+        "“Dit opent enorm veel deuren”, zegt Babori. “Veel werkgevers weten vandaag nog niet dat flexi-jobbers ook buiten de klassieke sectoren inzetbaar zijn. Dit bevestigt dat we op het juiste moment zijn gestart.”",
+    },
+    {
+      type: "heading",
+      content: "Financieel aantrekkelijk systeem",
+    },
+    {
+      type: "paragraph",
+      content:
+        "Ook het financiële plaatje blijft aantrekkelijk. De werkgeversbijdrage blijft 28 procent en het maximale jaarinkomen stijgt naar 18.000 euro. Dat moet het systeem nog interessanter maken voor wie wil bijverdienen.",
+    },
+    {
+      type: "heading",
+      content: "Wet in aantocht",
+    },
+    {
+      type: "paragraph",
+      content:
+        "De nieuwe regeling zit momenteel nog in het wetgevend traject, maar zou volgens de minister nog vóór de zomer in werking treden.",
+    },
+    {
+      type: "paragraph",
+      content:
+        "Voor Tibor Babori betekent dit vooral een bevestiging van zijn missie. “Ik wil mensen helpen om bij te verdienen en werkgevers sneller de juiste profielen te laten vinden. Dat dit nu op nationaal niveau wordt uitgebreid, is een enorme stap vooruit.”",
+    },
+    {
+      type: "heading",
+      content: "Lees het volledige artikel op HLN",
+    },
+    {
+      type: "link",
+      text: "Bekijk het artikel op HLN",
+      href: "https://www.hln.be/antwerpen/grote-doorbraak-voor-antwerpse-ondernemer-tibor-43-flexi-jobs-binnenkort-in-alle-sectoren-mogelijk~a316c59c/",
+    },
+    {
+      type: "heading",
+      content: "De Flexijobber",
+    },
+    {
+      type: "paragraph",
+      content:
+        "Ben je flexi-jobber, student of gepensioneerde en wil je een centje bijverdienen? Ontdek de mogelijkheden via De Flexijobber.",
+    },
+    {
+      type: "link",
+      text: "www.de-flexi-jobber.be",
+      href: "https://www.de-flexi-jobber.be",
     },
   ],
 };

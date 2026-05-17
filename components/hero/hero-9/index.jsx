@@ -12,7 +12,7 @@ const index = () => {
           <div className="title-box" data-aso-delay="300" data-aos="fade-up">
             <h3>De online vacaturesite voor flexi-jobbers in Vlaanderen</h3>
             <div className="text">
-              Vind flexi-jobs en interessante carrièremogelijkheden
+              Vind flexi-jobs en studentenjobs en interessante carrieremogelijkheden
             </div>
           </div>
 

@@ -24,7 +24,7 @@ module.exports = [
     menuList: [
       { name: "Werkgever Dashboard", route: "/employers-dashboard/dashboard" },
       { name: "Vacature Toevoegen", route: "/employers-dashboard/post-jobs" },
-      { name: "Vacature Pakketten", route: "/employers-dashboard/packages" },
+      { name: "Vacature Pakketten", route: "/pricing" },
       { name: "Beheer Vacatures", route: "/employers-dashboard/manage-jobs" },
     ],
   },
@@ -41,7 +41,7 @@ module.exports = [
   },
   {
     id: 4,
-    title: "Hulpmiddelen",
+    title: "Handige Links",
     menuList: [
       { name: "Prijzen", route: "/pricing" },
       { name: "Inloggen", route: "/login" },

@@ -25,13 +25,26 @@ Via De Flexijobber vergroot je jouw bereik aanzienlijk.`,
       link: "/platform",
       buttonText: "Ontdek het platform",
     },
+    {
+      id: 3,
+      name: "Waarom kiezen voor De Flexijobber als sollicitant?",
+      text: `• Het is helemaal gratis om een account aan te maken
+    • Alle vacatures netjes op 1 plaats
+    • Volg jouw sollicitaties op via het dashboard
+    • Vervolledig jouw profiel om vacatures te ontvangen in jouw gemeente
+    • Stel vacature-alerts in via het dashboard
+    • Vergroot jouw bereik bij werkgevers via De Flexijobber`,
+      avatar: "/images/resource/flexijobber.jpg",
+      link: "https://www.de-flexi-jobber.be/register",
+      buttonText: "Account Aanmaken",
+    },
   ];
 
   return (
     <div className="row reg-banner-row">
       {regBannerContent.map((item) => (
         <div
-          className="col-lg-6 col-md-12 col-sm-12 reg-banner-col"
+          className="col-lg-4 col-md-6 col-sm-12 reg-banner-col"
           key={item.id}
         >
           <div className="reg-banner-card">
