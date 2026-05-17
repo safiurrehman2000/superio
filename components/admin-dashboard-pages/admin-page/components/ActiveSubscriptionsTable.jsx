@@ -82,6 +82,10 @@ export default function ActiveSubscriptionsTable() {
     const plans = [];
     snap.docs.forEach((doc) => {
       const data = doc.data();
+      if (data.packageType) {
+        map[doc.id] = data.packageType;
+        if (data.id) map[data.id] = data.packageType;
+      }
       if (data.stripePriceId && data.packageType) {
         map[data.stripePriceId] = data.packageType;
         if (!types.includes(data.packageType)) types.push(data.packageType);
@@ -131,42 +135,62 @@ export default function ActiveSubscriptionsTable() {
 
       let usersList = docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 
-      // For each user, fetch subscription status
+      const resolvePlanName = (user, statusData) => {
+        if (user.planId && planMap[user.planId]) {
+          return planMap[user.planId];
+        }
+        if (statusData.planName && planMap[statusData.planName]) {
+          return planMap[statusData.planName];
+        }
+        if (statusData.accessType === "one_time") {
+          return "One-time package";
+        }
+        return statusData.planName || user.planId || "-";
+      };
+
+      const computeDaysLeft = (periodEndSeconds) =>
+        Math.max(
+          0,
+          Math.ceil(
+            (periodEndSeconds * 1000 - Date.now()) / (1000 * 60 * 60 * 24)
+          )
+        );
+
+      // For each user, fetch subscription status (Stripe + one-time)
       const usersWithSubs = await Promise.all(
         usersList.map(async (user) => {
           let planName = "-";
           let daysLeft = "-";
-          let planId = null;
+          let planId = user.planId || null;
           let hasActiveSubscription = false;
+          let accessType = null;
 
-          // Check if user has a stripe subscription ID
-          if (user.stripeSubscriptionId) {
-            try {
-              const res = await fetch("/api/subscription-status", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ userId: user.id }),
-              });
-              const data = await res.json();
-              if (data.active && data.current_period_end) {
-                planId = data.planName || "-";
-                planName = planMap[planId] || planId || "-";
-                const days = Math.max(
-                  0,
-                  Math.ceil(
-                    (data.current_period_end * 1000 - Date.now()) /
-                      (1000 * 60 * 60 * 24)
-                  )
-                );
-                daysLeft = days > 0 ? days : 0;
-                hasActiveSubscription = true;
-              }
-            } catch (err) {
-              // ignore
+          try {
+            const res = await fetch("/api/subscription-status", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ userId: user.id }),
+            });
+            const data = await res.json();
+            if (data.active && data.current_period_end) {
+              accessType = data.accessType || "subscription";
+              planName = resolvePlanName(user, data);
+              planId = user.planId || data.planName || null;
+              daysLeft = computeDaysLeft(data.current_period_end);
+              hasActiveSubscription = true;
             }
+          } catch (err) {
+            // ignore
           }
 
-          return { ...user, planName, daysLeft, planId, hasActiveSubscription };
+          return {
+            ...user,
+            planName,
+            daysLeft,
+            planId,
+            hasActiveSubscription,
+            accessType,
+          };
         })
       );
 
@@ -475,14 +499,33 @@ export default function ActiveSubscriptionsTable() {
                 </td>
                 <td>
                   {user.hasActiveSubscription ? (
-                    user.daysLeft
+                    <span>
+                      {user.daysLeft}{" "}
+                      {user.daysLeft === 1 ? "day" : "days"} left
+                      {user.accessType === "one_time" && (
+                        <span
+                          style={{
+                            display: "block",
+                            fontSize: "11px",
+                            color: "#666",
+                          }}
+                        >
+                          one-time
+                        </span>
+                      )}
+                    </span>
                   ) : (
                     <span style={{ color: "#999" }}>-</span>
                   )}
                 </td>
                 <td>
                   <div style={{ display: "flex", gap: 8 }}>
-                    {user.hasActiveSubscription ? (
+                    {user.hasActiveSubscription &&
+                    user.accessType === "one_time" ? (
+                      <span style={{ fontSize: "12px", color: "#666" }}>
+                        One-time purchase
+                      </span>
+                    ) : user.hasActiveSubscription ? (
                       <>
                         <button
                           onClick={() => handleChangeSubscription(user)}

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { adminDb } from "@/utils/firebase-admin";
+import { reactivateArchivedEmployerJobs } from "@/utils/expireOneTimeAccess";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -27,6 +28,7 @@ export async function POST(request) {
           oneTimePurchaseAt: accessStart,
           oneTimeAccessUntil: accessUntil,
         });
+        await reactivateArchivedEmployerJobs(adminDb, userId);
       } else {
         await adminDb.collection("users").doc(userId).update({
           subscriptionStatus: "active",
