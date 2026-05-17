@@ -6,6 +6,7 @@ import {
   processOneTimeCheckoutReceipt,
   processPaidInvoiceReceipt,
 } from '@/utils/stripeReceiptSync';
+import { reactivateArchivedEmployerJobs } from '@/utils/expireOneTimeAccess';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -238,6 +239,8 @@ export async function POST(request) {
           e,
         );
       }
+
+      await reactivateArchivedEmployerJobs(adminDb, userId);
     }
 
     if (

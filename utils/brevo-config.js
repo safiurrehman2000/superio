@@ -229,3 +229,37 @@ export const createWelcomeEmailContent = (userType = "User") => {
     </html>
   `;
 };
+
+export const createVerificationEmailContent = (code, userType) => {
+  const roleLabel = userType === 'Employer' ? 'werkgever' : 'kandidaat';
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>Bevestig uw e-mailadres</title>
+    </head>
+    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f9f9f9;">
+      <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background-color: #1967d2; color: white; padding: 24px 20px; text-align: center; border-radius: 8px 8px 0 0;">
+          <h1 style="margin: 0; font-size: 22px;">Bevestig uw e-mailadres</h1>
+        </div>
+        <div style="background-color: white; padding: 30px; border-radius: 0 0 8px 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+          <p style="color: #666; font-size: 16px;">
+            U registreert zich als <strong>${roleLabel}</strong> bij De Flexijobber.
+            Gebruik onderstaande code om uw registratie te voltooien. De code is 10 minuten geldig.
+          </p>
+          <p style="text-align: center; margin: 28px 0;">
+            <span style="display: inline-block; letter-spacing: 8px; font-size: 32px; font-weight: bold; color: #1967d2; background: #f0f4ff; padding: 16px 24px; border-radius: 8px;">
+              ${code}
+            </span>
+          </p>
+          <p style="color: #999; font-size: 14px;">
+            Als u dit niet heeft aangevraagd, kunt u deze e-mail negeren.
+          </p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+};
