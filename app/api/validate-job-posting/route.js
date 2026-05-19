@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { adminDb } from '@/utils/firebase-admin';
+import {
+  expireOneTimeAccessIfNeeded,
+  getOneTimeAccessEndMs,
+  hasActiveOneTimeAccess as userHasActiveOneTimeAccess,
+} from '@/utils/expireOneTimeAccess';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -26,15 +31,10 @@ export async function POST(request) {
 
     const userData = userDoc.data();
     const { stripeSubscriptionId, planId, oneTimeAccessUntil } = userData;
-    const now = Date.now();
-    const oneTimeEnd = oneTimeAccessUntil
-      ? oneTimeAccessUntil.toDate
-        ? oneTimeAccessUntil.toDate().getTime()
-        : new Date(oneTimeAccessUntil).getTime()
-      : null;
-    const hasActiveOneTimeAccess = Boolean(oneTimeEnd && oneTimeEnd > now);
+    const hasActiveOneTimeAccess = userHasActiveOneTimeAccess(userData);
 
     if (!stripeSubscriptionId && !hasActiveOneTimeAccess) {
+      await expireOneTimeAccessIfNeeded(adminDb, userId, userData);
       return NextResponse.json({
         canPost: false,
         message:
@@ -152,7 +152,7 @@ export async function POST(request) {
       remainingJobs,
       accessType: stripeSubscriptionId ? 'subscription' : 'one_time',
       oneTimeAccessUntil: hasActiveOneTimeAccess
-        ? new Date(oneTimeEnd).toISOString()
+        ? new Date(getOneTimeAccessEndMs(oneTimeAccessUntil)).toISOString()
         : null,
     });
   } catch (error) {

@@ -1,141 +1,102 @@
-import { adminDb } from "@/utils/firebase-admin";
+import { adminDb } from '@/utils/firebase-admin';
 import {
   authenticateAdmin,
   createAuthErrorResponse,
-} from "@/utils/admin-auth-middleware";
+} from '@/utils/admin-auth-middleware';
+
+function toMillis(value) {
+  if (!value) return 0;
+  if (typeof value?.toMillis === 'function') return value.toMillis();
+  if (typeof value?.toDate === 'function') return value.toDate().getTime();
+  return new Date(value).getTime() || 0;
+}
 
 /**
  * GET /api/admin/list-users
- * Lists users with pagination and filtering
- *
- * Authentication: Requires valid Firebase ID token with Admin privileges
- * Authorization: Only Admin users can list users
- *
- * Query Parameters:
- * - page: Page number (default: 1)
- * - limit: Number of users per page (default: 10, max: 50)
- * - userType: Filter by user type (Candidate, Employer, Admin)
- * - search: Search by email or name
- * - status: Filter by subscription status
+ * Lists users (newest first) with pagination and filtering.
  */
 export async function GET(request) {
   try {
-    // Authenticate and authorize the admin user
     const authResult = await authenticateAdmin(request);
     if (!authResult.success) {
       return createAuthErrorResponse(authResult);
     }
 
-    const adminUser = authResult.user;
-    console.log(
-      `Admin ${adminUser.email} (${adminUser.uid}) requesting user list`
-    );
-
     const { searchParams } = new URL(request.url);
+    const page = Math.max(1, parseInt(searchParams.get('page')) || 1);
+    const limit = Math.min(parseInt(searchParams.get('limit')) || 10, 50);
+    const userType = searchParams.get('userType');
+    const search = (searchParams.get('search') || '').trim().toLowerCase();
+    const status = searchParams.get('status');
 
-    // Parse query parameters
-    const page = parseInt(searchParams.get("page")) || 1;
-    const limit = Math.min(parseInt(searchParams.get("limit")) || 10, 50); // Max 50 per page
-    const userType = searchParams.get("userType");
-    const search = searchParams.get("search");
-    const status = searchParams.get("status");
+    // Fetch all profiles (includes docs missing createdAt/email index fields)
+    const snapshot = await adminDb.collection('users').get();
 
-    // Calculate offset
-    const offset = (page - 1) * limit;
+    let users = snapshot.docs.map((doc) => {
+      const userData = doc.data();
+      return {
+        id: doc.id,
+        uid: doc.id,
+        email: userData.email || '',
+        userType: userData.userType || '',
+        name: userData.name || '',
+        company_name: userData.company_name || '',
+        phone: userData.phone || userData.phone_number || '',
+        createdAt: userData.createdAt?.toDate?.() || userData.createdAt,
+        subscriptionStatus: userData.subscriptionStatus || 'none',
+        planId: userData.planId || null,
+        isFirstTime: userData.isFirstTime ?? true,
+        hasPostedJob: userData.hasPostedJob || false,
+      };
+    });
 
-    // Build query
-    let query = adminDb.collection("users");
-
-    // Apply filters
     if (userType) {
-      query = query.where("userType", "==", userType);
+      users = users.filter((u) => u.userType === userType);
     }
 
     if (status) {
-      query = query.where("subscriptionStatus", "==", status);
+      users = users.filter((u) => u.subscriptionStatus === status);
     }
 
-    // Get total count for pagination
-    const totalSnapshot = await query.get();
-    const totalUsers = totalSnapshot.size;
-
-    // Apply pagination
-    query = query.limit(limit).offset(offset);
-
-    // Execute query
-    const snapshot = await query.get();
-
-    // Process results
-    const users = [];
-    snapshot.forEach((doc) => {
-      const userData = doc.data();
-      users.push({
-        uid: doc.id,
-        email: userData.email,
-        userType: userData.userType,
-        name: userData.name || "",
-        company_name: userData.company_name || "",
-        createdAt: userData.createdAt?.toDate?.() || userData.createdAt,
-        subscriptionStatus: userData.subscriptionStatus || "none",
-        planId: userData.planId || null,
-        isFirstTime: userData.isFirstTime || false,
-        hasPostedJob: userData.hasPostedJob || false,
-        lastUpdatedBy: userData.lastUpdatedBy || null,
-        lastUpdatedAt:
-          userData.lastUpdatedAt?.toDate?.() || userData.lastUpdatedAt,
-      });
-    });
-
-    // Apply search filter if provided
-    let filteredUsers = users;
     if (search) {
-      const searchLower = search.toLowerCase();
-      filteredUsers = users.filter(
-        (user) =>
-          user.email.toLowerCase().includes(searchLower) ||
-          user.name.toLowerCase().includes(searchLower) ||
-          (user.company_name &&
-            user.company_name.toLowerCase().includes(searchLower))
+      users = users.filter(
+        (u) =>
+          u.email.toLowerCase().includes(search) ||
+          u.name.toLowerCase().includes(search) ||
+          (u.company_name && u.company_name.toLowerCase().includes(search)),
       );
     }
 
-    // Calculate pagination info
-    const totalPages = Math.ceil(totalUsers / limit);
-    const hasNextPage = page < totalPages;
-    const hasPrevPage = page > 1;
+    users.sort((a, b) => toMillis(b.createdAt) - toMillis(a.createdAt));
 
-    console.log(
-      `✅ Admin ${adminUser.email} successfully retrieved ${filteredUsers.length} users`
-    );
+    const totalUsers = users.length;
+    const totalPages = Math.max(1, Math.ceil(totalUsers / limit));
+    const offset = (page - 1) * limit;
+    const pageUsers = users.slice(offset, offset + limit);
 
     return Response.json({
       success: true,
       data: {
-        users: filteredUsers,
+        users: pageUsers,
         pagination: {
           currentPage: page,
           totalPages,
           totalUsers,
           limit,
-          hasNextPage,
-          hasPrevPage,
-        },
-        filters: {
-          userType,
-          search,
-          status,
+          hasNextPage: page < totalPages,
+          hasPrevPage: page > 1,
         },
       },
     });
   } catch (error) {
-    console.error("Error in admin list users:", error);
+    console.error('Error in admin list users:', error);
     return Response.json(
       {
         success: false,
         error:
-          error.message || "An unexpected error occurred while listing users",
+          error.message || 'An unexpected error occurred while listing users',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

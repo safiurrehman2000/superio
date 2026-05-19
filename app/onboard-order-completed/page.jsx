@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSelector } from "react-redux";
+import { auth } from "@/utils/firebase";
 import OnboardOrderCompleted from "./components/OnboardOrderCompleted";
 
 export default function page() {
@@ -54,6 +55,22 @@ export default function page() {
           if (data.session && data.session.payment_status === "paid") {
             console.log("Stripe session verified successfully");
             setIsAuthorized(true);
+            try {
+              const u = auth.currentUser;
+              if (u && sessionId) {
+                const token = await u.getIdToken();
+                await fetch("/api/sync-checkout-receipt", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                  },
+                  body: JSON.stringify({ sessionId }),
+                });
+              }
+            } catch (syncErr) {
+              console.warn("sync-checkout-receipt (onboard):", syncErr);
+            }
           } else {
             console.log("Stripe session verification failed");
             router.push("/onboard-pricing");

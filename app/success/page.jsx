@@ -1,10 +1,53 @@
 "use client";
+import { useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { auth } from "@/utils/firebase";
 
 export default function SuccessPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const source = searchParams.get("source") || "pricing";
+  const sessionId = searchParams.get("session_id");
+  const syncedRef = useRef(false);
+
+  useEffect(() => {
+    if (!sessionId || syncedRef.current) return;
+    let cancelled = false;
+
+    (async () => {
+      try {
+        if (typeof auth.authStateReady === "function") {
+          await auth.authStateReady();
+        }
+      } catch {
+        /* ignore */
+      }
+      const user = auth.currentUser;
+      if (!user || cancelled) return;
+
+      try {
+        const token = await user.getIdToken();
+        const res = await fetch("/api/sync-checkout-receipt", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ sessionId }),
+        });
+        const data = await res.json().catch(() => ({}));
+        syncedRef.current = true;
+        if (!res.ok) {
+          console.warn("sync-checkout-receipt:", res.status, data);
+        }
+      } catch (e) {
+        console.warn("sync-checkout-receipt failed", e);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [sessionId]);
 
   return (
     <div style={{ textAlign: "center", marginTop: 80 }}>

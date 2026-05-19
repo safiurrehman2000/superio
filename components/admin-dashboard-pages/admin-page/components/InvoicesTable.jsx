@@ -8,6 +8,7 @@ export default function InvoicesTable() {
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [pdfLoadingId, setPdfLoadingId] = useState(null);
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
   const [pagination, setPagination] = useState({
@@ -106,6 +107,29 @@ export default function InvoicesTable() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters.search, filters.currency, filters.dateFrom, filters.dateTo]);
 
+  const openReceiptPdf = async (receiptDocId) => {
+    setPdfLoadingId(receiptDocId);
+    try {
+      const token = await getCurrentUserToken();
+      const res = await fetch(
+        `/api/admin/receipt-pdf?receiptId=${encodeURIComponent(receiptDocId)}`,
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "Could not open PDF");
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank", "noopener,noreferrer");
+      setTimeout(() => URL.revokeObjectURL(url), 120_000);
+    } catch (error) {
+      errorToast(error.message || "Could not open PDF");
+    } finally {
+      setPdfLoadingId(null);
+    }
+  };
+
   const handleSyncMissingInvoices = async () => {
     setSyncing(true);
     try {
@@ -150,7 +174,7 @@ export default function InvoicesTable() {
           gap: 12,
         }}
       >
-        <h2 className={styles["admin-table-title"]}>Invoices</h2>
+        <h2 className={styles["admin-table-title"]}>Receipts &amp; invoices</h2>
         <button
           className={styles["admin-table-btn"]}
           disabled={syncing || loading}
@@ -171,7 +195,7 @@ export default function InvoicesTable() {
       >
         <input
           type="text"
-          placeholder="Search invoice/company/email..."
+          placeholder="Search reference/company/email..."
           value={filters.search}
           onChange={(e) =>
             setFilters((prev) => ({ ...prev, search: e.target.value }))
@@ -218,7 +242,8 @@ export default function InvoicesTable() {
       <table className={styles["admin-table"]}>
         <thead>
           <tr>
-            <th>Invoice ID</th>
+            <th>Type</th>
+            <th>Factuurnr.</th>
             <th>Company</th>
             <th>Email</th>
             <th>Amount</th>
@@ -229,20 +254,31 @@ export default function InvoicesTable() {
         <tbody>
           {loading ? (
             <tr>
-              <td colSpan={6} className={styles["admin-table-loading"]}>
+              <td colSpan={7} className={styles["admin-table-loading"]}>
                 Loading...
               </td>
             </tr>
           ) : invoices.length === 0 ? (
             <tr>
-              <td colSpan={6} className={styles["admin-table-empty"]}>
-                No invoices found.
+              <td colSpan={7} className={styles["admin-table-empty"]}>
+                No receipts found.
               </td>
             </tr>
           ) : (
             invoices.map((invoice) => (
               <tr key={invoice.id}>
-                <td>{invoice.invoiceId || "-"}</td>
+                <td>{invoice.receiptTypeLabel || "-"}</td>
+                <td
+                  style={{
+                    maxWidth: 200,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                  title={invoice.referenceId || ""}
+                >
+                  {invoice.referenceId || "-"}
+                </td>
                 <td>{invoice.user?.company_name || "-"}</td>
                 <td>{invoice.user?.email || "-"}</td>
                 <td>
@@ -265,6 +301,23 @@ export default function InvoicesTable() {
                     >
                       Open PDF
                     </a>
+                  ) : invoice.referenceId ? (
+                    <button
+                      type="button"
+                      onClick={() => openReceiptPdf(invoice.id)}
+                      disabled={pdfLoadingId === invoice.id}
+                      style={{
+                        color: "#fa5508",
+                        textDecoration: "underline",
+                        background: "none",
+                        border: "none",
+                        padding: 0,
+                        cursor:
+                          pdfLoadingId === invoice.id ? "wait" : "pointer",
+                      }}
+                    >
+                      {pdfLoadingId === invoice.id ? "Loading…" : "Open PDF"}
+                    </button>
                   ) : (
                     "-"
                   )}

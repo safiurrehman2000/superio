@@ -36,7 +36,6 @@ export async function GET(request) {
 
     const receiptsSnapshot = await adminDb
       .collection("receipts")
-      .where("type", "==", "invoice")
       .orderBy("created", "desc")
       .limit(scanLimit)
       .get();
@@ -75,6 +74,17 @@ export async function GET(request) {
       .map((invoice) => ({
         ...invoice,
         user: usersMap[invoice.userId] || null,
+        referenceId:
+          invoice.receiptNumber ||
+          invoice.invoiceId ||
+          invoice.checkoutSessionId ||
+          null,
+        receiptTypeLabel:
+          invoice.type === "one_time"
+            ? "One-time"
+            : invoice.type === "invoice"
+              ? "Subscription"
+              : invoice.type || "—",
       }))
       .filter((invoice) => {
         const createdMs = invoice?.created?.toDate
@@ -102,7 +112,12 @@ export async function GET(request) {
         }
 
         const haystack = [
+          invoice.receiptNumber || "",
           invoice.invoiceId || "",
+          invoice.checkoutSessionId || "",
+          invoice.referenceId || "",
+          invoice.receiptTypeLabel || "",
+          invoice.type || "",
           invoice.user?.email || "",
           invoice.user?.company_name || "",
         ]

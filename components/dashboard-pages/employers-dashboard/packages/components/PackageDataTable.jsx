@@ -27,6 +27,8 @@ const PackageDataTable = () => {
   const [stripeSubscriptionId, setStripeSubscriptionId] = useState(null);
   const [hasArchivedJobs, setHasArchivedJobs] = useState(false);
   const [currentPeriodEnd, setCurrentPeriodEnd] = useState(null);
+  const [hasActiveAccess, setHasActiveAccess] = useState(false);
+  const [accessType, setAccessType] = useState(null);
   const [pdfLoadingId, setPdfLoadingId] = useState(null);
   const user = useSelector((state) => state.user.user);
   const router = useRouter();
@@ -121,18 +123,26 @@ const PackageDataTable = () => {
         console.log("Subscription status API response:", data); // Debug log
         if (data.active && data.current_period_end) {
           setCurrentPeriodEnd(data.current_period_end);
+          setHasActiveAccess(true);
+          setAccessType(data.accessType || "subscription");
         } else {
           setCurrentPeriodEnd(null);
+          setHasActiveAccess(false);
+          setAccessType(null);
         }
       } catch (err) {
         setCurrentPeriodEnd(null);
+        setHasActiveAccess(false);
+        setAccessType(null);
       }
     };
     fetchSubscriptionStatus();
   }, [user?.uid]);
 
   const currentPlanName = planId ? packages[planId] || planId : "None";
-  const hasActiveSubscription = Boolean(stripeSubscriptionId);
+  const hasActiveSubscription = hasActiveAccess;
+  const isRecurringSubscription =
+    hasActiveAccess && accessType === "subscription" && stripeSubscriptionId;
 
   // Calculate days left
   const daysLeft = currentPeriodEnd
@@ -296,9 +306,10 @@ const PackageDataTable = () => {
           {!cancelSuccess && (
             <span style={{ color: "#fa5508" }}>
               {currentPlanName}
-              {daysLeft !== null && daysLeft > 0 && (
+              {hasActiveAccess && daysLeft !== null && (
                 <span style={{ marginLeft: 12, color: "#1976d2" }}>
-                  ({daysLeft} day{daysLeft > 1 ? "s" : ""} left)
+                  ({daysLeft} day{daysLeft === 1 ? "" : "s"} left
+                  {accessType === "one_time" ? ", one-time package" : ""})
                 </span>
               )}
             </span>
@@ -318,7 +329,7 @@ const PackageDataTable = () => {
               ? "Buy Subscription"
               : "Change Subscription"}
           </button>
-          {hasActiveSubscription && currentPlanName !== "None" && (
+          {isRecurringSubscription && currentPlanName !== "None" && (
             <button
               onClick={() => setShowModal(true)}
               disabled={cancelLoading}
@@ -333,7 +344,7 @@ const PackageDataTable = () => {
         <thead>
           <tr>
             <th>#</th>
-            <th>Receipt ID</th>
+            <th>Factuurnr.</th>
             <th>Package</th>
             <th>Amount</th>
             <th>Date</th>
@@ -357,7 +368,7 @@ const PackageDataTable = () => {
             receipts.map((r, idx) => (
               <tr key={r.id}>
                 <td>{idx + 1}</td>
-                <td>{r.id}</td>
+                <td>{r.receiptNumber || r.id}</td>
                 <td>{packages[r.planId] || r.planId || "N/A"}</td>{" "}
                 {/* Package name or planId */}
                 <td>
@@ -374,7 +385,7 @@ const PackageDataTable = () => {
                     : ""}
                 </td>
                 <td>
-                  {r.invoiceId ? (
+                  {r.invoiceId || r.checkoutSessionId ? (
                     <button
                       type="button"
                       className="btn btn-link p-0 border-0"

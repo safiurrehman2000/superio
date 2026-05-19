@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { adminDb } from "@/utils/firebase-admin";
 import { isEmployerCompanyProfileComplete } from "@/utils/isEmployerCompanyProfileComplete";
+import { hasActiveEmployerPlan } from "@/utils/employerAccess";
 
 /**
  * POST /api/complete-onboarding-skip
@@ -25,17 +26,19 @@ export async function POST(request) {
     }
 
     const userData = userDoc.data();
-    if (
-      userData?.userType === "Employer" &&
-      !isEmployerCompanyProfileComplete(userData)
-    ) {
-      return NextResponse.json(
-        {
-          error:
-            "Complete your company profile before skipping or subscribing.",
-        },
-        { status: 403 }
-      );
+    if (userData?.userType === "Employer") {
+      const profileComplete = isEmployerCompanyProfileComplete(userData);
+      const hasPlan = hasActiveEmployerPlan(userData);
+
+      if (!profileComplete && !hasPlan) {
+        return NextResponse.json(
+          {
+            error:
+              "Complete your company profile before skipping or subscribing.",
+          },
+          { status: 403 }
+        );
+      }
     }
 
     await userRef.update({

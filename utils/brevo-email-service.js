@@ -3,6 +3,8 @@ import {
   brevoApiInstance,
   BREVO_CONFIG,
   createJobAlertEmailContent,
+  createVerificationEmailContent,
+  createWelcomeEmailContent,
 } from './brevo-config.js';
 
 /**
@@ -193,78 +195,52 @@ export const sendJobAlertEmailBrevo = async (
  * @param {string} userType - Type of user (Candidate/Employer)
  * @returns {Promise<boolean>} - Success status
  */
+export const sendVerificationCodeEmailBrevo = async (
+  userEmail,
+  code,
+  userType = 'Candidate',
+) => {
+  try {
+    const htmlContent = createVerificationEmailContent(code, userType);
+    const emailData = {
+      to: [toRecipient(userEmail)],
+      subject: `${code} is uw verificatiecode – De Flexijobber`,
+      htmlContent,
+      senderName: BREVO_CONFIG.senderName,
+      senderEmail: BREVO_CONFIG.senderEmail,
+      replyTo: BREVO_CONFIG.replyToEmail,
+    };
+
+    const result = await sendBrevoEmail(emailData);
+    if (!result.success) {
+      console.error(
+        `Verification email failed for ${userEmail}:`,
+        result.errorMessage,
+      );
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error(`Error sending verification email to ${userEmail}:`, error);
+    return false;
+  }
+};
+
 export const sendWelcomeEmailBrevo = async (
   userEmail,
   userName = '',
   userType = 'User',
 ) => {
   try {
-    const htmlContent = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="utf-8">
-        <title>Welcome to Flexijobber!</title>
-        <style>
-          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-          .header { background-color: #007bff; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
-          .content { background-color: white; padding: 20px; border: 1px solid #ddd; }
-          .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 14px; color: #666; text-align: center; }
-          .btn { display: inline-block; padding: 12px 24px; background-color: #007bff; color: white; text-decoration: none; border-radius: 4px; margin: 10px; }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <div class="header">
-            <h1>🎉 Welcome to Flexijobber!</h1>
-            <p>Your account has been successfully created</p>
-          </div>
-          
-          <div class="content">
-            <h3>Hello ${userName || 'there'}!</h3>
-            <p>Welcome to Flexijobber! We're excited to have you on board as a <strong>${userType}</strong>.</p>
-            
-            <p>Here's what you can do next:</p>
-            <ul>
-              ${
-                userType === 'Candidate'
-                  ? `
-                <li>Complete your profile and upload your resume</li>
-                <li>Browse available job opportunities</li>
-                <li>Set up job alerts to get notified about new positions</li>
-                <li>Apply to jobs that match your skills and interests</li>
-              `
-                  : `
-                <li>Complete your company profile</li>
-                <li>Post job opportunities</li>
-                <li>Browse candidate profiles</li>
-                <li>Manage applications and interviews</li>
-              `
-              }
-            </ul>
-            
-            <div style="text-align: center; margin-top: 30px;">
-              <a href="${
-                process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
-              }/dashboard" class="btn">
-                Go to Dashboard
-              </a>
-            </div>
-          </div>
-          
-          <div class="footer">
-            <p>If you have any questions, feel free to contact our support team.</p>
-            <p>Best regards,<br>The Flexijobber Team</p>
-          </div>
-        </div>
-      </body>
-      </html>
-    `;
+    const htmlContent = createWelcomeEmailContent(userType);
+    const isCandidate = userType === 'Candidate';
+    const subject = isCandidate
+      ? 'Welkom bij De Flexijobber – start met solliciteren!'
+      : 'Welkom bij De Flexijobber – uw account is klaar!';
 
     const emailData = {
       to: [toRecipient(userEmail, userName)],
-      subject: '🎉 Welcome to Flexijobber!',
+      subject,
       htmlContent: htmlContent,
       senderName: BREVO_CONFIG.senderName,
       senderEmail: BREVO_CONFIG.senderEmail,

@@ -1,7 +1,6 @@
 import Wrapper from "@/layout/Wrapper";
 import Home from "@/components/home-1";
 import StructuredData from "@/components/common/StructuredData";
-import TestVacanciesPopup from "@/components/common/TestVacanciesPopup";
 
 const siteUrl =
   process.env.NEXT_PUBLIC_BASE_URL || "https://www.deflexijobber.be";
@@ -87,7 +86,6 @@ export default function Page() {
     <>
       <StructuredData data={organizationSchema} />
       <StructuredData data={websiteSchema} />
-      <TestVacanciesPopup />
 
       <Wrapper>
         <Home />

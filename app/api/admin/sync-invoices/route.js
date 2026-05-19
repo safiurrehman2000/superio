@@ -1,4 +1,8 @@
 import Stripe from "stripe";
+import {
+  allocateReceiptNumber,
+  receiptCreatedToDate,
+} from "@/utils/allocateReceiptNumber";
 import { adminDb } from "@/utils/firebase-admin";
 import {
   authenticateAdmin,
@@ -120,6 +124,10 @@ export async function POST(request) {
           ? new Date(invoice.created * 1000)
           : new Date();
 
+        const { receiptNumber } = await allocateReceiptNumber(
+          receiptCreatedToDate(created),
+        );
+
         await adminDb.collection("receipts").add({
           userId,
           planId,
@@ -129,6 +137,7 @@ export async function POST(request) {
           stripe_invoice_pdf_url: invoice.invoice_pdf || null,
           created,
           invoiceId,
+          receiptNumber,
           type: "invoice",
           source: "admin_backfill",
         });

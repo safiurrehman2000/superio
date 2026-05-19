@@ -1,6 +1,7 @@
 import { adminDb } from "@/utils/firebase-admin";
 import { generateBrandedReceiptPdf } from "@/utils/generateBrandedReceiptPdf";
 import { getInvoiceDisplayAmounts } from "@/utils/invoiceDisplayAmounts";
+import { formatReceiptInvoiceTitle } from "@/utils/allocateReceiptNumber";
 import { resolvePricingPackageLabel } from "@/utils/resolvePricingPackageLabel";
 import Stripe from "stripe";
 
@@ -20,7 +21,7 @@ function regionDisplayNameNl(iso2) {
  * @param {import("stripe").Stripe.Address | null | undefined} addr
  * @returns {string[]}
  */
-function linesFromStripeCustomerAddress(addr) {
+export function linesFromStripeCustomerAddress(addr) {
   if (!addr || typeof addr !== "object") return [];
   const out = [];
   const l1 = String(addr.line1 || "").trim();
@@ -48,7 +49,7 @@ function linesFromStripeCustomerAddress(addr) {
  * @param {Record<string, unknown>} ud
  * @returns {string[]}
  */
-function linesFromUserProfile(ud) {
+export function linesFromUserProfile(ud) {
   const out = [];
   const street = String(ud.address || ud.street || "").trim();
   const street2 = String(ud.address_line2 || ud.addressLine2 || "").trim();
@@ -81,7 +82,7 @@ function linesFromUserProfile(ud) {
  * @param {import("stripe").Stripe.Customer | null | undefined} customer
  * @param {Record<string, unknown>} ud
  */
-function buyerVatLine(customer, ud) {
+export function buyerVatLine(customer, ud) {
   const fromProfile =
     ud.vat_number || ud.btw_number || ud.btw || ud.company_vat || "";
   let fromStripe = "";
@@ -154,9 +155,15 @@ async function loadInvoiceAndCustomerForReceipt(invoice) {
  * @param {import("stripe").Stripe.Invoice} invoice
  * @param {string|null|undefined} planId
  * @param {string} userId Firebase user id (employer)
+ * @param {string} receiptNumber e.g. `2026/1`
  * @returns {Promise<Buffer>}
  */
-export async function buildBrandedReceiptPdfForInvoice(invoice, planId, userId) {
+export async function buildBrandedReceiptPdfForInvoice(
+  invoice,
+  planId,
+  userId,
+  receiptNumber,
+) {
   const packageName = await resolvePricingPackageLabel(planId);
   const userSnap = await adminDb.collection("users").doc(userId).get();
   const ud = userSnap.exists ? userSnap.data() : {};
@@ -212,7 +219,7 @@ export async function buildBrandedReceiptPdfForInvoice(invoice, planId, userId) 
     "https://www.de-flexi-jobber.be/algemene-voorwaarden";
 
   return generateBrandedReceiptPdf({
-    invoiceTitle: `FACTUUR ${inv.number || inv.id}`,
+    invoiceTitle: formatReceiptInvoiceTitle(receiptNumber),
     dateShort,
     seller,
     customerLines,

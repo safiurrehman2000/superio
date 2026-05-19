@@ -9,6 +9,7 @@ import {
 } from "@/slices/userSlice";
 import { LOGO } from "@/utils/constants";
 import { isEmployerCompanyProfileComplete } from "@/utils/isEmployerCompanyProfileComplete";
+import { hasActiveEmployerPlan } from "@/utils/employerAccess";
 import { auth, db } from "@/utils/firebase";
 import { authProtectedPublicRoutes, privateRoutes } from "@/utils/routes";
 import { onAuthStateChanged } from "firebase/auth";
@@ -32,8 +33,46 @@ const RouteGuard = ({ children }) => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         const { uid, email } = user;
-        const userDoc = await getDoc(doc(db, "users", uid));
-        const userData = userDoc.exists() ? userDoc.data() : {};
+        let userDoc = await getDoc(doc(db, "users", uid));
+        let userData = userDoc.exists() ? userDoc.data() : {};
+
+        const profileIncomplete =
+          !userDoc.exists() || !userData?.email || !userData?.userType;
+
+        if (profileIncomplete) {
+          const pendingType =
+            selector.userType === "Employer" ||
+            selector.userType === "Candidate"
+              ? selector.userType
+              : typeof window !== "undefined"
+                ? localStorage.getItem("registrationUserType")
+                : null;
+
+          if (pendingType) {
+            try {
+              const idToken = await user.getIdToken();
+              const repairRes = await fetch("/api/ensure-user-profile", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${idToken}`,
+                },
+                body: JSON.stringify({ userType: pendingType }),
+              });
+              if (repairRes.ok) {
+                userDoc = await getDoc(doc(db, "users", uid));
+                userData = userDoc.exists() ? userDoc.data() : {};
+                console.log("RouteGuard - repaired Firestore profile");
+              }
+            } catch (repairError) {
+              console.error("RouteGuard - profile repair failed:", repairError);
+            }
+          } else {
+            console.warn(
+              "RouteGuard - Auth user has no complete Firestore profile.",
+            );
+          }
+        }
 
         // Debug logging
         console.log("RouteGuard - User data:", userData);
@@ -154,23 +193,46 @@ const RouteGuard = ({ children }) => {
         }
         // Handle Employer flow
         else if (userData.userType === "Employer") {
-          // Treat as first-time only if Firestore says so and Redux hasn't been set to false (e.g. after skip)
+          const employerProfileComplete =
+            isEmployerCompanyProfileComplete(userData);
+          const hasActivePlan = hasActiveEmployerPlan(userData);
           const isOnboardingRequired =
             (userData.isFirstTime ?? true) && selector.isFirstTime !== false;
+          const needsFirstJob =
+            !(userData.hasPostedJob ?? false) &&
+            selector.hasPostedJob !== true;
 
-          if (isOnboardingRequired) {
-            const employerProfileComplete =
-              isEmployerCompanyProfileComplete(userData);
+          const isContactOrBlog =
+            pathname === "/contact" || pathname.startsWith("/blog-details");
 
-            if (!employerProfileComplete) {
-              if (
-                pathname !== "/onboard-company-profile" &&
-                pathname !== "/contact" &&
-                !pathname.startsWith("/blog-details")
+          // Step 1: company profile must be completed before anything else
+          if (!employerProfileComplete) {
+            if (
+              pathname !== "/onboard-company-profile" &&
+              !isContactOrBlog
+            ) {
+              push("/onboard-company-profile");
+            } else if (pathname === "/onboard-company-profile") {
+              localStorage.setItem(`lastOnboardingPage_${uid}`, pathname);
+            }
+          } else if (isOnboardingRequired) {
+            // Step 2: pricing (skip if admin already granted a plan)
+            if (hasActivePlan) {
+              if (needsFirstJob) {
+                if (
+                  pathname !== "/create-profile-employer" &&
+                  !isContactOrBlog &&
+                  !pathname.startsWith("/onboard-") &&
+                  pathname !== "/escape-onboarding"
+                ) {
+                  push("/create-profile-employer");
+                }
+              } else if (
+                pathname.startsWith("/onboard-") ||
+                pathname === "/create-profile-employer" ||
+                pathname === "/escape-onboarding"
               ) {
-                push("/onboard-company-profile");
-              } else if (pathname === "/onboard-company-profile") {
-                localStorage.setItem(`lastOnboardingPage_${uid}`, pathname);
+                push("/employers-dashboard/dashboard");
               }
             } else {
               const validOnboardingPages = [
@@ -183,11 +245,7 @@ const RouteGuard = ({ children }) => {
                 (page) => pathname === page
               );
 
-              if (
-                !lastValidPage &&
-                pathname !== "/contact" &&
-                !pathname.startsWith("/blog-details")
-              ) {
+              if (!lastValidPage && !isContactOrBlog) {
                 const lastPage =
                   localStorage.getItem(`lastOnboardingPage_${uid}`) ||
                   "/onboard-pricing";
@@ -196,25 +254,18 @@ const RouteGuard = ({ children }) => {
                 localStorage.setItem(`lastOnboardingPage_${uid}`, pathname);
               }
             }
-          } else if (
-            !(userData.hasPostedJob ?? false) &&
-            selector.hasPostedJob !== true
-          ) {
+          } else if (needsFirstJob) {
             if (
               pathname !== "/create-profile-employer" &&
-              pathname !== "/contact" &&
-              !pathname.startsWith("/blog-details")
+              !isContactOrBlog
             ) {
               push("/create-profile-employer");
             }
-          } else {
-            if (
-              pathname.startsWith("/create-profile") ||
-              pathname === "/create-profile-candidate" ||
-              pathname === "/create-profile-employer"
-            ) {
-              push("/employers-dashboard/dashboard");
-            }
+          } else if (
+            pathname.startsWith("/create-profile") ||
+            pathname === "/create-profile-employer"
+          ) {
+            push("/employers-dashboard/dashboard");
           }
         }
         // Redirect authenticated users away from auth-protected public routes

@@ -3,6 +3,10 @@
     {
       "path": "/api/send-job-alerts",
       "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/expire-one-time-access",
+      "schedule": "0 3 * * *"
     }
   ],
   "functions": {

@@ -164,7 +164,11 @@ export function generateBrandedReceiptPdf({
     const rowAmountX = pageW - margin - priceColW;
     const rowLabelW = 140;
     doc.font("Helvetica").fontSize(9);
-    doc.text(`BTW (${vatRateLabel}%):`, rowAmountX - rowLabelW, y, {
+    const vatRowLabel =
+      /btw/i.test(vatRateLabel) || vatRateLabel.includes("%")
+        ? vatRateLabel.replace(/\s*%\s*$/, "").trim()
+        : `${vatRateLabel}%`;
+    doc.text(`BTW (${vatRowLabel}):`, rowAmountX - rowLabelW, y, {
       width: rowLabelW,
       align: "right",
     });

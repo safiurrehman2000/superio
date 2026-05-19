@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { adminDb } from "@/utils/firebase-admin";
+import {
+  expireOneTimeAccessIfNeeded,
+  getOneTimeAccessEndMs,
+  hasActiveOneTimeAccess,
+} from "@/utils/expireOneTimeAccess";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -20,23 +25,31 @@ export async function POST(request) {
 
   try {
     if (!stripeSubscriptionId) {
-      const now = Date.now();
-      const oneTimeEnd = oneTimeAccessUntil
-        ? oneTimeAccessUntil.toDate
-          ? oneTimeAccessUntil.toDate().getTime()
-          : new Date(oneTimeAccessUntil).getTime()
-        : null;
-
-      if (oneTimeEnd && oneTimeEnd > now) {
+      if (hasActiveOneTimeAccess(userData)) {
+        const oneTimeEnd = getOneTimeAccessEndMs(oneTimeAccessUntil);
+        const status = userData.subscriptionStatus || "one_time_active";
+        let planName = "One-time package";
+        if (userData.planId) {
+          const pkgDoc = await adminDb
+            .collection("pricingPackages")
+            .doc(userData.planId)
+            .get();
+          if (pkgDoc.exists) {
+            const pkg = pkgDoc.data();
+            planName = pkg.packageType || pkg.name || planName;
+          }
+        }
         return NextResponse.json({
           active: true,
-          status: "one_time_active",
-          accessType: "one_time",
+          status,
+          accessType: status === "admin_active" ? "admin" : "one_time",
           current_period_end: Math.floor(oneTimeEnd / 1000),
-          message: "One-time access is active",
-          planName: "One-time package",
+          message: "Plan access is active",
+          planName,
         });
       }
+
+      await expireOneTimeAccessIfNeeded(adminDb, userId, userData);
 
       return NextResponse.json({
         active: false,

@@ -1,8 +1,12 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { adminDb } from '@/utils/firebase-admin';
-import { buildBrandedReceiptPdfForInvoice } from '@/utils/buildBrandedReceiptPdfForInvoice';
-import { uploadBrandedReceiptPdf } from '@/utils/uploadBrandedReceiptPdf';
+import {
+  ensureReceiptFromCompletedCheckoutSession,
+  processOneTimeCheckoutReceipt,
+  processPaidInvoiceReceipt,
+} from '@/utils/stripeReceiptSync';
+import { reactivateArchivedEmployerJobs } from '@/utils/expireOneTimeAccess';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -226,102 +230,49 @@ export async function POST(request) {
         },
         { merge: true },
       );
-    }
-    // No longer create a receipt here for subscriptions
-    // Only handle any logic you need for one-time payments if required
-  } else if (event.type === 'invoice.paid') {
-    const invoice = event.data.object;
-    console.log('invoice', invoice.parent?.subscription_details?.metadata);
-    let userId =
-      invoice?.parent?.subscription_details?.metadata?.userId || null;
-    let planId =
-      invoice?.parent?.subscription_details?.metadata?.planId || null;
 
-    const subscriptionRef = invoice.subscription;
-    const subscriptionId =
-      typeof subscriptionRef === 'string'
-        ? subscriptionRef
-        : subscriptionRef?.id || null;
-
-    if ((!userId || !planId) && subscriptionId) {
       try {
-        const sub = await stripe.subscriptions.retrieve(subscriptionId);
-        userId = userId || sub.metadata?.userId || null;
-        planId = planId || sub.metadata?.planId || null;
+        await processOneTimeCheckoutReceipt(stripe, session);
       } catch (e) {
         console.error(
-          'Could not retrieve subscription for invoice metadata:',
+          'checkout.session.completed: one-time receipt failed',
           e,
         );
       }
+
+      await reactivateArchivedEmployerJobs(adminDb, userId);
     }
 
-    if (!userId && invoice.customer) {
-      const customerId =
-        typeof invoice.customer === 'string'
-          ? invoice.customer
-          : invoice.customer?.id;
-      if (customerId) {
-        const employerQuery = await adminDb
-          .collection('users')
-          .where('stripeCustomerId', '==', customerId)
-          .limit(1)
-          .get();
-        if (!employerQuery.empty) {
-          userId = employerQuery.docs[0].id;
-        }
-      }
-    }
-
-    const amount = invoice.amount_paid;
-    const currency = invoice.currency;
-    const stripe_invoice_pdf_url = invoice.invoice_pdf || null;
-    const created = invoice.created
-      ? new Date(invoice.created * 1000)
-      : new Date();
-    const invoiceId = invoice.id;
-
-    if (userId) {
-      let receipt_pdf_url = stripe_invoice_pdf_url;
-
-      if (process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET) {
+    if (
+      session.payment_status === 'paid' ||
+      session.payment_status === 'no_payment_required'
+    ) {
+      if (session.mode === 'subscription') {
         try {
-          const pdfBuffer = await buildBrandedReceiptPdfForInvoice(
-            invoice,
-            planId,
-            userId,
+          const sync = await ensureReceiptFromCompletedCheckoutSession(
+            stripe,
+            session.id,
           );
-          receipt_pdf_url = await uploadBrandedReceiptPdf({
-            userId,
-            invoiceId,
-            pdfBuffer,
-          });
-        } catch (err) {
+          console.log(
+            'checkout.session.completed: subscription receipt ensure',
+            sync,
+          );
+        } catch (e) {
           console.error(
-            'Branded receipt PDF failed, using Stripe invoice PDF if available:',
-            err,
+            'checkout.session.completed: subscription receipt ensure failed',
+            e,
           );
-          receipt_pdf_url = stripe_invoice_pdf_url;
         }
       }
-
-      try {
-        await adminDb.collection('receipts').add({
-          userId,
-          planId,
-          amount,
-          currency,
-          receipt_pdf_url,
-          stripe_invoice_pdf_url,
-          created,
-          invoiceId,
-          type: 'invoice',
-        });
-        console.log('Invoice receipt successfully written to Firestore');
-      } catch (err) {
-        console.error('Error writing invoice receipt to Firestore:', err);
-      }
     }
+    // Subscription receipts also arrive via invoice.* webhooks in production.
+  } else if (
+    event.type === 'invoice.paid' ||
+    event.type === 'invoice.payment_succeeded'
+  ) {
+    const invoice = event.data.object;
+    console.log('invoice', event.type, invoice.parent?.subscription_details?.metadata);
+    await processPaidInvoiceReceipt(stripe, invoice);
   } else if (event.type === 'customer.subscription.created') {
     const subscription = event.data.object;
     console.log('subscription in subscription created', subscription.id);
