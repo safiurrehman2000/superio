@@ -190,7 +190,7 @@ const PricingPackages = () => {
                   "linear-gradient(180deg, rgba(8,22,46,0.96) 0%, rgba(0,116,225,0.88) 100%)",
                 borderRadius: "26px",
                 padding: "40px 30px",
-                border: "1px solid rgba(255,255,255,0.12)",
+                border: "2px solid #ff8c42",
                 boxShadow: "0 15px 40px rgba(0,0,0,0.25)",
                 backdropFilter: "blur(10px)",
                 transition: "all 0.3s ease",
@@ -231,7 +231,7 @@ const PricingPackages = () => {
               <div
                 className="title"
                 style={{
-                  color: "#fff",
+                  color: "#ff8c42",
                   fontWeight: "700",
                   fontSize: "28px",
                   marginTop: "20px",

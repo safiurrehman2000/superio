@@ -37,13 +37,13 @@ const index = () => {
                 marginBottom: "50px",
                 boxShadow: "0 15px 40px rgba(0,0,0,0.25)",
                 textAlign: "left",
-                border: "1px solid rgba(255,255,255,0.12)",
+                border: "2px solid #ff8c42",
                 backdropFilter: "blur(10px)",
               }}
             >
               <h3
                 style={{
-                  color: "#fff",
+                  color: "#ff8c42",
                   marginBottom: "20px",
                   fontWeight: "700",
                 }}
