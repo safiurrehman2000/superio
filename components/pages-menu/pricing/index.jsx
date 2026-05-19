@@ -29,14 +29,16 @@ const index = () => {
             <div
               style={{
                 background:
-                  "linear-gradient(45deg, rgba(16,231,220,0.45) 0%, rgba(0,116,225,0.7) 70%)",
-                padding: "35px",
-                borderRadius: "20px",
+                  "linear-gradient(45deg, rgba(7,35,67,0.92) 0%, rgba(0,116,225,0.82) 100%)",
+                padding: "45px",
+                borderRadius: "28px",
                 color: "#fff",
                 marginTop: "30px",
-                marginBottom: "40px",
-                boxShadow: "0 10px 30px rgba(0,0,0,0.15)",
+                marginBottom: "50px",
+                boxShadow: "0 15px 40px rgba(0,0,0,0.25)",
                 textAlign: "left",
+                border: "1px solid rgba(255,255,255,0.12)",
+                backdropFilter: "blur(10px)",
               }}
             >
               <h3
