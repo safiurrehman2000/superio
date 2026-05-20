@@ -222,3 +222,8 @@ Deep Blue – #0074E1 */
 .facebook-group-widget p {
   color: #ffffff;
 }
+
+.pricing-table .table-content ul li::before {
+  display: none !important;
+  content: none !important;
+}

@@ -165,70 +165,197 @@ const PricingPackages = () => {
   }
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: "10px",
-        margin: "50px",
-      }}
-    >
-      <div className="pricing-tabs tabs-box wow fadeInUp">
-        <div className="row">
-          {pricingContent?.map((item) => (
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      gap: "20px",
+      marginTop: "20px",
+    }}
+  >
+    <div className="pricing-tabs tabs-box wow fadeInUp">
+      <div className="row">
+        {pricingContent?.map((item) => (
+          <div
+            className={`pricing-table col-lg-4 col-md-6 col-sm-12 ${item.tag}`}
+            key={item.id}
+            style={{
+              marginBottom: "30px",
+            }}
+          >
             <div
-              className={`pricing-table col-lg-4 col-md-6 col-sm-12 ${item.tag}`}
-              key={item.id}
+              className="inner-box"
+              style={{
+                background:
+                  "linear-gradient(180deg, rgba(8,22,46,0.96) 0%, rgba(0,116,225,0.88) 100%)",
+                borderRadius: "26px",
+                padding: "40px 30px",
+                border: "2px solid #ff8c42",
+                boxShadow: "0 15px 40px rgba(0,0,0,0.25)",
+                backdropFilter: "blur(10px)",
+                transition: "all 0.3s ease",
+                height: "100%",
+                color: "#fff",
+                overflow: "hidden",
+                position: "relative",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "translateY(-8px)";
+                e.currentTarget.style.boxShadow =
+                  "0 20px 50px rgba(0,0,0,0.35)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "translateY(0px)";
+                e.currentTarget.style.boxShadow =
+                  "0 15px 40px rgba(0,0,0,0.25)";
+              }}
             >
-              <div className="inner-box">
-                {item.tag ? <span className="tag">Recommended</span> : ""}
-                <div className="title">{item.packageType}</div>
-                {item?.price === "Free" ? (
-                  <div className="price">{item.price}</div>
-                ) : (
-                  <div className="price">
-                    €{item.price}{" "}
-                    {getPriceDurationLabel(item) && (
-                      <span className="duration">
-                        / {getPriceDurationLabel(item)}
-                      </span>
-                    )}
-                  </div>
-                )}
+              {item.tag ? (
+                <span
+                  className="tag"
+                  style={{
+                    background: "#10e7dc",
+                    color: "#072343",
+                    fontWeight: "700",
+                    padding: "8px 18px",
+                    borderRadius: "30px",
+                    fontSize: "13px",
+                  }}
+                >
+                  Recommended
+                </span>
+              ) : (
+                ""
+              )}
 
-                <div className="table-content">
-                  <ul>
-                    {item.features.map((feature, i) => (
-                      <li key={i}>
-                        <span>{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
+              <div
+                className="title"
+                style={{
+                  color: "#ff8c42",
+                  fontWeight: "700",
+                  fontSize: "28px",
+                  marginTop: "20px",
+                  marginBottom: "20px",
+                }}
+              >
+                {item.packageType}
+              </div>
+
+              {item?.price === "Free" ? (
+                <div
+                  className="price"
+                  style={{
+                    color: "#fff",
+                    fontSize: "42px",
+                    fontWeight: "800",
+                    marginBottom: "25px",
+                  }}
+                >
+                  {item.price}
                 </div>
-                <div style={{ width: "100%" }}>
-                  <button
-                    className="theme-btn btn-style-three"
-                    style={{
-                      margin: "auto",
-                      opacity: checkoutLoadingId === item?.id ? 0.7 : 1,
-                    }}
-                    disabled={checkoutLoadingId !== null}
-                    onClick={() => {
-                      handleSubmit(item?.stripePriceId, item?.id);
-                    }}
-                  >
-                    {checkoutLoadingId === item?.id
-                      ? "Bezig met laden..."
-                      : "ADVERTEER"}
-                  </button>
+              ) : (
+                <div
+                  className="price"
+                  style={{
+                    color: "#fff",
+                    fontSize: "42px",
+                    fontWeight: "800",
+                    marginBottom: "25px",
+                  }}
+                >
+                  €{item.price}{" "}
+                  {getPriceDurationLabel(item) && (
+                    <span
+                      className="duration"
+                      style={{
+                        color: "rgba(255,255,255,0.75)",
+                        fontSize: "16px",
+                        fontWeight: "400",
+                      }}
+                    >
+                      / {getPriceDurationLabel(item)}
+                    </span>
+                  )}
                 </div>
+              )}
+
+              <div className="table-content">
+                <ul
+                  style={{
+                    padding: 0,
+                    margin: 0,
+                    listStyle: "none",
+                  }}
+                >
+                  {item.features.map((feature, i) => (
+                    <li
+                      key={i}
+                      style={{
+                        color: "#fff",
+                        borderBottom: "1px solid rgba(255,255,255,0.08)",
+                        padding: "14px 0",
+                        fontSize: "15px",
+                        lineHeight: "1.7",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "10px",
+                        listStyle: "none",
+                      }}
+                    >
+                      <span
+                        style={{
+                          color: "#ff8c42",
+                          fontWeight: "bold",
+                          fontSize: "18px",
+                        }}
+                      >
+                        ✓
+                      </span>
+
+                      <span>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div
+                style={{
+                  width: "100%",
+                  marginTop: "30px",
+                  textAlign: "center",
+                }}
+              >
+                <button
+                  className="theme-btn btn-style-three"
+                  style={{
+                    margin: "auto",
+                    opacity:
+                      checkoutLoadingId === item?.id ? 0.7 : 1,
+                    borderRadius: "14px",
+                    padding: "14px 34px",
+                    fontWeight: "700",
+                    letterSpacing: "0.5px",
+                    boxShadow: "0 10px 25px rgba(0,0,0,0.2)",
+                    transition: "all 0.3s ease",
+                    cursor: "pointer",
+                  }}
+                  disabled={checkoutLoadingId !== null}
+                  onClick={() => {
+                    handleSubmit(item?.stripePriceId, item?.id);
+                  }}
+                >
+                  {checkoutLoadingId === item?.id
+                    ? "Bezig met laden..."
+                    : "ADVERTEER"}
+                </button>
               </div>
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
       </div>
     </div>
-  );
+  </div>
+);
 };
 
 export default PricingPackages;
