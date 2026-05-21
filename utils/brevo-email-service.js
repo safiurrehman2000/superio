@@ -217,12 +217,17 @@ export const sendVerificationCodeEmailBrevo = async (
         `Verification email failed for ${userEmail}:`,
         result.errorMessage,
       );
-      return false;
+      return {
+        success: false,
+        errorMessage: result.errorMessage,
+        errorCode: result.errorCode,
+      };
     }
-    return true;
+    return { success: true };
   } catch (error) {
-    console.error(`Error sending verification email to ${userEmail}:`, error);
-    return false;
+    const { errorMessage, errorCode } = extractBrevoApiError(error);
+    console.error(`Error sending verification email to ${userEmail}:`, errorMessage);
+    return { success: false, errorMessage, errorCode };
   }
 };
 

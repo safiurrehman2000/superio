@@ -65,10 +65,23 @@ export async function POST(request) {
     const code = generateOtpCode();
     const expiresAt = new Date(Date.now() + OTP_TTL_MS);
 
-    const sent = await sendVerificationCodeEmailBrevo(normalized, code, userType);
-    if (!sent) {
+    const sendResult = await sendVerificationCodeEmailBrevo(
+      normalized,
+      code,
+      userType,
+    );
+    if (!sendResult.success) {
+      console.error('Brevo verification send failed:', {
+        email: normalized,
+        errorCode: sendResult.errorCode,
+        errorMessage: sendResult.errorMessage,
+      });
       return NextResponse.json(
-        { error: 'Kon verificatie-e-mail niet verzenden. Probeer later opnieuw.' },
+        {
+          error: 'Kon verificatie-e-mail niet verzenden. Probeer later opnieuw.',
+          brevoError: sendResult.errorMessage || null,
+          brevoErrorCode: sendResult.errorCode || null,
+        },
         { status: 502 },
       );
     }
