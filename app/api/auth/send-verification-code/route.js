@@ -65,6 +65,14 @@ export async function POST(request) {
     const code = generateOtpCode();
     const expiresAt = new Date(Date.now() + OTP_TTL_MS);
 
+    const sent = await sendVerificationCodeEmailBrevo(normalized, code, userType);
+    if (!sent) {
+      return NextResponse.json(
+        { error: 'Kon verificatie-e-mail niet verzenden. Probeer later opnieuw.' },
+        { status: 502 },
+      );
+    }
+
     await docRef.set({
       email: normalized,
       userType,
@@ -74,14 +82,6 @@ export async function POST(request) {
       attempts: 0,
       maxAttempts: OTP_MAX_ATTEMPTS,
     });
-
-    const sent = await sendVerificationCodeEmailBrevo(normalized, code, userType);
-    if (!sent) {
-      return NextResponse.json(
-        { error: 'Kon verificatie-e-mail niet verzenden. Probeer later opnieuw.' },
-        { status: 502 },
-      );
-    }
 
     return NextResponse.json({
       success: true,
