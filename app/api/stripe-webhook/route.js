@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { adminDb } from '@/utils/firebase-admin';
 import {
-  ensureReceiptFromCompletedCheckoutSession,
   processOneTimeCheckoutReceipt,
   processPaidInvoiceReceipt,
 } from '@/utils/stripeReceiptSync';
@@ -234,44 +233,18 @@ export async function POST(request) {
       try {
         await processOneTimeCheckoutReceipt(stripe, session);
       } catch (e) {
-        console.error(
-          'checkout.session.completed: one-time receipt failed',
-          e,
-        );
+        console.error('checkout.session.completed: one-time receipt failed', e);
       }
 
       await reactivateArchivedEmployerJobs(adminDb, userId);
     }
-
-    if (
-      session.payment_status === 'paid' ||
-      session.payment_status === 'no_payment_required'
-    ) {
-      if (session.mode === 'subscription') {
-        try {
-          const sync = await ensureReceiptFromCompletedCheckoutSession(
-            stripe,
-            session.id,
-          );
-          console.log(
-            'checkout.session.completed: subscription receipt ensure',
-            sync,
-          );
-        } catch (e) {
-          console.error(
-            'checkout.session.completed: subscription receipt ensure failed',
-            e,
-          );
-        }
-      }
-    }
-    // Subscription receipts also arrive via invoice.* webhooks in production.
-  } else if (
-    event.type === 'invoice.paid' ||
-    event.type === 'invoice.payment_succeeded'
-  ) {
+  } else if (event.type === 'invoice.paid') {
     const invoice = event.data.object;
-    console.log('invoice', event.type, invoice.parent?.subscription_details?.metadata);
+    console.log(
+      'invoice',
+      event.type,
+      invoice.parent?.subscription_details?.metadata,
+    );
     await processPaidInvoiceReceipt(stripe, invoice);
   } else if (event.type === 'customer.subscription.created') {
     const subscription = event.data.object;

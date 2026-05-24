@@ -27,14 +27,25 @@ export async function processOneTimeCheckoutReceipt(stripe, session) {
     return;
   }
 
-  const dup = await adminDb
+  const receiptRef = adminDb.collection('receipts').doc(session.id);
+  const existingReceipt = await receiptRef.get();
+  if (existingReceipt.exists) {
+    console.log(
+      'Receipt already exists for checkout session',
+      session.id,
+      '— skipping',
+    );
+    return;
+  }
+
+  const legacyDup = await adminDb
     .collection('receipts')
     .where('checkoutSessionId', '==', session.id)
     .limit(1)
     .get();
-  if (!dup.empty) {
+  if (!legacyDup.empty) {
     console.log(
-      'Receipt already exists for checkout session',
+      'Receipt already exists for checkout session (legacy doc)',
       session.id,
       '— skipping',
     );
@@ -80,7 +91,7 @@ export async function processOneTimeCheckoutReceipt(stripe, session) {
   }
 
   try {
-    await adminDb.collection('receipts').add({
+    await receiptRef.create({
       userId,
       planId,
       amount,
@@ -94,6 +105,14 @@ export async function processOneTimeCheckoutReceipt(stripe, session) {
     });
     console.log('One-time receipt written to Firestore', session.id);
   } catch (err) {
+    if (err?.code === 6 || err?.code === 'already-exists') {
+      console.log(
+        'Receipt already exists for checkout session (concurrent write)',
+        session.id,
+        '— skipping',
+      );
+      return;
+    }
     console.error('processOneTimeCheckoutReceipt: Firestore write failed', err);
   }
 }
@@ -153,13 +172,24 @@ export async function processPaidInvoiceReceipt(stripe, invoice) {
     : new Date();
   const invoiceId = invoice.id;
 
-  const dupInv = await adminDb
+  const receiptRef = adminDb.collection('receipts').doc(invoiceId);
+  const existingReceipt = await receiptRef.get();
+  if (existingReceipt.exists) {
+    console.log('Receipt already exists for invoice', invoiceId, '— skipping');
+    return;
+  }
+
+  const legacyDup = await adminDb
     .collection('receipts')
     .where('invoiceId', '==', invoiceId)
     .limit(1)
     .get();
-  if (!dupInv.empty) {
-    console.log('Receipt already exists for invoice', invoiceId, '— skipping');
+  if (!legacyDup.empty) {
+    console.log(
+      'Receipt already exists for invoice (legacy doc)',
+      invoiceId,
+      '— skipping',
+    );
     return;
   }
 
@@ -201,7 +231,7 @@ export async function processPaidInvoiceReceipt(stripe, invoice) {
   }
 
   try {
-    await adminDb.collection('receipts').add({
+    await receiptRef.create({
       userId,
       planId,
       amount,
@@ -215,6 +245,14 @@ export async function processPaidInvoiceReceipt(stripe, invoice) {
     });
     console.log('Invoice receipt successfully written to Firestore', invoiceId);
   } catch (err) {
+    if (err?.code === 6 || err?.code === 'already-exists') {
+      console.log(
+        'Receipt already exists for invoice (concurrent write)',
+        invoiceId,
+        '— skipping',
+      );
+      return;
+    }
     console.error('Error writing invoice receipt to Firestore:', err);
   }
 }
