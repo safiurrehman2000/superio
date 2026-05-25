@@ -1,11 +1,13 @@
 "use client";
 import { errorToast, successToast } from "@/utils/toast";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { InputField } from "@/components/inputfield/InputField";
+import { getCouponCompatibilityForPackages } from "@/utils/couponPackageCompatibility";
 
 const CouponManager = () => {
   const [coupons, setCoupons] = useState([]);
+  const [packages, setPackages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [showPromoCodeForm, setShowPromoCodeForm] = useState({});
@@ -30,6 +32,29 @@ const CouponManager = () => {
   const { handleSubmit, reset, watch, setValue } = methods;
   const discountType = watch("discountType");
   const duration = watch("duration");
+  const amountOff = watch("amountOff");
+  const percentOff = watch("percentOff");
+
+  const draftCompatibility = useMemo(() => {
+    if (!packages.length) return [];
+    const hasPercent =
+      discountType === "percent" &&
+      percentOff &&
+      !Number.isNaN(parseFloat(percentOff));
+    const hasAmount =
+      discountType === "amount" &&
+      amountOff &&
+      !Number.isNaN(parseFloat(amountOff));
+    if (!hasPercent && !hasAmount) return [];
+
+    const draftCoupon = {
+      duration,
+      amountOff: hasAmount ? Math.round(parseFloat(amountOff) * 100) : null,
+      percentOff: hasPercent ? parseFloat(percentOff) : null,
+      appliesTo: null,
+    };
+    return getCouponCompatibilityForPackages(draftCoupon, packages);
+  }, [packages, duration, discountType, amountOff, percentOff]);
 
   useEffect(() => {
     fetchCoupons();
@@ -43,6 +68,7 @@ const CouponManager = () => {
 
       if (response.ok) {
         setCoupons(data.data || []);
+        setPackages(data.packages || []);
       } else {
         errorToast(data.error || "Failed to fetch coupons");
       }
@@ -55,6 +81,14 @@ const CouponManager = () => {
   };
 
   const onSubmit = async (data) => {
+    const trimmedPromoCode = data.promoCode?.trim();
+    if (!trimmedPromoCode) {
+      errorToast(
+        "Promotion code is required. Customers enter this code at Stripe checkout (not the coupon name)."
+      );
+      return;
+    }
+
     try {
       setSubmitting(true);
 
@@ -65,7 +99,7 @@ const CouponManager = () => {
           ? parseInt(data.maxRedemptions)
           : null,
         redeemBy: data.redeemBy || null,
-        promoCode: data.promoCode || null,
+        promoCode: trimmedPromoCode,
         maxPromoRedemptions: data.maxPromoRedemptions
           ? parseInt(data.maxPromoRedemptions)
           : null,
@@ -177,9 +211,8 @@ const CouponManager = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          name: `Promo for ${couponId}`,
           couponId,
-          promoCode: promoCode.toUpperCase(),
+          promoCode: promoCode.trim().toUpperCase(),
           maxPromoRedemptions: maxRedemptions ? parseInt(maxRedemptions) : null,
         }),
       });
@@ -342,6 +375,42 @@ const CouponManager = () => {
                 </div>
               )}
 
+              {duration !== "once" && packages.some((p) => p.interval === "one_time") && (
+                <div className="col-lg-12">
+                  <div className="alert alert-warning" style={{ marginBottom: 0 }}>
+                    <strong>One-time packages:</strong> Duration &quot;{duration}&quot; will
+                    show as <strong>invalid</strong> on one-time packages at checkout. Use
+                    &quot;One-time&quot; duration if you need SUMMER to work on every package.
+                  </div>
+                </div>
+              )}
+
+              {draftCompatibility.some((row) => !row.compatible) && (
+                <div className="col-lg-12">
+                  <div className="alert alert-warning" style={{ marginBottom: 0 }}>
+                    <strong>Package preview:</strong>
+                    <ul style={{ marginBottom: 0, paddingLeft: "18px" }}>
+                      {draftCompatibility.map((row) => (
+                        <li key={row.packageId}>
+                          {row.compatible ? (
+                            <>
+                              <span style={{ color: "#27ae60" }}>OK</span> —{" "}
+                              {row.packageName} (€{row.price},{" "}
+                              {row.interval === "one_time" ? "one-time" : row.interval})
+                            </>
+                          ) : (
+                            <>
+                              <span style={{ color: "#e74c3c" }}>Invalid at checkout</span>{" "}
+                              — {row.packageName} (€{row.price}): {row.reasons.join(" ")}
+                            </>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )}
+
               <div className="col-lg-6 col-md-6 col-sm-12">
                 <InputField
                   label="Max Redemptions (Optional)"
@@ -371,7 +440,7 @@ const CouponManager = () => {
               <div className="col-lg-12 col-md-12 col-sm-12">
                 <hr style={{ margin: "20px 0" }} />
                 <h6 style={{ color: "#1967d2", marginBottom: "15px" }}>
-                  Promotion Code (Optional)
+                  Promotion Code (Required)
                 </h6>
                 <p
                   style={{
@@ -380,8 +449,8 @@ const CouponManager = () => {
                     marginBottom: "15px",
                   }}
                 >
-                  Create a customer-facing code (e.g., "SUMMER2024") that users
-                  can enter at checkout.
+                  Customers must enter this code at Stripe checkout. The coupon
+                  name alone will not work and will show as invalid.
                 </p>
               </div>
 
@@ -390,7 +459,7 @@ const CouponManager = () => {
                   label="Promotion Code"
                   name="promoCode"
                   placeholder="e.g., SUMMER2024"
-                  required={false}
+                  required={true}
                   fieldType="Text"
                   disabled={submitting}
                 />
@@ -453,6 +522,9 @@ const CouponManager = () => {
                     </th>
                     <th style={{ fontWeight: "600", color: "#1967d2" }}>
                       Promotion Codes
+                    </th>
+                    <th style={{ fontWeight: "600", color: "#1967d2" }}>
+                      Packages
                     </th>
                     <th style={{ fontWeight: "600", color: "#1967d2" }}>
                       Status
@@ -531,7 +603,41 @@ const CouponManager = () => {
                             ))}
                           </div>
                         ) : (
-                          <span style={{ color: "#999" }}>No codes</span>
+                          <div>
+                            <span style={{ color: "#e74c3c", fontWeight: 600 }}>
+                              No checkout code
+                            </span>
+                            <br />
+                            <button
+                              type="button"
+                              onClick={() => handleAddPromoCode(coupon.id)}
+                              className="btn btn-sm btn-primary"
+                              style={{ marginTop: "6px" }}
+                            >
+                              Add promotion code
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                      <td style={{ maxWidth: "220px", fontSize: "13px" }}>
+                        {coupon.packageCompatibility?.length ? (
+                          <ul style={{ margin: 0, paddingLeft: "16px" }}>
+                            {coupon.packageCompatibility.map((row) => (
+                              <li key={row.packageId} style={{ marginBottom: "4px" }}>
+                                {row.compatible ? (
+                                  <span style={{ color: "#27ae60" }}>
+                                    {row.packageName} (€{row.price})
+                                  </span>
+                                ) : (
+                                  <span style={{ color: "#e74c3c" }} title={row.reasons.join(" ")}>
+                                    {row.packageName} (€{row.price}) — invalid
+                                  </span>
+                                )}
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <span style={{ color: "#999" }}>—</span>
                         )}
                       </td>
                       <td>
@@ -576,8 +682,19 @@ const CouponManager = () => {
               "SUMMER2024") that users enter at checkout
             </li>
             <li>
-              <strong>Duration:</strong> One-time (single invoice), Repeating
-              (multiple months), or Forever
+              <strong>Duration:</strong> &quot;One-time&quot; works on all packages.
+              &quot;Forever&quot; / &quot;Repeating&quot; only work on subscription
+              packages (monthly/yearly), not on one-time packages — that is why a
+              code can work on a €60 plan but fail on a €28 one-time plan.
+            </li>
+            <li>
+              <strong>Fixed € off:</strong> Must be less than the package price
+              (e.g. €30 off fails on a €28 package).
+            </li>
+            <li>
+              <strong>Very high % off (e.g. 99%):</strong> Can work on €60 but
+              fail on €28.5 — after discount + 21% VAT the total must be at least
+              €0.50 or Stripe marks the code invalid.
             </li>
             <li>
               Once created, the discount value cannot be changed (you can only
