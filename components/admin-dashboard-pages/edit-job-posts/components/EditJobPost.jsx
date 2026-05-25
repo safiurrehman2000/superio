@@ -8,7 +8,7 @@ import CircularLoader from '@/components/circular-loading/CircularLoading';
 import { InputField } from '@/components/inputfield/InputField';
 import { TextAreaField } from '@/components/textarea/TextArea';
 import { formatString, JOB_TYPE_OPTIONS, SECTORS } from '@/utils/constants';
-import { useRouter } from 'next/navigation';
+import { sanitizeFormData } from '@/utils/sanitization';
 import { useState, useEffect } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { useSelector } from 'react-redux';
@@ -27,7 +27,6 @@ const EditJobPost = () => {
   const [selectedJobId, setSelectedJobId] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const { push } = useRouter();
   const selector = useSelector((store) => store.user);
   const [jobs, setJobs] = useState([]);
   const [jobsLoading, setJobsLoading] = useState(true);
@@ -71,7 +70,55 @@ const EditJobPost = () => {
     },
   });
 
-  const { handleSubmit, reset, setValue } = methods;
+  const { handleSubmit, reset } = methods;
+
+  const emptyFormValues = {
+    name: '',
+    description: '',
+    functionDescription: '',
+    profileSkills: '',
+    offer: '',
+    schedule: '',
+    email: '',
+    'job-type': [],
+    state: '',
+    address: '',
+    postalCode: '',
+    salary: '',
+    tags: [],
+  };
+
+  useEffect(() => {
+    if (!selectedJobId) {
+      reset(emptyFormValues);
+      return;
+    }
+    const selectedJob = jobs.find((job) => job.id === selectedJobId);
+    if (!selectedJob) return;
+
+    reset({
+      name: selectedJob.title || '',
+      description: selectedJob.description || '',
+      functionDescription: selectedJob.functionDescription || '',
+      profileSkills: selectedJob.profileSkills || '',
+      offer: selectedJob.offer || '',
+      schedule: selectedJob.schedule || '',
+      email: selectedJob.email || selector?.user?.email || '',
+      'job-type': jobTypeValuesToOptions(
+        selectedJob.jobType ?? selectedJob.JobType,
+      ),
+      state: selectedJob.location || '',
+      address: selectedJob.address || '',
+      postalCode: selectedJob.postalCode || '',
+      salary: selectedJob.salary || '',
+      tags: selectedJob.tags
+        ? selectedJob.tags.map((tag) => ({
+            value: tag,
+            label: formatString(tag),
+          }))
+        : [],
+    });
+  }, [selectedJobId, jobs, reset, selector?.user?.email]);
 
   // Transform jobs data for react-select
   const jobOptions = jobs.map((job) => ({
@@ -83,42 +130,7 @@ const EditJobPost = () => {
   }));
 
   const handleJobSelection = (selectedOption) => {
-    const jobId = selectedOption ? selectedOption.value : '';
-    setSelectedJobId(jobId);
-    if (jobId) {
-      const selectedJob = jobs.find((job) => job.id === jobId);
-      if (selectedJob) {
-        setValue('name', selectedJob.title || '');
-        setValue('description', selectedJob.description || '');
-        setValue('functionDescription', selectedJob.functionDescription || '');
-        setValue('profileSkills', selectedJob.profileSkills || '');
-        setValue('offer', selectedJob.offer || '');
-        setValue('schedule', selectedJob.schedule || '');
-        setValue(
-          'email',
-          selectedJob.email || selector?.user?.email || '',
-        );
-        setValue(
-          'job-type',
-          jobTypeValuesToOptions(selectedJob.jobType ?? selectedJob.JobType),
-        );
-        setValue('state', selectedJob.location || '');
-        setValue('address', selectedJob.address || '');
-        setValue('postalCode', selectedJob.postalCode || '');
-        setValue('salary', selectedJob.salary || '');
-        setValue(
-          'tags',
-          selectedJob.tags
-            ? selectedJob.tags.map((tag) => ({
-                value: tag,
-                label: formatString(tag),
-              }))
-            : [],
-        );
-      }
-    } else {
-      reset();
-    }
+    setSelectedJobId(selectedOption ? selectedOption.value : '');
   };
 
   const onSubmit = async (data) => {
@@ -154,18 +166,33 @@ const EditJobPost = () => {
         return;
       }
 
+      const fieldTypes = {
+        title: 'title',
+        description: 'description',
+        functionDescription: 'description',
+        profileSkills: 'description',
+        offer: 'description',
+        schedule: 'description',
+        email: 'email',
+        location: 'text',
+        jobType: 'job_type_array',
+        address: 'company_location',
+        postalCode: 'company_location',
+        salary: 'company_location',
+        tags: 'company_type',
+      };
+
+      const sanitized = sanitizeFormData(payload, fieldTypes);
       const { success, error: apiError } = await updateJob(
         selectedJobId,
-        payload,
+        sanitized,
         selector.user.uid,
       );
       if (!success) {
         throw new Error(apiError || 'Failed to update job post.');
       }
 
-      reset();
-      setSelectedJobId('');
-      push('/admin-dashboard/edit-job-posts');
+      await fetchJobs();
     } catch (err) {
       setError(
         err.message || 'An unexpected error occurred. Please try again.',
@@ -196,10 +223,8 @@ const EditJobPost = () => {
       if (!success) {
         throw new Error(apiError || 'Failed to delete job post.');
       }
-      reset();
       setSelectedJobId('');
-      fetchJobs();
-      push('/admin-dashboard/edit-job-posts');
+      await fetchJobs();
       setIsDeleteModalOpen(false);
     } catch (err) {
       setError(
@@ -259,6 +284,7 @@ const EditJobPost = () => {
         </div>
 
         <div className='widget-content'>
+          <FormProvider {...methods}>
           <div className='form-group col-lg-12 col-md-12 mb-4'>
             <label
               style={{
@@ -290,7 +316,6 @@ const EditJobPost = () => {
           </div>
 
           {selectedJobId && (
-            <FormProvider {...methods}>
               <form
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
@@ -488,7 +513,6 @@ const EditJobPost = () => {
                   </div>
                 </div>
               </form>
-            </FormProvider>
           )}
 
           {!selectedJobId && (
@@ -507,6 +531,7 @@ const EditJobPost = () => {
               {error}
             </div>
           )}
+          </FormProvider>
         </div>
       </div>
       <DeleteConfirmationModal
