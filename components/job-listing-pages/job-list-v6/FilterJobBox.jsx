@@ -361,87 +361,98 @@ const FilterJobBox = () => {
 
   return (
     <>
-      <div className='ls-switcher'>
-        <div className='showing-result'>
-          <div className='text'>
-            Showing <strong>{content?.length || 0}</strong> of{' '}
-            <strong>{totalItems || 0}</strong> jobs
+      <div className='job-list-layout'>
+        <div className='ls-switcher job-list-controls'>
+          <div className='showing-result'>
+            <div className='text'>
+              Showing <strong>{content?.length || 0}</strong> of{' '}
+              <strong>{totalItems || 0}</strong> jobs
+            </div>
+          </div>
+
+          <div className='sort-by'>
+            {hasActiveFilters && (
+              <button
+                onClick={clearAll}
+                className='btn btn-danger text-nowrap me-2'
+                style={{ minHeight: '45px', marginBottom: '15px' }}
+              >
+                Clear All
+              </button>
+            )}
+
+            <select
+              className='chosen-single form-select'
+              onChange={sortHandler}
+              value={sortOrder}
+            >
+              <option value=''>Sort by (default)</option>
+              <option value='asc'>Oldest</option>
+              <option value='desc'>Newest</option>
+            </select>
+
+            <select
+              onChange={perPageHandler}
+              className='chosen-single form-select ms-3'
+              value={getSelectValue()}
+            >
+              <option value='2'>2 per page</option>
+              <option value='3'>3 per page</option>
+              <option value='4'>4 per page</option>
+              <option value='10'>10 per page</option>
+              <option value='20'>20 per page</option>
+            </select>
           </div>
         </div>
 
-        <div className='sort-by'>
-          {hasActiveFilters && (
-            <button
-              onClick={clearAll}
-              className='btn btn-danger text-nowrap me-2'
-              style={{ minHeight: '45px', marginBottom: '15px' }}
-            >
-              Clear All
-            </button>
-          )}
+        <div className='row job-list-results'>{content}</div>
 
-          <select
-            className='chosen-single form-select'
-            onChange={sortHandler}
-            value={sortOrder}
-          >
-            <option value=''>Sort by (default)</option>
-            <option value='asc'>Oldest</option>
-            <option value='desc'>Newest</option>
-          </select>
+        {totalPages > 1 && (
+          <div className='ls-pagination job-list-pagination'>
+            <ul className='pagination-list'>
+              {/* Previous Page Button */}
+              <li className={pagination.currentPage === 1 ? 'disabled' : ''}>
+                <button
+                  onClick={() => handlePageChange(pagination.currentPage - 1)}
+                  disabled={pagination.currentPage === 1}
+                >
+                  <i className='fa fa-angle-left'></i>
+                </button>
+              </li>
 
-          <select
-            onChange={perPageHandler}
-            className='chosen-single form-select ms-3'
-            value={getSelectValue()}
-          >
-            <option value='2'>2 per page</option>
-            <option value='3'>3 per page</option>
-            <option value='4'>4 per page</option>
-            <option value='10'>10 per page</option>
-            <option value='20'>20 per page</option>
-          </select>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                (page) => (
+                  <li
+                    key={page}
+                    className={pagination.currentPage === page ? 'active' : ''}
+                  >
+                    <button onClick={() => handlePageChange(page)}>
+                      {page}
+                    </button>
+                  </li>
+                ),
+              )}
+
+              <li
+                className={
+                  pagination.currentPage === totalPages ? 'disabled' : ''
+                }
+              >
+                <button
+                  onClick={() => handlePageChange(pagination.currentPage + 1)}
+                  disabled={pagination.currentPage === totalPages}
+                >
+                  <i className='fa fa-angle-right'></i>
+                </button>
+              </li>
+            </ul>
+          </div>
+        )}
+
+        <div className='job-list-show-more'>
+          <ListingShowing />
         </div>
       </div>
-      <div className='row'>{content}</div>
-      {totalPages > 1 && (
-        <div className='ls-pagination'>
-          <ul className='pagination-list'>
-            {/* Previous Page Button */}
-            <li className={pagination.currentPage === 1 ? 'disabled' : ''}>
-              <button
-                onClick={() => handlePageChange(pagination.currentPage - 1)}
-                disabled={pagination.currentPage === 1}
-              >
-                <i className='fa fa-angle-left'></i>
-              </button>
-            </li>
-
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <li
-                key={page}
-                className={pagination.currentPage === page ? 'active' : ''}
-              >
-                <button onClick={() => handlePageChange(page)}>{page}</button>
-              </li>
-            ))}
-
-            <li
-              className={
-                pagination.currentPage === totalPages ? 'disabled' : ''
-              }
-            >
-              <button
-                onClick={() => handlePageChange(pagination.currentPage + 1)}
-                disabled={pagination.currentPage === totalPages}
-              >
-                <i className='fa fa-angle-right'></i>
-              </button>
-            </li>
-          </ul>
-        </div>
-      )}
-      <ListingShowing />
       {showModal && selector?.userType === 'Candidate' && (
         <JobAlertModal
           show={showModal}

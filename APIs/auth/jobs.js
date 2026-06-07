@@ -1,7 +1,7 @@
 'use client';
 import { setAppliedJobs } from '@/slices/userSlice';
 import { db } from '@/utils/firebase';
-import { errorToast, successToast } from '@/utils/toast';
+import { jobMatchesCategory } from '@/utils/constants';
 import { sanitizeFormData } from '@/utils/sanitization';
 import {
   addDoc,
@@ -938,7 +938,7 @@ export const useGetJobListingPaginated = (params = {}) => {
         }
 
         if (category) {
-          jobs = jobs.filter((job) => job.category === category);
+          jobs = jobs.filter((job) => jobMatchesCategory(job, category));
         }
 
         if (jobType) {

@@ -45,6 +45,10 @@ const index = () => {
       <section className="user-dashboard">
         <div className="dashboard-outer">
           <BreadCrumb title="Upload your CV" />
+          <p style={{ color: "#666", marginBottom: 16 }}>
+            Add a CV to apply for jobs faster, or skip and upload one later from
+            your dashboard.
+          </p>
           {/* breadCrumb */}
 
           <div className="row">

@@ -7,3 +7,33 @@
   border: 1px solid;
   border-color: #fa5508;
 }
+
+@media (max-width: 767px) {
+  .job-list-layout {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .job-list-results {
+    order: 1;
+  }
+
+  .job-list-pagination {
+    order: 2;
+  }
+
+  .job-list-controls {
+    order: 3;
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid #e8ebf3;
+  }
+
+  .job-list-controls .showing-result {
+    margin-bottom: 16px;
+  }
+
+  .job-list-show-more {
+    order: 4;
+  }
+}
