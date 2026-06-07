@@ -161,6 +161,15 @@
   color: white;
 }
 
+.truncated-filename {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
 .admin-modal-overlay {
   position: fixed;
   top: 0;

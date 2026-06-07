@@ -3,7 +3,7 @@ import { checkIfJobApplied, useApplyForJob } from "@/APIs/auth/jobs";
 import { useDeleteResume, useUploadResume } from "@/APIs/auth/resume";
 import CircularLoader from "@/components/circular-loading/CircularLoading";
 import "@/styles/customStyles.css";
-import { checkFileSize, checkFileTypes } from "@/utils/resumeHelperFunctions";
+import { checkFileSize, checkFileTypes, ALLOWED_RESUME_ACCEPT, ALLOWED_RESUME_LABEL, truncateFileName } from "@/utils/resumeHelperFunctions";
 import { errorToast } from "@/utils/toast";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -86,7 +86,7 @@ const ApplyJobModalContent = ({ onApplicationSuccess }) => {
 
     // Validate files
     if (!checkFileTypes(files)) {
-      errorToast("Only .doc, .docx, or .pdf files are allowed");
+      errorToast(`Only ${ALLOWED_RESUME_LABEL} files are allowed`);
       e.target.value = ""; // Reset input value
       return;
     }
@@ -167,14 +167,18 @@ const ApplyJobModalContent = ({ onApplicationSuccess }) => {
           >
             <span
               className="title"
+              title={file.fileName}
               style={{
                 wordBreak: "break-word",
                 fontSize: "15px",
                 WebkitLineClamp: 1,
                 overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+                display: "block",
               }}
             >
-              {file.fileName}
+              {truncateFileName(file.fileName, 24)}
             </span>
             <div className="edit-btns">
               <button
@@ -196,7 +200,7 @@ const ApplyJobModalContent = ({ onApplicationSuccess }) => {
                 className="uploadButton-input"
                 type="file"
                 name="attachments[]"
-                accept=".doc,.docx,application/pdf"
+                accept={ALLOWED_RESUME_ACCEPT}
                 id="upload"
                 multiple=""
                 onChange={cvManagerHandler}
@@ -205,7 +209,7 @@ const ApplyJobModalContent = ({ onApplicationSuccess }) => {
                 className="uploadButton-button ripple-effect"
                 htmlFor="upload"
               >
-                Upload CV (doc, docx, pdf)
+                Upload CV ({ALLOWED_RESUME_LABEL})
               </label>
             </div>
           </div>

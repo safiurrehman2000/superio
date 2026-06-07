@@ -616,10 +616,6 @@ export const useFetchApplications = (employerId, selectedJobId, refreshKey) => {
               const resumeSnapshot = await getDoc(resumeDocRef);
               if (resumeSnapshot.exists()) {
                 resumeData = resumeSnapshot.data();
-                // Convert Base64 fileData to data URL for PDF
-                if (resumeData.fileData) {
-                  resumeData.url = `data:application/pdf;base64,${resumeData.fileData}`;
-                }
               }
             }
 

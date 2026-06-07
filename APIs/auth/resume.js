@@ -1,5 +1,5 @@
 import { db } from "@/utils/firebase";
-import { fileToBase64, resumeToFile } from "@/utils/resumeHelperFunctions";
+import { fileToBase64, isAllowedResumeFile, resumeToFile } from "@/utils/resumeHelperFunctions";
 import { errorToast, successToast } from "@/utils/toast";
 import { sanitizeText } from "@/utils/sanitization";
 import {
@@ -115,7 +115,12 @@ export const useUploadResume = async (user, data, dispatch, setError) => {
       // Validate file
       if (!(file instanceof File)) {
         console.warn(`Skipping invalid file: ${file}`);
-        continue; // Skip invalid files but continue processing others
+        continue;
+      }
+
+      if (!isAllowedResumeFile(file)) {
+        setError("Only .pdf and .docx files are allowed");
+        continue;
       }
 
       // Convert file to base64

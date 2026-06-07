@@ -65,12 +65,12 @@ const AdminSkeleton = () => {
         {/* Users Table Skeleton */}
         {tableSkeleton(["Email", "Name", "Mobile", "User Type"], 4, 4)}
         {/* Jobs Table Skeleton */}
-        {tableSkeleton(["Title", "Post Date", "Posted By", "Job Views"], 4, 4)}
+        {tableSkeleton(["Title", "Post Date", "Posted By", "Job Views", "Applicants"], 4, 5)}
         {/* Applications Table Skeleton */}
         {tableSkeleton(
-          ["Candidate Name", "Candidate Email", "Job Title", "Status"],
+          ["Candidate Name", "Candidate Email", "Job Title", "Resume", "Status"],
           4,
-          4
+          5
         )}
     </div>
   );
