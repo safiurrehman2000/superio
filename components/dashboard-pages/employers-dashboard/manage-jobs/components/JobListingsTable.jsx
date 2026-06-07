@@ -1,6 +1,7 @@
 'use client';
 import { useFetchEmployerJobsPaginated, deleteJob } from '@/APIs/auth/jobs';
 import { formatJobTypesDisplay, formatString } from '@/utils/constants';
+import { useJobTypes } from '@/utils/hooks/useOptionsFromFirebase';
 import { errorToast, successToast } from '@/utils/toast';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -11,6 +12,7 @@ import { DeleteConfirmationModal } from './DeleteModal';
 import ManageJobsSkeleton from './ManageJobsSkeleton';
 
 const JobListingsTable = () => {
+  const { options: jobTypes } = useJobTypes();
   const selector = useSelector((store) => store.user);
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -204,7 +206,7 @@ const JobListingsTable = () => {
                       item?.jobLocation ??
                       '';
                     const displayJobType = rawJobType
-                      ? formatJobTypesDisplay(rawJobType)
+                      ? formatJobTypesDisplay(rawJobType, jobTypes)
                       : 'N/A';
                     const displayLocation =
                       [item?.address, item?.postalCode, rawLocation]

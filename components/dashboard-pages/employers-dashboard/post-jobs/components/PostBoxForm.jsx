@@ -7,8 +7,8 @@ import CircularLoader from '@/components/circular-loading/CircularLoading';
 import { InputField } from '@/components/inputfield/InputField';
 import { TextAreaField } from '@/components/textarea/TextArea';
 import { addEmployerJob } from '@/slices/userSlice';
-import { JOB_TYPE_OPTIONS } from '@/utils/constants';
-import { useSectors } from '@/utils/hooks/useOptionsFromFirebase';
+import { getJobTypeOptions } from '@/utils/constants';
+import { useJobTypes, useSectors } from '@/utils/hooks/useOptionsFromFirebase';
 import {
   checkSubscriptionStatus,
   validateJobPostingPermission,
@@ -32,6 +32,8 @@ const PostBoxForm = () => {
 
   // Fetch options from Firebase
   const { options: sectors, loading: sectorsLoading } = useSectors();
+  const { options: jobTypes, loading: jobTypesLoading } = useJobTypes();
+  const jobTypeOptions = getJobTypeOptions(jobTypes);
 
   const methods = useForm({
     mode: 'onSubmit',
@@ -272,11 +274,15 @@ const PostBoxForm = () => {
             <AutoSelect
               label='Type contract'
               name='job-type'
-              options={JOB_TYPE_OPTIONS}
-              placeholder='Selecteer één of meer contracttypes'
+              options={jobTypeOptions}
+              placeholder={
+                jobTypesLoading
+                  ? 'Contracttypes laden...'
+                  : 'Selecteer één of meer contracttypes'
+              }
               required
               defaultValue={[]}
-              disabled={isFormDisabled}
+              disabled={isFormDisabled || jobTypesLoading}
             />
           </div>
 

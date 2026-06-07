@@ -6,6 +6,7 @@ import DefaulHeader2 from '@/components/header/DefaulHeader2';
 import MobileMenu from '@/components/header/MobileMenu';
 import Loading from '@/components/loading/Loading';
 import { formatJobTypesDisplay, formatString } from '@/utils/constants';
+import { useJobTypes } from '@/utils/hooks/useOptionsFromFirebase';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -13,6 +14,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 const EmployersSingleV1 = () => {
+  const { options: jobTypes } = useJobTypes();
   const params = useParams();
   const [jobs, setJobs] = useState([]);
   const { replace } = useRouter();
@@ -187,7 +189,8 @@ const EmployersSingleV1 = () => {
                             <ul className='job-info'>
                               <li>
                                 <span className='icon flaticon-briefcase'></span>
-                                {formatJobTypesDisplay(item?.jobType) || 'N/A'}
+                                {formatJobTypesDisplay(item?.jobType, jobTypes) ||
+                                  'N/A'}
                               </li>
                               {/* compnay info */}
                               {/* <li>

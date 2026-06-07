@@ -338,10 +338,24 @@ export const formatString = (str) => {
     .join(' ');
 };
 
-export const formatJobTypesDisplay = (raw) => {
+export const getJobTypeOptions = (firebaseOptions) =>
+  firebaseOptions?.length ? firebaseOptions : JOB_TYPE_OPTIONS;
+
+export const jobTypeValuesToOptions = (jt, firebaseOptions) => {
+  const options = getJobTypeOptions(firebaseOptions);
+  if (jt == null || jt === '') return [];
+  const values = Array.isArray(jt) ? jt : [jt];
+  return values.map((v) => {
+    const opt = options.find((o) => o.value === v);
+    return opt || { value: v, label: formatString(v) };
+  });
+};
+
+export const formatJobTypesDisplay = (raw, firebaseOptions) => {
   if (raw == null || raw === '') return '';
+  const options = getJobTypeOptions(firebaseOptions);
   const labelFor = (value) => {
-    const option = JOB_TYPE_OPTIONS.find((opt) => opt.value === value);
+    const option = options.find((opt) => opt.value === value);
     return option ? option.label : formatString(value);
   };
   if (Array.isArray(raw)) {
@@ -446,7 +460,8 @@ export const applyFilters = (state) => {
   state.filteredJobs = filteredJobs;
 };
 
-export const transformJobData = (jobs) => {
+export const transformJobData = (jobs, firebaseJobTypes) => {
+  const jobTypeOptions = getJobTypeOptions(firebaseJobTypes);
   const findLabel = (options, value) => {
     const option = options.find((opt) => opt.value === value);
     return option ? option.label : formatString(value);
@@ -457,9 +472,9 @@ export const transformJobData = (jobs) => {
     const jtLabel = (() => {
       if (rawJt == null || rawJt === '') return '';
       if (Array.isArray(rawJt)) {
-        return rawJt.map((v) => findLabel(JOB_TYPE_OPTIONS, v)).join(', ');
+        return rawJt.map((v) => findLabel(jobTypeOptions, v)).join(', ');
       }
-      return findLabel(JOB_TYPE_OPTIONS, rawJt);
+      return findLabel(jobTypeOptions, rawJt);
     })();
     return {
       ...job,

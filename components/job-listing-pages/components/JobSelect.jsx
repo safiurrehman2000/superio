@@ -3,11 +3,14 @@ import {
   setSelectedDatePosted,
   setSelectedJobType,
 } from "@/features/job/newJobSlice";
-import { JOB_TYPE_OPTIONS } from "@/utils/constants";
+import { getJobTypeOptions } from "@/utils/constants";
+import { useJobTypes } from "@/utils/hooks/useOptionsFromFirebase";
 import { useDispatch, useSelector } from "react-redux";
 
 export default function JobSelect() {
   const dispatch = useDispatch();
+  const { options: jobTypes, loading: jobTypesLoading } = useJobTypes();
+  const jobTypeOptions = getJobTypeOptions(jobTypes);
   const { selectedJobType, selectedDatePosted } = useSelector(
     (state) => state.newJob
   );
@@ -42,9 +45,12 @@ export default function JobSelect() {
               className="chosen-single form-select"
               value={selectedJobType}
               onChange={(e) => dispatch(setSelectedJobType(e.target.value))}
+              disabled={jobTypesLoading}
             >
-              <option value="">Functie Type</option>
-              {JOB_TYPE_OPTIONS.map((type) => (
+              <option value="">
+                {jobTypesLoading ? "Laden..." : "Functie Type"}
+              </option>
+              {jobTypeOptions.map((type) => (
                 <option key={type.value} value={type.value}>
                   {type.label}
                 </option>

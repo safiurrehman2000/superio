@@ -22,6 +22,7 @@ import {
   formatJobTypesDisplay,
   serializeFirestoreJob,
 } from '@/utils/constants';
+import { useJobTypes } from '@/utils/hooks/useOptionsFromFirebase';
 import { errorToast, successToast } from '@/utils/toast';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -34,6 +35,7 @@ import './jobList.css';
 import JobListSkeleton from './JobListSkeleton';
 
 const FilterJobBox = () => {
+  const { options: jobTypes } = useJobTypes();
   const selector = useSelector((store) => store.user);
   const [showModal, setShowModal] = useState(false);
 
@@ -265,9 +267,14 @@ const FilterJobBox = () => {
                     ) {
                       if (raw.label) return raw.label;
                       if (raw.value != null)
-                        return formatJobTypesDisplay(raw.value) || 'Not specified';
+                        return (
+                          formatJobTypesDisplay(raw.value, jobTypes) ||
+                          'Not specified'
+                        );
                     }
-                    return formatJobTypesDisplay(raw) || 'Not specified';
+                    return (
+                      formatJobTypesDisplay(raw, jobTypes) || 'Not specified'
+                    );
                   })()}
                 </li>
                 {/* compnay info */}

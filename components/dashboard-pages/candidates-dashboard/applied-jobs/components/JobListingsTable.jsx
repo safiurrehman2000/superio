@@ -3,10 +3,12 @@ import Link from 'next/link.js';
 import Image from 'next/image.js';
 import { useSelector } from 'react-redux';
 import { formatJobTypesDisplay, formatString } from '@/utils/constants';
+import { useJobTypes } from '@/utils/hooks/useOptionsFromFirebase';
 import { useState, useEffect } from 'react';
 import { useGetAppliedJobsPaginated } from '@/APIs/auth/jobs';
 
 const JobListingsTable = () => {
+  const { options: jobTypes } = useJobTypes();
   const selector = useSelector((store) => store.user);
   const candidateId = selector?.user?.uid;
 
@@ -160,7 +162,7 @@ const JobListingsTable = () => {
                               <ul className='job-info'>
                                 <li>
                                   <span className='icon flaticon-briefcase'></span>
-                                  {formatJobTypesDisplay(item?.jobType)}
+                                  {formatJobTypesDisplay(item?.jobType, jobTypes)}
                                 </li>
                                 <li>
                                   <span className='icon flaticon-map-locator'></span>

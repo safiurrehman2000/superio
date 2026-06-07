@@ -16,8 +16,8 @@ import { InputField } from "@/components/inputfield/InputField";
 import { SelectField } from "@/components/selectfield/SelectField";
 import AutoSelect from "@/components/autoselect/AutoSelect";
 import { TextAreaField } from "@/components/textarea/TextArea";
-import { JOB_TYPE_OPTIONS } from "@/utils/constants";
-import { useStates, useSectors } from "@/utils/hooks/useOptionsFromFirebase";
+import { getJobTypeOptions } from "@/utils/constants";
+import { useJobTypes, useStates, useSectors } from "@/utils/hooks/useOptionsFromFirebase";
 
 const PostJobForEmployer = () => {
   const [employers, setEmployers] = useState([]);
@@ -28,6 +28,8 @@ const PostJobForEmployer = () => {
   // Fetch options from Firebase
   const { options: states, loading: statesLoading } = useStates();
   const { options: sectors, loading: sectorsLoading } = useSectors();
+  const { options: jobTypes, loading: jobTypesLoading } = useJobTypes();
+  const jobTypeOptions = getJobTypeOptions(jobTypes);
 
   useEffect(() => {
     const fetchEmployers = async () => {
@@ -251,10 +253,15 @@ const PostJobForEmployer = () => {
                   <AutoSelect
                     label="Job Type"
                     name="job-type"
-                    options={JOB_TYPE_OPTIONS}
-                    placeholder="Select one or more contract types"
+                    options={jobTypeOptions}
+                    placeholder={
+                      jobTypesLoading
+                        ? "Loading job types..."
+                        : "Select one or more contract types"
+                    }
                     required
                     defaultValue={[]}
+                    disabled={jobTypesLoading}
                   />
                 </div>
                 <div className="form-group col-lg-6 col-md-12">
