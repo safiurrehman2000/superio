@@ -66,6 +66,30 @@ export default function JobsTable() {
 
       let jobsList = docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 
+      const pageJobIds = jobsList.map((job) => job.id).filter(Boolean);
+      const applicationCountsMap = {};
+      if (pageJobIds.length > 0) {
+        for (let i = 0; i < pageJobIds.length; i += 10) {
+          const batch = pageJobIds.slice(i, i + 10);
+          const appsQuery = query(
+            collection(db, "applications"),
+            where("jobId", "in", batch)
+          );
+          const appsSnap = await getDocs(appsQuery);
+          appsSnap.docs.forEach((appDoc) => {
+            const jobId = appDoc.data().jobId;
+            if (jobId) {
+              applicationCountsMap[jobId] =
+                (applicationCountsMap[jobId] || 0) + 1;
+            }
+          });
+        }
+      }
+      jobsList = jobsList.map((job) => ({
+        ...job,
+        applicationCount: applicationCountsMap[job.id] || 0,
+      }));
+
       // Only apply client-side filtering for cases where server-side search isn't possible
       if (jobSearch && sortBy !== "title") {
         jobsList = jobsList.filter(
@@ -292,19 +316,20 @@ export default function JobsTable() {
               Job Views{" "}
               {sortBy === "viewCount" && (sortDir === "asc" ? "▲" : "▼")}
             </th>
+            <th>Applicants</th>
             <th>Status</th>
           </tr>
         </thead>
         <tbody>
           {jobsLoading ? (
             <tr>
-              <td colSpan={5} className={styles["admin-table-loading"]}>
+              <td colSpan={6} className={styles["admin-table-loading"]}>
                 Loading...
               </td>
             </tr>
           ) : jobs.length === 0 ? (
             <tr>
-              <td colSpan={5} className={styles["admin-table-empty"]}>
+              <td colSpan={6} className={styles["admin-table-empty"]}>
                 No jobs found.
               </td>
             </tr>
@@ -347,6 +372,7 @@ export default function JobsTable() {
                   <td>
                     {typeof job.viewCount === "number" ? job.viewCount : 0}
                   </td>
+                  <td>{job.applicationCount ?? 0}</td>
                   <td>{getJobStatusDisplay()}</td>
                 </tr>
               );

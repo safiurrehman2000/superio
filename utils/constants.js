@@ -353,6 +353,19 @@ export const formatJobTypesDisplay = (raw) => {
   return labelFor(raw);
 };
 
+export const jobMatchesCategory = (job, category) => {
+  if (!category) return true;
+  if (job.category === category) return true;
+  if (!job.tags?.length) return false;
+  return job.tags.some((tag) => {
+    if (typeof tag === 'string') return tag === category;
+    if (tag && typeof tag === 'object') {
+      return tag.value === category || tag.label === category;
+    }
+    return false;
+  });
+};
+
 export const formatJobDate = (value) => {
   if (value == null) return '—';
   let d;
@@ -387,9 +400,7 @@ export const applyFilters = (state) => {
       locationLower === '' || formattedLocation.includes(locationLower);
 
     // Category filter
-    const matchesCategory =
-      state.selectedCategory === '' ||
-      (job.tags && job.tags.includes(state.selectedCategory));
+    const matchesCategory = jobMatchesCategory(job, state.selectedCategory);
 
     // Job type filter
     const jobTypeRaw = job.jobType ?? job.JobType;

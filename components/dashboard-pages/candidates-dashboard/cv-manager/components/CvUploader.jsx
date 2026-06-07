@@ -1,10 +1,12 @@
 "use client";
 
 import { useDeleteResume, useUploadResume } from "@/APIs/auth/resume";
+import { useUpdateIsFirstTime } from "@/APIs/auth/database";
 import CircularLoader from "@/components/circular-loading/CircularLoading";
 
 import { db } from "@/utils/firebase";
-import { checkFileSize, checkFileTypes } from "@/utils/resumeHelperFunctions";
+import { checkFileSize, checkFileTypes, ALLOWED_RESUME_ACCEPT, ALLOWED_RESUME_LABEL, truncateFileName } from "@/utils/resumeHelperFunctions";
+import { updateIsFirstTime } from "@/slices/userSlice";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -13,6 +15,7 @@ import { useDispatch, useSelector } from "react-redux";
 const CvUploader = () => {
   const [getError, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [skipLoading, setSkipLoading] = useState(false);
   const { push } = useRouter();
   const selector = useSelector((store) => store.user);
   const dispatch = useDispatch();
@@ -46,13 +49,43 @@ const CvUploader = () => {
     checkUserType();
   }, [user?.uid]);
 
+  const completeOnboardingRedirect = () => {
+    if (selector?.jobId) {
+      push(`/job-list/${selector.jobId}`);
+    } else {
+      push("/job-list");
+    }
+  };
+
+  const handleSkip = async () => {
+    if (!user?.uid) return;
+
+    setSkipLoading(true);
+    setError("");
+
+    try {
+      const { success } = await useUpdateIsFirstTime(user.uid);
+      if (!success) {
+        setError("Could not skip. Please try again.");
+        return;
+      }
+
+      dispatch(updateIsFirstTime(false));
+      completeOnboardingRedirect();
+    } catch {
+      setError("Could not skip. Please try again.");
+    } finally {
+      setSkipLoading(false);
+    }
+  };
+
   const cvManagerHandler = async (e) => {
     const files = e.target.files;
     if (!files.length) return;
 
     // Validate files
     if (!checkFileTypes(files)) {
-      setError("Only .doc, .docx, or .pdf files are allowed");
+      setError(`Only ${ALLOWED_RESUME_LABEL} files are allowed`);
       return;
     }
     if (!checkFileSize(files)) {
@@ -62,7 +95,7 @@ const CvUploader = () => {
 
     const data = Array.from(files);
     const isExist = selector?.resumes.some((file1) =>
-      data.some((file2) => file1.name === file2.name)
+      data.some((file2) => file1.fileName === file2.name)
     );
     if (isExist) {
       setError("File already exists");
@@ -75,11 +108,7 @@ const CvUploader = () => {
     setIsLoading(false);
 
     if (success && selector.isFirstTime) {
-      if (selector?.jobId) {
-        push(`/job-list/${selector?.jobId}`);
-      } else {
-        push("/job-list");
-      }
+      completeOnboardingRedirect();
     }
   };
 
@@ -92,7 +121,7 @@ const CvUploader = () => {
             className="uploadButton-input"
             type="file"
             name="attachments[]"
-            accept=".doc,.docx,application/pdf"
+            accept={ALLOWED_RESUME_ACCEPT}
             id="upload"
             multiple
             onChange={cvManagerHandler}
@@ -105,7 +134,7 @@ const CvUploader = () => {
             <span className="title">Sleep bestanden hier om te uploaden</span>
             <span className="text">
               Maximale bestandsgrootte is 500 KB en toegestane bestandstypen
-              zijn (.doc, .docx, .pdf)
+              zijn ({ALLOWED_RESUME_LABEL})
             </span>
             <span className="theme-btn btn-style-one">
               {isLoading ? (
@@ -130,7 +159,9 @@ const CvUploader = () => {
       <div className="files-outer">
         {selector?.resumes?.map((file) => (
           <div key={file?.id} className="file-edit-box">
-            <span className="title">{file.fileName}</span>
+            <span className="title" title={file.fileName}>
+              {truncateFileName(file.fileName, 28)}
+            </span>
             <div className="edit-btns">
               <button disabled>
                 <span className="la la-pencil"></span>
@@ -147,6 +178,23 @@ const CvUploader = () => {
         ))}
       </div>
       {/* End resume Preview */}
+
+      {selector.isFirstTime && (
+        <div style={{ marginTop: 24, textAlign: "center" }}>
+          <p style={{ color: "#666", marginBottom: 12 }}>
+            You can skip for now and upload your CV later from your dashboard.
+          </p>
+          <button
+            type="button"
+            className="theme-btn btn-style-one"
+            onClick={handleSkip}
+            disabled={skipLoading || isLoading}
+            style={{ opacity: skipLoading ? 0.7 : 1 }}
+          >
+            {skipLoading ? "Continuing…" : "Skip for now"}
+          </button>
+        </div>
+      )}
     </>
   );
 };

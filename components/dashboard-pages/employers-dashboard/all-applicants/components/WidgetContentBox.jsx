@@ -9,6 +9,7 @@ import {
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { Tab, TabList, TabPanel, Tabs } from "react-tabs";
+import { truncateFileName } from "@/utils/resumeHelperFunctions";
 import { ResumeModal } from "./ResumeModal";
 import { ConfirmationModal } from "./ConfirmationModal";
 import AllApplicantsSkeleton from "./AllApplicantsSkeleton";
@@ -21,10 +22,7 @@ const WidgetContentBox = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [confirmationModalOpen, setConfirmationModalOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
-  const [selectedResume, setSelectedResume] = useState({
-    url: "",
-    fileName: "",
-  });
+  const [selectedResume, setSelectedResume] = useState(null);
   const [currentAction, setCurrentAction] = useState({
     type: "",
     applicationId: "",
@@ -51,10 +49,7 @@ const WidgetContentBox = () => {
     }
   };
   const handleViewResume = (resume) => {
-    setSelectedResume({
-      url: resume.url || "",
-      fileName: resume.fileName || "Resume",
-    });
+    setSelectedResume(resume?.fileData ? resume : null);
     setModalOpen(true);
   };
 
@@ -174,8 +169,9 @@ const WidgetContentBox = () => {
                               WebkitLineClamp: 1,
                               overflow: "hidden",
                             }}
+                            title={candidate?.resume?.fileName}
                           >
-                            {candidate?.resume?.fileName}
+                            {truncateFileName(candidate?.resume?.fileName, 24)}
                           </span>
 
                           {/* Status indicator */}
@@ -258,14 +254,18 @@ const WidgetContentBox = () => {
                           <div className="d-flex flex-column flex-column flex-column align-items-center">
                             <span
                               className="title me-2"
+                              title={candidate?.resume?.fileName}
                               style={{
                                 wordBreak: "break-word",
                                 fontSize: "15px",
                                 WebkitLineClamp: 1,
                                 overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                whiteSpace: "nowrap",
+                                maxWidth: "100%",
                               }}
                             >
-                              {candidate?.resume?.fileName}
+                              {truncateFileName(candidate?.resume?.fileName, 24)}
                             </span>
 
                             {/* Status indicator */}
@@ -354,14 +354,18 @@ const WidgetContentBox = () => {
                           <div className="d-flex flex-column flex-column align-items-center">
                             <span
                               className="title me-2"
+                              title={candidate?.resume?.fileName}
                               style={{
                                 wordBreak: "break-word",
                                 fontSize: "15px",
                                 WebkitLineClamp: 1,
                                 overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                whiteSpace: "nowrap",
+                                maxWidth: "100%",
                               }}
                             >
-                              {candidate?.resume?.fileName}
+                              {truncateFileName(candidate?.resume?.fileName, 24)}
                             </span>
 
                             {/* Status indicator */}
@@ -443,8 +447,7 @@ const WidgetContentBox = () => {
       <ResumeModal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
-        resumeUrl={selectedResume.url}
-        fileName={selectedResume.fileName}
+        resume={selectedResume}
       />
     </div>
   );

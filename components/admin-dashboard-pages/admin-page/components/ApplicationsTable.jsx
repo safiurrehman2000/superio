@@ -7,9 +7,13 @@ import {
   limit,
   startAfter,
   getDocs,
+  doc,
+  getDoc,
 } from "firebase/firestore";
 import { debounce } from "@/utils/constants";
 import { errorToast } from "@/utils/toast";
+import { truncateFileName } from "@/utils/resumeHelperFunctions";
+import { ResumeModal } from "@/components/dashboard-pages/employers-dashboard/all-applicants/components/ResumeModal";
 import styles from "./admin-tables.module.scss";
 
 const PAGE_SIZE = 10;
@@ -25,6 +29,8 @@ export default function ApplicationsTable() {
   const [hasNext, setHasNext] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const debounceRef = useRef();
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedResume, setSelectedResume] = useState(null);
 
   useEffect(() => {
     debounceRef.current = debounce((val) => setSearch(val), 500);
@@ -81,11 +87,31 @@ export default function ApplicationsTable() {
       }
 
       // Attach candidate and job info
-      appsList = appsList.map((app) => ({
-        ...app,
-        candidate: candidatesMap[app.candidateId] || {},
-        job: jobsMap[app.jobId] || {},
-      }));
+      appsList = await Promise.all(
+        appsList.map(async (app) => {
+          let resume = {};
+          if (app.resumeId && app.candidateId) {
+            const resumeDocRef = doc(
+              db,
+              "users",
+              app.candidateId,
+              "resumes",
+              app.resumeId
+            );
+            const resumeSnapshot = await getDoc(resumeDocRef);
+            if (resumeSnapshot.exists()) {
+              resume = resumeSnapshot.data();
+            }
+          }
+
+          return {
+            ...app,
+            candidate: candidatesMap[app.candidateId] || {},
+            job: jobsMap[app.jobId] || {},
+            resume,
+          };
+        })
+      );
 
       // Client-side search filter (since we need to search across joined data)
       if (search) {
@@ -143,6 +169,11 @@ export default function ApplicationsTable() {
     debounceRef.current(e.target.value);
   };
 
+  const handleViewResume = (resume) => {
+    setSelectedResume(resume?.fileData ? resume : null);
+    setModalOpen(true);
+  };
+
   return (
     <div className={styles["admin-table-container"]} style={{ marginTop: 48 }}>
       <h2 className={styles["admin-table-title"]}>Applications</h2>
@@ -161,19 +192,20 @@ export default function ApplicationsTable() {
             <th>Candidate Name</th>
             <th>Candidate Email</th>
             <th>Job Title</th>
+            <th>Resume</th>
             <th>Status</th>
           </tr>
         </thead>
         <tbody>
           {loading ? (
             <tr>
-              <td colSpan={4} className={styles["admin-table-loading"]}>
+              <td colSpan={5} className={styles["admin-table-loading"]}>
                 Loading...
               </td>
             </tr>
           ) : applications.length === 0 ? (
             <tr>
-              <td colSpan={4} className={styles["admin-table-empty"]}>
+              <td colSpan={5} className={styles["admin-table-empty"]}>
                 No applications found.
               </td>
             </tr>
@@ -183,6 +215,23 @@ export default function ApplicationsTable() {
                 <td>{app.candidate.name || "-"}</td>
                 <td>{app.candidate.email || "-"}</td>
                 <td>{app.job.title || "-"}</td>
+                <td>
+                  {app.resume?.fileName ? (
+                    <button
+                      type="button"
+                      onClick={() => handleViewResume(app.resume)}
+                      className={styles["admin-table-btn"]}
+                      style={{ padding: "6px 12px", fontSize: "0.9rem", maxWidth: "200px" }}
+                      title={app.resume.fileName}
+                    >
+                      <span className={styles["truncated-filename"]}>
+                        {truncateFileName(app.resume.fileName, 24)}
+                      </span>
+                    </button>
+                  ) : (
+                    "-"
+                  )}
+                </td>
                 <td>
                   {app.status === "Accepted" && (
                     <span
@@ -242,6 +291,11 @@ export default function ApplicationsTable() {
           </button>
         </div>
       </div>
+      <ResumeModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        resume={selectedResume}
+      />
     </div>
   );
 }

@@ -8,7 +8,6 @@ import { useEffect, useState } from "react";
 const Categories = () => {
   const dispatch = useDispatch();
   const searchParams = useSearchParams();
-  const jobs = useSelector((state) => state.newJob.jobs);
   const selectedCategory = useSelector(
     (state) => state.newJob.selectedCategory
   );
@@ -19,11 +18,11 @@ const Categories = () => {
 
   useEffect(() => {
     const urlCategory = searchParams.get("category");
-    if (urlCategory && jobs.length > 0) {
+    if (urlCategory) {
       setCategoryValue(urlCategory);
       dispatch(setSelectedCategory(urlCategory));
     }
-  }, [searchParams, jobs, dispatch]);
+  }, [searchParams, dispatch]);
 
   const handleCategoryChange = (e) => {
     const value = e.target.value;

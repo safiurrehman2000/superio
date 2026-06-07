@@ -1,7 +1,7 @@
 'use client';
 import { setAppliedJobs } from '@/slices/userSlice';
 import { db } from '@/utils/firebase';
-import { errorToast, successToast } from '@/utils/toast';
+import { jobMatchesCategory } from '@/utils/constants';
 import { sanitizeFormData } from '@/utils/sanitization';
 import {
   addDoc,
@@ -616,10 +616,6 @@ export const useFetchApplications = (employerId, selectedJobId, refreshKey) => {
               const resumeSnapshot = await getDoc(resumeDocRef);
               if (resumeSnapshot.exists()) {
                 resumeData = resumeSnapshot.data();
-                // Convert Base64 fileData to data URL for PDF
-                if (resumeData.fileData) {
-                  resumeData.url = `data:application/pdf;base64,${resumeData.fileData}`;
-                }
               }
             }
 
@@ -942,7 +938,7 @@ export const useGetJobListingPaginated = (params = {}) => {
         }
 
         if (category) {
-          jobs = jobs.filter((job) => job.category === category);
+          jobs = jobs.filter((job) => jobMatchesCategory(job, category));
         }
 
         if (jobType) {
