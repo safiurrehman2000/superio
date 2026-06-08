@@ -21,8 +21,10 @@ import CompnayInfo from '@/components/job-single-pages/shared-components/Company
 import CircularLoader from '@/components/circular-loading/CircularLoading';
 import { errorToast } from '@/utils/toast';
 import { formatJobTypesDisplay, formatString } from '@/utils/constants';
+import { useJobTypes } from '@/utils/hooks/useOptionsFromFirebase';
 
 export default function JobClient({ job }) {
+  const { options: jobTypes } = useJobTypes();
   const router = useRouter();
   const selector = useSelector((store) => store.user);
 
@@ -102,11 +104,14 @@ export default function JobClient({ job }) {
                             ) {
                               if (raw.label) return raw.label;
                               if (raw.value != null) {
-                                const s = formatJobTypesDisplay(raw.value);
+                                const s = formatJobTypesDisplay(
+                                  raw.value,
+                                  jobTypes,
+                                );
                                 return s || 'Niet gespecificeerd';
                               }
                             }
-                            const s = formatJobTypesDisplay(raw);
+                            const s = formatJobTypesDisplay(raw, jobTypes);
                             return s || 'Niet gespecificeerd';
                           })()}
                         </li>

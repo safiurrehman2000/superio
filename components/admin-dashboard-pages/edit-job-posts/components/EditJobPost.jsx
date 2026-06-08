@@ -7,7 +7,13 @@ import AutoSelect from '@/components/autoselect/AutoSelect';
 import CircularLoader from '@/components/circular-loading/CircularLoading';
 import { InputField } from '@/components/inputfield/InputField';
 import { TextAreaField } from '@/components/textarea/TextArea';
-import { formatString, JOB_TYPE_OPTIONS, SECTORS } from '@/utils/constants';
+import {
+  formatString,
+  getJobTypeOptions,
+  jobTypeValuesToOptions,
+  SECTORS,
+} from '@/utils/constants';
+import { useJobTypes } from '@/utils/hooks/useOptionsFromFirebase';
 import { sanitizeFormData } from '@/utils/sanitization';
 import { useState, useEffect } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
@@ -15,20 +21,14 @@ import { useSelector } from 'react-redux';
 import { DeleteConfirmationModal } from '@/components/dashboard-pages/employers-dashboard/manage-jobs/components/DeleteModal';
 import Select from 'react-select';
 
-const jobTypeValuesToOptions = (jt) => {
-  if (jt == null || jt === '') return [];
-  const values = Array.isArray(jt) ? jt : [jt];
-  return values
-    .map((v) => JOB_TYPE_OPTIONS.find((o) => o.value === v))
-    .filter(Boolean);
-};
-
 const EditJobPost = () => {
   const [selectedJobId, setSelectedJobId] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const selector = useSelector((store) => store.user);
   const [jobs, setJobs] = useState([]);
+  const { options: jobTypes, loading: jobTypesLoading } = useJobTypes();
+  const jobTypeOptions = getJobTypeOptions(jobTypes);
   const [jobsLoading, setJobsLoading] = useState(true);
   const [jobsError, setJobsError] = useState(null);
   const fetchJobs = async () => {
@@ -106,6 +106,7 @@ const EditJobPost = () => {
       email: selectedJob.email || selector?.user?.email || '',
       'job-type': jobTypeValuesToOptions(
         selectedJob.jobType ?? selectedJob.JobType,
+        jobTypes,
       ),
       state: selectedJob.location || '',
       address: selectedJob.address || '',
@@ -118,7 +119,7 @@ const EditJobPost = () => {
           }))
         : [],
     });
-  }, [selectedJobId, jobs, reset, selector?.user?.email]);
+  }, [selectedJobId, jobs, jobTypes, jobTypesLoading, reset, selector?.user?.email]);
 
   // Transform jobs data for react-select
   const jobOptions = jobs.map((job) => ({
@@ -409,8 +410,13 @@ const EditJobPost = () => {
                     <AutoSelect
                       label='Job Type'
                       name='job-type'
-                      options={JOB_TYPE_OPTIONS}
-                      placeholder='Select one or more contract types'
+                      options={jobTypeOptions}
+                      placeholder={
+                        jobTypesLoading
+                          ? 'Loading job types...'
+                          : 'Select one or more contract types'
+                      }
+                      disabled={jobTypesLoading}
                       required
                       defaultValue={[]}
                     />

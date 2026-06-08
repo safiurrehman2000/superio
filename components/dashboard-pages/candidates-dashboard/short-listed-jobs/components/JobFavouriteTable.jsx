@@ -3,10 +3,12 @@ import Link from "next/link.js";
 import Image from "next/image.js";
 import { useSelector } from "react-redux";
 import { formatJobTypesDisplay, formatString } from "@/utils/constants";
+import { useJobTypes } from "@/utils/hooks/useOptionsFromFirebase";
 import { useState, useEffect } from "react";
 import { useGetSavedJobsPaginated } from "@/APIs/auth/jobs";
 
 const JobFavouriteTable = () => {
+  const { options: jobTypes } = useJobTypes();
   const selector = useSelector((store) => store.user);
   const userId = selector?.user?.uid;
 
@@ -169,7 +171,7 @@ const JobFavouriteTable = () => {
                               <ul className="job-info">
                                 <li>
                                   <span className="icon flaticon-briefcase"></span>
-                                  {formatJobTypesDisplay(item?.jobType)}
+                                  {formatJobTypesDisplay(item?.jobType, jobTypes)}
                                 </li>
                                 <li>
                                   <span className="icon flaticon-map-locator"></span>

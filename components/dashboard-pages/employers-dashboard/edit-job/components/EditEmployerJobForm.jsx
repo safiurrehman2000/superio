@@ -5,8 +5,12 @@ import AutoSelect from '@/components/autoselect/AutoSelect';
 import CircularLoader from '@/components/circular-loading/CircularLoading';
 import { InputField } from '@/components/inputfield/InputField';
 import { TextAreaField } from '@/components/textarea/TextArea';
-import { JOB_TYPE_OPTIONS, formatString } from '@/utils/constants';
-import { useSectors } from '@/utils/hooks/useOptionsFromFirebase';
+import {
+  formatString,
+  getJobTypeOptions,
+  jobTypeValuesToOptions,
+} from '@/utils/constants';
+import { useJobTypes, useSectors } from '@/utils/hooks/useOptionsFromFirebase';
 import { sanitizeFormData } from '@/utils/sanitization';
 import { errorToast } from '@/utils/toast';
 import Link from 'next/link';
@@ -15,14 +19,6 @@ import React, { useEffect, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 
-const jobTypeValuesToOptions = (jt) => {
-  if (jt == null || jt === '') return [];
-  const values = Array.isArray(jt) ? jt : [jt];
-  return values
-    .map((v) => JOB_TYPE_OPTIONS.find((o) => o.value === v))
-    .filter(Boolean);
-};
-
 const EditEmployerJobForm = () => {
   const params = useParams();
   const jobId = params?.id;
@@ -30,6 +26,8 @@ const EditEmployerJobForm = () => {
   const selector = useSelector((store) => store.user);
   const { job, loading, error } = useGetJobById(jobId);
   const { options: sectors, loading: sectorsLoading } = useSectors();
+  const { options: jobTypes, loading: jobTypesLoading } = useJobTypes();
+  const jobTypeOptions = getJobTypeOptions(jobTypes);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState(null);
   const [forbidden, setForbidden] = useState(false);
@@ -72,7 +70,7 @@ const EditEmployerJobForm = () => {
   }, [loading, job, selector?.user?.uid, push]);
 
   useEffect(() => {
-    if (!job || sectorsLoading) return;
+    if (!job || sectorsLoading || jobTypesLoading) return;
 
     reset({
       name: job.title || '',
@@ -82,7 +80,10 @@ const EditEmployerJobForm = () => {
       offer: job.offer || '',
       schedule: job.schedule || '',
       email: job.email || selector?.user?.email || '',
-      'job-type': jobTypeValuesToOptions(job.jobType ?? job.JobType),
+      'job-type': jobTypeValuesToOptions(
+        job.jobType ?? job.JobType,
+        jobTypes,
+      ),
       state: job.location || '',
       address: job.address || '',
       postalCode: job.postalCode || '',
@@ -94,7 +95,7 @@ const EditEmployerJobForm = () => {
           })
         : [],
     });
-  }, [job, sectors, sectorsLoading, reset, selector?.user?.email]);
+  }, [job, sectors, sectorsLoading, jobTypes, jobTypesLoading, reset, selector?.user?.email]);
 
   const onSubmit = async (data) => {
     if (saving || !jobId || !selector?.user?.uid) return;
@@ -188,7 +189,7 @@ const EditEmployerJobForm = () => {
     );
   }
 
-  if (sectorsLoading) {
+  if (sectorsLoading || jobTypesLoading) {
     return (
       <div
         style={{
@@ -292,7 +293,7 @@ const EditEmployerJobForm = () => {
             <AutoSelect
               label='Type contract'
               name='job-type'
-              options={JOB_TYPE_OPTIONS}
+              options={jobTypeOptions}
               placeholder='Selecteer één of meer contracttypes'
               required
               defaultValue={[]}
