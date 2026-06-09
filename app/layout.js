@@ -60,7 +60,7 @@ export default function RootLayout({ children }) {
         />
         <meta
           property="og:image"
-          content={`${siteUrl}/images/resource/logo.png`}
+          content={`${siteUrl}/images/logo-deflexijobber.png`}
         />
         <meta name="twitter:card" content="summary_large_image" />
         <meta
@@ -73,7 +73,7 @@ export default function RootLayout({ children }) {
         />
         <meta
           name="twitter:image"
-          content={`${siteUrl}/images/resource/logo.png`}
+          content={`${siteUrl}/images/logo-deflexijobber.png`}
         />
         <link rel="icon" href="/favicon.ico" />
         <link rel="canonical" href={siteUrl} />

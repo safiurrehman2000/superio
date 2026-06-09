@@ -9,7 +9,7 @@ export const generateOrganizationSchema = () => {
     '@type': 'Organization',
     name: 'De Flexijobber',
     url: siteUrl,
-    logo: `${siteUrl}/images/resource/logo.png`,
+    logo: `${siteUrl}/images/logo-deflexijobber.png`,
     description:
       'Het toonaangevende platform voor flexibele jobs in Vlaanderen. Verbindt werkgevers met flexwerkers in verschillende sectoren.',
     sameAs: [
@@ -188,7 +188,7 @@ export const generatePageMetadata = (options = {}) => {
       type: type,
       images: [
         {
-          url: image || `${siteUrl}/images/resource/logo.png`,
+          url: image || `${siteUrl}/images/logo-deflexijobber.png`,
           width: 1200,
           height: 630,
           alt: title || 'De Flexijobber',
@@ -201,7 +201,7 @@ export const generatePageMetadata = (options = {}) => {
       description:
         description ||
         'De Flexijobber - Het toonaangevende platform voor flexibele jobs in Vlaanderen.',
-      images: [image || `${siteUrl}/images/resource/logo.png`],
+      images: [image || `${siteUrl}/images/logo-deflexijobber.png`],
     },
     robots: {
       index: !noindex,

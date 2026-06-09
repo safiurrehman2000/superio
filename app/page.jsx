@@ -20,7 +20,7 @@ export const metadata = {
     type: "website",
     images: [
       {
-        url: `${siteUrl}/images/resource/logo.png`,
+        url: `${siteUrl}/images/logo-deflexijobber.png`,
         width: 1200,
         height: 630,
         alt: "De Flexijobber",
@@ -33,7 +33,7 @@ export const metadata = {
       "De Flexijobber - Online vacaturesite voor flexwerkers in Vlaanderen",
     description:
       "De Flexijobber is een platform voor werkgevers en flexwerkers in Vlaanderen die op zoek zijn naar flexibele jobs in verschillende sectoren.",
-    images: [`${siteUrl}/images/resource/logo.png`],
+    images: [`${siteUrl}/images/logo-deflexijobber.png`],
   },
   alternates: {
     canonical: siteUrl,
@@ -48,7 +48,7 @@ const organizationSchema = {
   "@type": "Organization",
   name: "De Flexijobber",
   url: siteUrl,
-  logo: `${siteUrl}/images/resource/logo.png`,
+  logo: `${siteUrl}/images/logo-deflexijobber.png`,
   description:
     "Het toonaangevende platform voor flexibele jobs in Vlaanderen. Verbindt werkgevers met flexwerkers in verschillende sectoren.",
   areaServed: {
