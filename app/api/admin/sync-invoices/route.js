@@ -1,8 +1,5 @@
 import Stripe from "stripe";
-import {
-  allocateReceiptNumber,
-  receiptCreatedToDate,
-} from "@/utils/allocateReceiptNumber";
+import { createReceiptWithAllocatedNumber } from "@/utils/allocateReceiptNumber";
 import { adminDb } from "@/utils/firebase-admin";
 import {
   authenticateAdmin,
@@ -124,24 +121,28 @@ export async function POST(request) {
           ? new Date(invoice.created * 1000)
           : new Date();
 
-        const { receiptNumber } = await allocateReceiptNumber(
-          receiptCreatedToDate(created),
+        const createResult = await createReceiptWithAllocatedNumber(
+          invoiceId,
+          {
+            userId,
+            planId,
+            amount: invoice.amount_paid ?? 0,
+            currency: invoice.currency || null,
+            receipt_pdf_url: invoice.invoice_pdf || null,
+            stripe_invoice_pdf_url: invoice.invoice_pdf || null,
+            created,
+            invoiceId,
+            type: "invoice",
+            source: "admin_backfill",
+          },
+          created,
         );
 
-        await adminDb.collection("receipts").add({
-          userId,
-          planId,
-          amount: invoice.amount_paid ?? 0,
-          currency: invoice.currency || null,
-          receipt_pdf_url: invoice.invoice_pdf || null,
-          stripe_invoice_pdf_url: invoice.invoice_pdf || null,
-          created,
-          invoiceId,
-          receiptNumber,
-          type: "invoice",
-          source: "admin_backfill",
-        });
-        createdCount += 1;
+        if (createResult.created) {
+          createdCount += 1;
+        } else {
+          skippedExisting += 1;
+        }
       }
 
       hasMore = page.has_more;

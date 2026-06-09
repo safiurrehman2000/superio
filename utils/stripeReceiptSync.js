@@ -1,8 +1,5 @@
-import {
-  allocateReceiptNumber,
-  receiptCreatedToDate,
-  receiptPdfFilename,
-} from '@/utils/allocateReceiptNumber';
+import { createReceiptWithAllocatedNumber } from '@/utils/allocateReceiptNumber';
+import { isCheckoutSessionPaymentComplete } from '@/utils/checkoutPaymentStatus';
 import { adminDb } from '@/utils/firebase-admin';
 import { buildBrandedReceiptPdfForInvoice } from '@/utils/buildBrandedReceiptPdfForInvoice';
 import { buildBrandedReceiptPdfForOneTimeSession } from '@/utils/buildBrandedReceiptPdfForOneTimeSession';
@@ -15,7 +12,7 @@ import { uploadBrandedReceiptPdf } from '@/utils/uploadBrandedReceiptPdf';
  */
 export async function processOneTimeCheckoutReceipt(stripe, session) {
   if (session.mode !== 'payment') return;
-  if (session.payment_status !== 'paid') return;
+  if (!isCheckoutSessionPaymentComplete(session)) return;
 
   const userId =
     session.metadata?.userId || session.client_reference_id || null;
@@ -59,13 +56,41 @@ export async function processOneTimeCheckoutReceipt(stripe, session) {
     ? new Date(session.created * 1000)
     : new Date();
 
-  const { receiptNumber } = await allocateReceiptNumber(
-    receiptCreatedToDate(created),
-  );
+  let createResult;
+  try {
+    createResult = await createReceiptWithAllocatedNumber(
+      session.id,
+      {
+        userId,
+        planId,
+        amount,
+        currency,
+        receipt_pdf_url: null,
+        stripe_invoice_pdf_url: null,
+        created,
+        checkoutSessionId: session.id,
+        type: 'one_time',
+      },
+      created,
+    );
+  } catch (err) {
+    console.error('processOneTimeCheckoutReceipt: Firestore write failed', err);
+    return;
+  }
 
-  let receipt_pdf_url = null;
+  if (!createResult.created) {
+    console.log(
+      'Receipt already exists for checkout session (concurrent write)',
+      session.id,
+      '— skipping',
+    );
+    return;
+  }
 
-  if (process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET) {
+  const { receiptNumber } = createResult;
+  console.log('One-time receipt written to Firestore', session.id);
+
+  if (process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET && receiptNumber) {
     try {
       const sessionFull = await stripe.checkout.sessions.retrieve(session.id, {
         expand: ['customer', 'customer.tax_ids'],
@@ -77,43 +102,18 @@ export async function processOneTimeCheckoutReceipt(stripe, session) {
         receiptNumber,
       );
       const storageKey = receiptNumber.replace(/\//g, '-');
-      receipt_pdf_url = await uploadBrandedReceiptPdf({
+      const receipt_pdf_url = await uploadBrandedReceiptPdf({
         userId,
         invoiceId: storageKey,
         pdfBuffer,
       });
+      await receiptRef.update({ receipt_pdf_url });
     } catch (err) {
       console.error(
         'processOneTimeCheckoutReceipt: branded PDF / upload failed',
         err,
       );
     }
-  }
-
-  try {
-    await receiptRef.create({
-      userId,
-      planId,
-      amount,
-      currency,
-      receipt_pdf_url,
-      stripe_invoice_pdf_url: null,
-      created,
-      checkoutSessionId: session.id,
-      receiptNumber,
-      type: 'one_time',
-    });
-    console.log('One-time receipt written to Firestore', session.id);
-  } catch (err) {
-    if (err?.code === 6 || err?.code === 'already-exists') {
-      console.log(
-        'Receipt already exists for checkout session (concurrent write)',
-        session.id,
-        '— skipping',
-      );
-      return;
-    }
-    console.error('processOneTimeCheckoutReceipt: Firestore write failed', err);
   }
 }
 
@@ -201,13 +201,44 @@ export async function processPaidInvoiceReceipt(stripe, invoice) {
     return;
   }
 
-  const { receiptNumber } = await allocateReceiptNumber(
-    receiptCreatedToDate(created),
-  );
+  let createResult;
+  try {
+    createResult = await createReceiptWithAllocatedNumber(
+      invoiceId,
+      {
+        userId,
+        planId,
+        amount,
+        currency,
+        receipt_pdf_url: stripe_invoice_pdf_url,
+        stripe_invoice_pdf_url,
+        created,
+        invoiceId,
+        type: 'invoice',
+      },
+      created,
+    );
+  } catch (err) {
+    console.error('Error writing invoice receipt to Firestore:', err);
+    return;
+  }
 
-  let receipt_pdf_url = stripe_invoice_pdf_url;
+  if (!createResult.created) {
+    console.log(
+      'Receipt already exists for invoice (concurrent write)',
+      invoiceId,
+      '— skipping',
+    );
+    return;
+  }
 
-  if (process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET) {
+  const { receiptNumber } = createResult;
+  console.log('Invoice receipt successfully written to Firestore', invoiceId);
+
+  if (
+    process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET &&
+    receiptNumber
+  ) {
     try {
       const pdfBuffer = await buildBrandedReceiptPdfForInvoice(
         invoice,
@@ -216,44 +247,18 @@ export async function processPaidInvoiceReceipt(stripe, invoice) {
         receiptNumber,
       );
       const storageKey = receiptNumber.replace(/\//g, '-');
-      receipt_pdf_url = await uploadBrandedReceiptPdf({
+      const receipt_pdf_url = await uploadBrandedReceiptPdf({
         userId,
         invoiceId: storageKey,
         pdfBuffer,
       });
+      await receiptRef.update({ receipt_pdf_url });
     } catch (err) {
       console.error(
         'Branded receipt PDF failed, using Stripe invoice PDF if available:',
         err,
       );
-      receipt_pdf_url = stripe_invoice_pdf_url;
     }
-  }
-
-  try {
-    await receiptRef.create({
-      userId,
-      planId,
-      amount,
-      currency,
-      receipt_pdf_url,
-      stripe_invoice_pdf_url,
-      created,
-      invoiceId,
-      receiptNumber,
-      type: 'invoice',
-    });
-    console.log('Invoice receipt successfully written to Firestore', invoiceId);
-  } catch (err) {
-    if (err?.code === 6 || err?.code === 'already-exists') {
-      console.log(
-        'Receipt already exists for invoice (concurrent write)',
-        invoiceId,
-        '— skipping',
-      );
-      return;
-    }
-    console.error('Error writing invoice receipt to Firestore:', err);
   }
 }
 
@@ -271,14 +276,12 @@ export async function ensureReceiptFromCompletedCheckoutSession(
     expand: ['subscription.latest_invoice', 'customer', 'customer.tax_ids'],
   });
 
-  if (
-    session.payment_status !== 'paid' &&
-    session.payment_status !== 'no_payment_required'
-  ) {
+  if (!isCheckoutSessionPaymentComplete(session)) {
     return {
       ok: false,
       reason: 'not_paid',
       payment_status: session.payment_status,
+      status: session.status,
     };
   }
 
@@ -325,4 +328,143 @@ export async function ensureReceiptFromCompletedCheckoutSession(
   }
 
   return { ok: false, reason: 'unknown_mode', mode: session.mode };
+}
+
+function userAccessCreatedAt(userData) {
+  const raw =
+    userData?.oneTimePurchaseAt ??
+    userData?.subscriptionStartDate ??
+    userData?.subscriptionUpdatedAt;
+  if (!raw) {
+    return new Date();
+  }
+  if (typeof raw.toDate === 'function') {
+    return raw.toDate();
+  }
+  if (raw._seconds) {
+    return new Date(raw._seconds * 1000);
+  }
+  return new Date(raw);
+}
+
+/**
+ * Create a €0 (or package-priced) one-time receipt from active user access when
+ * Checkout completed but receipt sync was missed (no completed Stripe session to attach).
+ * @param {string} userId
+ */
+export async function createMissingOneTimeReceiptFromUserAccess(userId) {
+  const userDoc = await adminDb.collection('users').doc(userId).get();
+  if (!userDoc.exists) {
+    return { ok: false, reason: 'user_not_found' };
+  }
+
+  const userData = userDoc.data();
+  const planId = userData.planId || null;
+  if (!planId) {
+    return { ok: false, reason: 'no_plan' };
+  }
+
+  const existing = await adminDb
+    .collection('receipts')
+    .where('userId', '==', userId)
+    .where('planId', '==', planId)
+    .limit(1)
+    .get();
+  if (!existing.empty) {
+    return {
+      ok: true,
+      reason: 'already_exists',
+      receiptId: existing.docs[0].id,
+    };
+  }
+
+  const pkgDoc = await adminDb.collection('pricingPackages').doc(planId).get();
+  const pkgData = pkgDoc.exists ? pkgDoc.data() : {};
+  const priceEuro = Number(pkgData.price ?? 0);
+  const amount = Number.isFinite(priceEuro) ? Math.round(priceEuro * 100) : 0;
+  const currency = pkgData.currency || 'eur';
+  const created = userAccessCreatedAt(userData);
+  const receiptDocId = `access_${userId}_${planId}`;
+
+  let createResult;
+  try {
+    createResult = await createReceiptWithAllocatedNumber(
+      receiptDocId,
+      {
+        userId,
+        planId,
+        amount,
+        currency,
+        receipt_pdf_url: null,
+        stripe_invoice_pdf_url: null,
+        created,
+        checkoutSessionId: null,
+        type: 'one_time',
+        source: 'admin_backfill',
+      },
+      created,
+    );
+  } catch (err) {
+    console.error('createMissingOneTimeReceiptFromUserAccess failed', err);
+    return { ok: false, reason: 'create_failed' };
+  }
+
+  if (!createResult.created) {
+    return {
+      ok: true,
+      reason: 'already_exists',
+      receiptId: receiptDocId,
+      receiptNumber: createResult.receiptNumber,
+    };
+  }
+
+  return {
+    ok: true,
+    reason: 'created',
+    receiptId: receiptDocId,
+    receiptNumber: createResult.receiptNumber,
+  };
+}
+
+/**
+ * Backfill receipts from completed Stripe Checkout sessions for a user.
+ * @param {import('stripe').Stripe} stripe
+ * @param {string} userId
+ */
+export async function backfillCheckoutReceiptsForUser(stripe, userId) {
+  const userDoc = await adminDb.collection('users').doc(userId).get();
+  if (!userDoc.exists) {
+    return { created: 0, skipped: 0, reason: 'user_not_found' };
+  }
+
+  const customerId = userDoc.data().stripeCustomerId;
+  if (!customerId) {
+    return { created: 0, skipped: 0, reason: 'no_stripe_customer' };
+  }
+
+  const sessions = await stripe.checkout.sessions.list({
+    customer: customerId,
+    limit: 100,
+  });
+
+  let created = 0;
+  let skipped = 0;
+
+  for (const session of sessions.data) {
+    if (session.mode !== 'payment' || !isCheckoutSessionPaymentComplete(session)) {
+      skipped += 1;
+      continue;
+    }
+
+    const before = await adminDb.collection('receipts').doc(session.id).get();
+    await processOneTimeCheckoutReceipt(stripe, session);
+    const after = await adminDb.collection('receipts').doc(session.id).get();
+    if (!before.exists && after.exists) {
+      created += 1;
+    } else {
+      skipped += 1;
+    }
+  }
+
+  return { created, skipped };
 }

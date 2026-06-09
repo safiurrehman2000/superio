@@ -3,6 +3,7 @@ import { setAppliedJobs } from '@/slices/userSlice';
 import { db } from '@/utils/firebase';
 import { jobMatchesCategory } from '@/utils/constants';
 import { sanitizeFormData } from '@/utils/sanitization';
+import { errorToast, successToast } from '@/utils/toast';
 import {
   addDoc,
   collection,

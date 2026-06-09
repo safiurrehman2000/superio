@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { adminDb } from '@/utils/firebase-admin';
+import { isCheckoutSessionPaymentComplete } from '@/utils/checkoutPaymentStatus';
 import {
   processOneTimeCheckoutReceipt,
   processPaidInvoiceReceipt,
@@ -211,7 +212,7 @@ export async function POST(request) {
     if (
       userId &&
       session.mode === 'payment' &&
-      session.payment_status === 'paid'
+      isCheckoutSessionPaymentComplete(session)
     ) {
       const accessStart = new Date();
       const accessUntil = new Date(

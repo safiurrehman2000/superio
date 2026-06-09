@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { adminDb } from "@/utils/firebase-admin";
+import { isCheckoutSessionPaymentComplete } from "@/utils/checkoutPaymentStatus";
 import { reactivateArchivedEmployerJobs } from "@/utils/expireOneTimeAccess";
+import { processOneTimeCheckoutReceipt } from "@/utils/stripeReceiptSync";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -11,8 +13,9 @@ export async function POST(request) {
   try {
     const session = await stripe.checkout.sessions.retrieve(sessionId);
 
-    if (session.payment_status === "paid") {
-      const userId = session.client_reference_id;
+    if (isCheckoutSessionPaymentComplete(session)) {
+      const userId =
+        session.metadata?.userId || session.client_reference_id || null;
       const planId = session.metadata?.planId || null;
 
       if (session.mode === "payment") {
@@ -29,6 +32,11 @@ export async function POST(request) {
           oneTimeAccessUntil: accessUntil,
         });
         await reactivateArchivedEmployerJobs(adminDb, userId);
+        try {
+          await processOneTimeCheckoutReceipt(stripe, session);
+        } catch (receiptErr) {
+          console.error("check-session: one-time receipt failed", receiptErr);
+        }
       } else {
         await adminDb.collection("users").doc(userId).update({
           subscriptionStatus: "active",

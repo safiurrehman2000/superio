@@ -117,7 +117,9 @@ export default function InvoicesTable() {
       );
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || "Could not open PDF");
+        throw new Error(
+          err.detail || err.error || `Could not open PDF (${res.status})`,
+        );
       }
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
