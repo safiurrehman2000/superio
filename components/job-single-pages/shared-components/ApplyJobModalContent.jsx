@@ -9,17 +9,23 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-const ApplyJobModalContent = ({ onApplicationSuccess }) => {
+const ApplyJobModalContent = ({ onApplicationSuccess, initialHasApplied = false }) => {
   const [selected, setSelected] = useState(null);
   const [loading, setLoading] = useState(false);
   const [showError, setShowError] = useState(false);
   const [message, setMessage] = useState("");
-  const [hasApplied, setHasApplied] = useState(false);
+  const [hasApplied, setHasApplied] = useState(initialHasApplied);
   const dispatch = useDispatch();
   const selector = useSelector((store) => store.user);
   const { id: jobId } = useParams();
 
   useEffect(() => {
+    setHasApplied(initialHasApplied);
+  }, [initialHasApplied]);
+
+  useEffect(() => {
+    if (initialHasApplied) return;
+
     const checkAppliedStatus = async () => {
       if (selector?.user?.uid && jobId) {
         const isApplied = await checkIfJobApplied(selector.user.uid, jobId);
@@ -28,7 +34,7 @@ const ApplyJobModalContent = ({ onApplicationSuccess }) => {
     };
 
     checkAppliedStatus();
-  }, [selector?.user?.uid, jobId]);
+  }, [selector?.user?.uid, jobId, initialHasApplied]);
 
   const handleSubmit = async (e) => {
     if (selector.userType === "Employer") {

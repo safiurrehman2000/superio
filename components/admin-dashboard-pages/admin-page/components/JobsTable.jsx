@@ -11,6 +11,7 @@ import {
 } from "firebase/firestore";
 import { debounce } from "@/utils/constants";
 import { errorToast } from "@/utils/toast";
+import { batchFetchDocsByIds } from "@/utils/batchFetchByIds";
 import styles from "./admin-tables.module.scss";
 
 const PAGE_SIZE = 10;
@@ -122,24 +123,15 @@ export default function JobsTable() {
       }
       // If direction is null (initial load), don't change the page number
 
-      // Fetch employers for this page
-      const employerIds = Array.from(
-        new Set(jobsList.map((job) => job.employerId).filter(Boolean))
-      );
+      const employerIds = [
+        ...new Set(
+          jobsList
+            .filter((job) => job.employerId && !job.email)
+            .map((job) => job.employerId),
+        ),
+      ];
       if (employerIds.length > 0) {
-        let employers = {};
-        for (let i = 0; i < employerIds.length; i += 10) {
-          const batch = employerIds.slice(i, i + 10);
-          const q = query(
-            collection(db, "users"),
-            where("userType", "==", "Employer"),
-            where("__name__", "in", batch)
-          );
-          const snap = await getDocs(q);
-          snap.docs.forEach((doc) => {
-            employers[doc.id] = doc.data();
-          });
-        }
+        const employers = await batchFetchDocsByIds(db, "users", employerIds);
         setEmployersMap((prev) => ({ ...prev, ...employers }));
       }
     } catch (error) {
@@ -367,7 +359,7 @@ export default function JobsTable() {
                   <td>
                     {employer
                       ? employer.name || employer.email || employer.id
-                      : job.employerId || "-"}
+                      : job.email || job.employerId || "-"}
                   </td>
                   <td>
                     {typeof job.viewCount === "number" ? job.viewCount : 0}

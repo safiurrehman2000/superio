@@ -89,7 +89,7 @@ export async function POST(request) {
           ? null
           : (planId ?? null),
         subscriptionUpdatedAt: new Date(),
-        // If this is a new plan (different from current), reset the start date
+        subscriptionPeriodEnd: subscription.current_period_end || null,
         ...(planId &&
           planId !== userData.planId && {
             subscriptionStartDate: new Date(),

@@ -11,9 +11,11 @@ import {
 } from "firebase/firestore";
 import { successToast, errorToast } from "@/utils/toast";
 import { getCurrentUserToken } from "@/utils/auth-utils";
+import { deriveSubscriptionDisplay } from "@/utils/deriveSubscriptionDisplay";
 import styles from "./admin-tables.module.scss";
 
 const PAGE_SIZE = 10;
+const FILTER_SCAN_LIMIT = 200;
 
 export default function ActiveSubscriptionsTable() {
   const [users, setUsers] = useState([]);
@@ -118,7 +120,7 @@ export default function ActiveSubscriptionsTable() {
       // Fetch all records when searching or filtering by plan type
       const hasFilters = search || selectedPlans.length > 0;
       if (hasFilters) {
-        constraints.push(limit(1000));
+        constraints.push(limit(FILTER_SCAN_LIMIT));
       } else {
         constraints.push(limit(PAGE_SIZE + 1));
         if (startDoc) {
@@ -141,67 +143,17 @@ export default function ActiveSubscriptionsTable() {
 
       let usersList = docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 
-      const resolvePlanName = (user, statusData) => {
-        if (user.planId && planMap[user.planId]) {
-          return planMap[user.planId];
-        }
-        if (statusData.planName && planMap[statusData.planName]) {
-          return planMap[statusData.planName];
-        }
-        if (
-          statusData.accessType === "one_time" ||
-          statusData.accessType === "admin"
-        ) {
-          return statusData.planName || "Granted package";
-        }
-        return statusData.planName || user.planId || "-";
-      };
-
-      const computeDaysLeft = (periodEndSeconds) =>
-        Math.max(
-          0,
-          Math.ceil(
-            (periodEndSeconds * 1000 - Date.now()) / (1000 * 60 * 60 * 24)
-          )
-        );
-
-      // For each user, fetch subscription status (Stripe + one-time)
-      const usersWithSubs = await Promise.all(
-        usersList.map(async (user) => {
-          let planName = "-";
-          let daysLeft = "-";
-          let planId = user.planId || null;
-          let hasActiveSubscription = false;
-          let accessType = null;
-
-          try {
-            const res = await fetch("/api/subscription-status", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ userId: user.id }),
-            });
-            const data = await res.json();
-            if (data.active && data.current_period_end) {
-              accessType = data.accessType || "subscription";
-              planName = resolvePlanName(user, data);
-              planId = user.planId || data.planName || null;
-              daysLeft = computeDaysLeft(data.current_period_end);
-              hasActiveSubscription = true;
-            }
-          } catch (err) {
-            // ignore
-          }
-
-          return {
-            ...user,
-            planName,
-            daysLeft,
-            planId,
-            hasActiveSubscription,
-            accessType,
-          };
-        })
-      );
+      const usersWithSubs = usersList.map((user) => {
+        const sub = deriveSubscriptionDisplay(user, planMap);
+        return {
+          ...user,
+          planName: sub.planName,
+          daysLeft: sub.daysLeft,
+          planId: sub.planId ?? user.planId ?? null,
+          hasActiveSubscription: sub.hasActiveSubscription,
+          accessType: sub.accessType,
+        };
+      });
 
       // Filter by plan type
       let filtered = usersWithSubs;

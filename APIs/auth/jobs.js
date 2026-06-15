@@ -3,6 +3,7 @@ import { setAppliedJobs } from '@/slices/userSlice';
 import { db } from '@/utils/firebase';
 import { jobMatchesCategory } from '@/utils/constants';
 import { sanitizeFormData } from '@/utils/sanitization';
+import { isFirestoreQuotaError } from '@/utils/firestore-errors';
 import { errorToast, successToast } from '@/utils/toast';
 import {
   addDoc,
@@ -11,6 +12,7 @@ import {
   doc,
   getDoc,
   getDocs,
+  getCountFromServer,
   increment,
   query,
   setDoc,
@@ -22,6 +24,76 @@ import {
   limit,
 } from 'firebase/firestore';
 import { useEffect, useState, useRef } from 'react';
+
+const JOB_LIST_COUNT_CACHE_TTL_MS = 5 * 60 * 1000;
+const jobListCountCache = {
+  count: null,
+  expiresAt: 0,
+  key: '',
+};
+
+function getJobListCountCacheKey(params) {
+  const { search, location, category, jobType, datePosted, sortOrder, status } =
+    params;
+  return JSON.stringify({
+    search,
+    location,
+    category,
+    jobType,
+    datePosted,
+    sortOrder,
+    status,
+  });
+}
+
+function isFirestoreRateLimitError(error) {
+  if (!error) return false;
+  const code = String(error.code || '').toLowerCase();
+  const message = String(error.message || '').toLowerCase();
+  return (
+    code === 'resource-exhausted' ||
+    code === '8' ||
+    message.includes('429') ||
+    message.includes('too many requests') ||
+    message.includes('quota exceeded')
+  );
+}
+
+async function getCachedJobListTotalCount(cacheKey) {
+  const now = Date.now();
+  if (
+    jobListCountCache.key === cacheKey &&
+    jobListCountCache.expiresAt > now &&
+    jobListCountCache.count != null
+  ) {
+    return jobListCountCache.count;
+  }
+
+  try {
+    const totalQuery = query(
+      collection(db, 'jobs'),
+      where('status', '!=', 'archived'),
+    );
+    const totalSnap = await getCountFromServer(totalQuery);
+    const count = totalSnap.data().count;
+    jobListCountCache.count = count;
+    jobListCountCache.key = cacheKey;
+    jobListCountCache.expiresAt = now + JOB_LIST_COUNT_CACHE_TTL_MS;
+    return count;
+  } catch (error) {
+    if (
+      jobListCountCache.key === cacheKey &&
+      jobListCountCache.count != null
+    ) {
+      return jobListCountCache.count;
+    }
+    if (isFirestoreRateLimitError(error)) {
+      console.warn('Job list count skipped due to Firestore rate limit');
+      return null;
+    }
+    throw error;
+  }
+}
 
 export const useCreateJobPost = async (payload) => {
   try {
@@ -418,34 +490,34 @@ export const useJobViewIncrement = (jobId, user) => {
       if (isTracking?.current) return;
       isTracking.current = true;
 
+      const sessionKey = `viewed_${user.uid}_${jobId}`;
       try {
-        // Check session storage
-        const sessionKey = `viewed_${user.uid}_${jobId}`;
         if (sessionStorage.getItem(sessionKey)) return;
 
-        // Check Firestore for existing view
         const viewDocRef = doc(db, `jobViews/${jobId}/views`, user.uid);
         const viewDoc = await getDoc(viewDocRef);
-        if (viewDoc.exists()) return;
-
-        console.log('trackJobView is being called :>> ');
+        if (viewDoc.exists()) {
+          sessionStorage.setItem(sessionKey, 'true');
+          return;
+        }
 
         const jobRef = doc(db, 'jobs', jobId);
-        // Increment viewCount
         await updateDoc(jobRef, { viewCount: increment(1) });
-        // Record view in jobViews subcollection, creating jobViews if needed
         await setDoc(viewDocRef, { userId: user.uid, timestamp: Date.now() });
         sessionStorage.setItem(sessionKey, 'true');
-        console.log(`View count incremented for job ${jobId}`);
       } catch (error) {
+        if (isFirestoreQuotaError(error)) {
+          sessionStorage.setItem(sessionKey, 'true');
+          return;
+        }
         console.error('Error incrementing view count:', error);
       } finally {
-        isTracking.current = false; // Reset tracking flag
+        isTracking.current = false;
       }
     };
 
     trackJobView();
-  }, [jobId, user]); // Correct dependencies
+  }, [jobId, user]);
 };
 
 export const useFetchEmployerJobs = async (employerId) => {
@@ -864,7 +936,8 @@ export const useGetJobListingPaginated = (params = {}) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [totalItems, setTotalItems] = useState(0);
+  const [totalItems, setTotalItems] = useState(null);
+  const [hasNextPage, setHasNextPage] = useState(false);
 
   const {
     page = 1,
@@ -877,6 +950,11 @@ export const useGetJobListingPaginated = (params = {}) => {
     sortOrder = '',
     status = 'active',
   } = params;
+
+  const hasClientFilters = Boolean(
+    search || location || category || jobType || datePosted,
+  );
+  const countCacheKey = getJobListCountCacheKey(params);
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -902,10 +980,9 @@ export const useGetJobListingPaginated = (params = {}) => {
           constraints.push(orderBy('createdAt', 'desc'));
         }
 
-        // Apply pagination
+        // Apply pagination (+1 to detect if another page exists)
         const offset = (page - 1) * itemsPerPage;
-        // Get all documents up to offset + itemsPerPage (Firestore limitation)
-        constraints.push(limit(offset + itemsPerPage));
+        constraints.push(limit(offset + itemsPerPage + 1));
 
         // Create the query
         const jobsRef = collection(db, 'jobs');
@@ -917,10 +994,8 @@ export const useGetJobListingPaginated = (params = {}) => {
           ...doc.data(),
         }));
 
-        // Apply offset in memory (Firestore limitation)
-        if (offset > 0) {
-          jobs = jobs.slice(offset);
-        }
+        const pageHasMore = jobs.length > offset + itemsPerPage;
+        jobs = jobs.slice(offset, offset + itemsPerPage);
 
         // Apply client-side filters
         if (search) {
@@ -984,34 +1059,43 @@ export const useGetJobListingPaginated = (params = {}) => {
           }
         }
 
-        // Get total count for pagination
-        const totalQuery = query(
-          collection(db, 'jobs'),
-          where('status', '!=', 'archived'),
-        );
-        const totalSnap = await getDocs(totalQuery);
-        const totalCount = totalSnap.docs.length;
+        let totalCount = null;
+        if (!hasClientFilters && page === 1) {
+          totalCount = await getCachedJobListTotalCount(countCacheKey);
+        } else if (
+          !hasClientFilters &&
+          jobListCountCache.key === countCacheKey &&
+          jobListCountCache.count != null
+        ) {
+          totalCount = jobListCountCache.count;
+        }
 
         const employerIds = [
-          ...new Set(jobs.map((j) => j.employerId).filter(Boolean)),
+          ...new Set(
+            jobs
+              .filter((j) => j.employerId && (!j.logo || !j.companyName))
+              .map((j) => j.employerId),
+          ),
         ];
         const employerMap = {};
-        await Promise.all(
-          employerIds.map(async (uid) => {
-            try {
-              const userSnap = await getDoc(doc(db, 'users', uid));
-              if (userSnap.exists()) {
-                const d = userSnap.data();
-                employerMap[uid] = {
-                  logo: d.logo ?? null,
-                  company_name: d.company_name ?? null,
-                };
+        if (employerIds.length > 0) {
+          await Promise.all(
+            employerIds.map(async (uid) => {
+              try {
+                const userSnap = await getDoc(doc(db, 'users', uid));
+                if (userSnap.exists()) {
+                  const d = userSnap.data();
+                  employerMap[uid] = {
+                    logo: d.logo ?? null,
+                    company_name: d.company_name ?? null,
+                  };
+                }
+              } catch {
+                // ignore per-employer fetch errors
               }
-            } catch {
-              // ignore per-employer fetch errors
-            }
-          }),
-        );
+            }),
+          );
+        }
         const enrichedJobs = jobs.map((job) => {
           const employer = job.employerId ? employerMap[job.employerId] : null;
           return {
@@ -1023,6 +1107,9 @@ export const useGetJobListingPaginated = (params = {}) => {
 
         setData(enrichedJobs);
         setTotalItems(totalCount);
+        setHasNextPage(
+          hasClientFilters ? jobs.length >= itemsPerPage : pageHasMore,
+        );
       } catch (err) {
         setError(err);
         console.error('Error fetching jobs:', err);
@@ -1042,15 +1129,26 @@ export const useGetJobListingPaginated = (params = {}) => {
     datePosted,
     sortOrder,
     status,
+    hasClientFilters,
+    countCacheKey,
   ]);
+
+  const resolvedTotalPages =
+    totalItems != null
+      ? Math.ceil(totalItems / itemsPerPage)
+      : hasNextPage
+        ? page + 1
+        : page;
 
   return {
     data,
     loading,
     error,
     totalItems,
-    totalPages: Math.ceil(totalItems / itemsPerPage),
+    hasNextPage,
+    totalPages: resolvedTotalPages,
     currentPage: page,
+    totalCountKnown: totalItems != null,
   };
 };
 
@@ -1223,6 +1321,25 @@ export const useGetSavedJobsPaginated = async (
   }
 };
 
+export const getJobBookmarkAndApplicationStatus = async (userId, jobId) => {
+  if (!userId || !jobId) {
+    return { isSaved: false, isApplied: false };
+  }
+
+  try {
+    const [isSaved, isApplied] = await Promise.all([
+      checkIfJobSaved(userId, jobId),
+      checkIfJobApplied(userId, jobId),
+    ]);
+    return { isSaved, isApplied };
+  } catch (error) {
+    if (isFirestoreQuotaError(error)) {
+      return { isSaved: false, isApplied: false };
+    }
+    throw error;
+  }
+};
+
 export const checkIfJobApplied = async (candidateId, jobId) => {
   try {
     if (!candidateId || !jobId) {
@@ -1240,6 +1357,37 @@ export const checkIfJobApplied = async (candidateId, jobId) => {
   } catch (error) {
     console.error('Error checking if job is applied:', error);
     return false;
+  }
+};
+
+export const getSavedJobIdsForUser = async (userId, jobIds = []) => {
+  try {
+    if (!userId || !jobIds.length) {
+      return new Set();
+    }
+
+    const uniqueIds = [...new Set(jobIds.filter(Boolean))];
+    const savedIds = new Set();
+    const chunkSize = 30;
+
+    for (let i = 0; i < uniqueIds.length; i += chunkSize) {
+      const chunk = uniqueIds.slice(i, i + chunkSize);
+      const savedJobsQuery = query(
+        collection(db, 'saved_jobs'),
+        where('userId', '==', userId),
+        where('jobId', 'in', chunk),
+      );
+      const querySnapshot = await getDocs(savedJobsQuery);
+      querySnapshot.docs.forEach((docSnapshot) => {
+        const jobId = docSnapshot.data().jobId;
+        if (jobId) savedIds.add(jobId);
+      });
+    }
+
+    return savedIds;
+  } catch (error) {
+    console.error('Error fetching saved job ids:', error);
+    return new Set();
   }
 };
 

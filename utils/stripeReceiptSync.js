@@ -1,6 +1,7 @@
 import { createReceiptWithAllocatedNumber } from '@/utils/allocateReceiptNumber';
 import { isCheckoutSessionPaymentComplete } from '@/utils/checkoutPaymentStatus';
 import { adminDb } from '@/utils/firebase-admin';
+import { getUserFieldsForReceipt } from '@/utils/receiptUserFields';
 import { buildBrandedReceiptPdfForInvoice } from '@/utils/buildBrandedReceiptPdfForInvoice';
 import { buildBrandedReceiptPdfForOneTimeSession } from '@/utils/buildBrandedReceiptPdfForOneTimeSession';
 import { uploadBrandedReceiptPdf } from '@/utils/uploadBrandedReceiptPdf';
@@ -56,6 +57,8 @@ export async function processOneTimeCheckoutReceipt(stripe, session) {
     ? new Date(session.created * 1000)
     : new Date();
 
+  const userFields = await getUserFieldsForReceipt(userId);
+
   let createResult;
   try {
     createResult = await createReceiptWithAllocatedNumber(
@@ -70,6 +73,7 @@ export async function processOneTimeCheckoutReceipt(stripe, session) {
         created,
         checkoutSessionId: session.id,
         type: 'one_time',
+        ...userFields,
       },
       created,
     );
@@ -201,6 +205,8 @@ export async function processPaidInvoiceReceipt(stripe, invoice) {
     return;
   }
 
+  const userFields = await getUserFieldsForReceipt(userId);
+
   let createResult;
   try {
     createResult = await createReceiptWithAllocatedNumber(
@@ -215,6 +221,7 @@ export async function processPaidInvoiceReceipt(stripe, invoice) {
         created,
         invoiceId,
         type: 'invoice',
+        ...userFields,
       },
       created,
     );

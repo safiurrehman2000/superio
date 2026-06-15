@@ -1,54 +1,42 @@
 'use client';
 
 import { updateJob, deleteJob } from '@/APIs/auth/jobs';
-import { collection, getDocs } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/utils/firebase';
 import AutoSelect from '@/components/autoselect/AutoSelect';
 import CircularLoader from '@/components/circular-loading/CircularLoading';
 import { InputField } from '@/components/inputfield/InputField';
 import { TextAreaField } from '@/components/textarea/TextArea';
 import {
+  debounce,
   formatString,
   getJobTypeOptions,
   jobTypeValuesToOptions,
   SECTORS,
 } from '@/utils/constants';
 import { useJobTypes } from '@/utils/hooks/useOptionsFromFirebase';
+import { getCurrentUserToken } from '@/utils/auth-utils';
 import { sanitizeFormData } from '@/utils/sanitization';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import { DeleteConfirmationModal } from '@/components/dashboard-pages/employers-dashboard/manage-jobs/components/DeleteModal';
-import Select from 'react-select';
 
 const EditJobPost = () => {
   const [selectedJobId, setSelectedJobId] = useState('');
+  const [selectedJob, setSelectedJob] = useState(null);
+  const [searchInput, setSearchInput] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchPending, setSearchPending] = useState(false);
+  const [searchError, setSearchError] = useState(null);
+  const [jobLoading, setJobLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const selector = useSelector((store) => store.user);
-  const [jobs, setJobs] = useState([]);
   const { options: jobTypes, loading: jobTypesLoading } = useJobTypes();
   const jobTypeOptions = getJobTypeOptions(jobTypes);
-  const [jobsLoading, setJobsLoading] = useState(true);
-  const [jobsError, setJobsError] = useState(null);
-  const fetchJobs = async () => {
-    setJobsLoading(true);
-    setJobsError(null);
-    try {
-      const jobsRef = collection(db, 'jobs');
-      const jobsSnap = await getDocs(jobsRef);
-      const jobs = jobsSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      setJobs(jobs);
-    } catch (err) {
-      setJobsError(err);
-      setJobs([]);
-    } finally {
-      setJobsLoading(false);
-    }
-  };
-  useEffect(() => {
-    fetchJobs();
-  }, []);
+  const debounceRef = useRef(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const methods = useForm({
@@ -88,13 +76,104 @@ const EditJobPost = () => {
     tags: [],
   };
 
+  const searchJobs = useCallback(async (query) => {
+    const trimmed = query.trim();
+    if (trimmed.length < 2) {
+      setSearchResults([]);
+      setSearchError(null);
+      setSearchLoading(false);
+      setSearchPending(false);
+      return;
+    }
+
+    setSearchLoading(true);
+    setSearchPending(true);
+    setSearchError(null);
+    try {
+      const token = await getCurrentUserToken();
+      const params = new URLSearchParams({ q: trimmed, limit: '20' });
+      const response = await fetch(`/api/admin/search-jobs?${params}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const payload = await response.json();
+      if (!response.ok || !payload.success) {
+        throw new Error(payload.error || 'Failed to search jobs');
+      }
+      setSearchResults(payload.data || []);
+    } catch (err) {
+      setSearchResults([]);
+      setSearchError(err.message || 'Failed to search jobs');
+    } finally {
+      setSearchLoading(false);
+      setSearchPending(false);
+    }
+  }, []);
+
   useEffect(() => {
-    if (!selectedJobId) {
+    debounceRef.current = debounce((value) => {
+      searchJobs(value);
+    }, 400);
+  }, [searchJobs]);
+
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearchInput(value);
+    const trimmed = value.trim();
+
+    if (trimmed.length < 2) {
+      setSearchPending(false);
+      setSearchLoading(false);
+      setSearchResults([]);
+      setSearchError(null);
+      return;
+    }
+
+    setSearchPending(true);
+    if (debounceRef.current) {
+      debounceRef.current(value);
+    }
+  };
+
+  const isSearching = searchPending || searchLoading;
+
+  const loadJobById = async (jobId) => {
+    setJobLoading(true);
+    setError(null);
+    try {
+      const jobSnap = await getDoc(doc(db, 'jobs', jobId));
+      if (!jobSnap.exists()) {
+        throw new Error('Job not found');
+      }
+      const job = { id: jobSnap.id, ...jobSnap.data() };
+      setSelectedJobId(jobId);
+      setSelectedJob(job);
+      setSearchResults([]);
+      setSearchInput(`${job.title || 'Untitled'}${job.location ? ` — ${job.location}` : ''}`);
+    } catch (err) {
+      setError(err.message || 'Failed to load job');
+      setSelectedJobId('');
+      setSelectedJob(null);
+    } finally {
+      setJobLoading(false);
+    }
+  };
+
+  const clearSelection = () => {
+    setSelectedJobId('');
+    setSelectedJob(null);
+    setSearchInput('');
+    setSearchResults([]);
+    setSearchPending(false);
+    setSearchLoading(false);
+    setSearchError(null);
+    reset(emptyFormValues);
+  };
+
+  useEffect(() => {
+    if (!selectedJob) {
       reset(emptyFormValues);
       return;
     }
-    const selectedJob = jobs.find((job) => job.id === selectedJobId);
-    if (!selectedJob) return;
 
     reset({
       name: selectedJob.title || '',
@@ -119,25 +198,12 @@ const EditJobPost = () => {
           }))
         : [],
     });
-  }, [selectedJobId, jobs, jobTypes, jobTypesLoading, reset, selector?.user?.email]);
-
-  // Transform jobs data for react-select
-  const jobOptions = jobs.map((job) => ({
-    value: job.id,
-    label: `${job.title} - ${job.location} (${new Date(
-      job.createdAt,
-    ).toLocaleDateString()})`,
-    job: job, // Keep the full job object for reference
-  }));
-
-  const handleJobSelection = (selectedOption) => {
-    setSelectedJobId(selectedOption ? selectedOption.value : '');
-  };
+  }, [selectedJob, jobTypes, jobTypesLoading, reset, selector?.user?.email]);
 
   const onSubmit = async (data) => {
     if (loading) return;
     if (!selectedJobId) {
-      setError('Please select a job to edit');
+      setError('Please search and select a job to edit');
       return;
     }
 
@@ -193,7 +259,7 @@ const EditJobPost = () => {
         throw new Error(apiError || 'Failed to update job post.');
       }
 
-      await fetchJobs();
+      await loadJobById(selectedJobId);
     } catch (err) {
       setError(
         err.message || 'An unexpected error occurred. Please try again.',
@@ -224,8 +290,7 @@ const EditJobPost = () => {
       if (!success) {
         throw new Error(apiError || 'Failed to delete job post.');
       }
-      setSelectedJobId('');
-      await fetchJobs();
+      clearSelection();
       setIsDeleteModalOpen(false);
     } catch (err) {
       setError(
@@ -237,45 +302,17 @@ const EditJobPost = () => {
     }
   };
 
-  if (jobsLoading) {
-    return (
-      <div className='ls-widget'>
-        <div className='tabs-box'>
-          <div className='widget-title'>
-            <h4>Edit Job Posts</h4>
-          </div>
-          <div className='widget-content'>
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'center',
-                padding: '50px',
-              }}
-            >
-              <CircularLoader />
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (jobsError) {
-    return (
-      <div className='ls-widget'>
-        <div className='tabs-box'>
-          <div className='widget-title'>
-            <h4>Edit Job Posts</h4>
-          </div>
-          <div className='widget-content'>
-            <div style={{ color: 'red', textAlign: 'center', padding: '20px' }}>
-              Error loading jobs: {jobsError.message}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const formatJobDate = (createdAt) => {
+    if (!createdAt) return '';
+    const ms =
+      typeof createdAt === 'number'
+        ? createdAt < 1e12
+          ? createdAt * 1000
+          : createdAt
+        : new Date(createdAt).getTime();
+    if (!Number.isFinite(ms)) return '';
+    return new Date(ms).toLocaleDateString();
+  };
 
   return (
     <div className='ls-widget'>
@@ -286,37 +323,118 @@ const EditJobPost = () => {
 
         <div className='widget-content'>
           <FormProvider {...methods}>
-          <div className='form-group col-lg-12 col-md-12 mb-4'>
-            <label
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                fontSize: '15px',
-                fontWeight: '500',
-                marginBottom: '6px',
-              }}
-            >
-              Select Job to Edit
-            </label>
-            <Select
-              value={
-                jobOptions.find((option) => option.value === selectedJobId) ||
-                null
-              }
-              onChange={handleJobSelection}
-              options={jobOptions}
-              placeholder='Search and select a job to edit...'
-              isClearable
-              isSearchable
-              className='basic-single-select'
-              classNamePrefix='select'
-              noOptionsMessage={() => 'No jobs found'}
-              loadingMessage={() => 'Loading jobs...'}
-              isLoading={jobsLoading}
-            />
-          </div>
+            <div className='form-group col-lg-12 col-md-12 mb-4'>
+              <label
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  fontSize: '15px',
+                  fontWeight: '500',
+                  marginBottom: '6px',
+                }}
+              >
+                Search job to edit
+              </label>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <div style={{ position: 'relative', flex: 1 }}>
+                  <input
+                    type='text'
+                    className='form-control'
+                    placeholder='Search by title, location, email, or job ID...'
+                    value={searchInput}
+                    onChange={handleSearchChange}
+                    style={{ paddingRight: isSearching ? 40 : undefined }}
+                  />
+                  {isSearching && !selectedJobId && (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        right: 12,
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        display: 'flex',
+                        alignItems: 'center',
+                      }}
+                      aria-hidden
+                    >
+                      <CircularLoader strokeColor='#1967d2' />
+                    </div>
+                  )}
+                </div>
+                {selectedJobId && (
+                  <button
+                    type='button'
+                    className='theme-btn btn-style-two'
+                    onClick={clearSelection}
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+              <p style={{ margin: '8px 0 0', fontSize: 13, color: '#666' }}>
+                {isSearching && !selectedJobId
+                  ? 'Searching jobs...'
+                  : 'Type at least 2 characters. Only matching jobs are loaded.'}
+              </p>
 
-          {selectedJobId && (
+              {searchError && (
+                <div style={{ color: 'red', marginTop: 8 }}>{searchError}</div>
+              )}
+
+              {!isSearching && searchResults.length > 0 && !selectedJobId && (
+                <ul
+                  style={{
+                    listStyle: 'none',
+                    margin: '12px 0 0',
+                    padding: 0,
+                    border: '1px solid #e8e8e8',
+                    borderRadius: 8,
+                    overflow: 'hidden',
+                  }}
+                >
+                  {searchResults.map((job) => (
+                    <li key={job.id}>
+                      <button
+                        type='button'
+                        onClick={() => loadJobById(job.id)}
+                        style={{
+                          width: '100%',
+                          textAlign: 'left',
+                          padding: '12px 16px',
+                          border: 'none',
+                          borderBottom: '1px solid #eee',
+                          background: '#fff',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <strong>{job.title || 'Untitled'}</strong>
+                        {job.location ? ` — ${job.location}` : ''}
+                        <span style={{ display: 'block', fontSize: 13, color: '#666', marginTop: 4 }}>
+                          {formatJobDate(job.createdAt)}
+                          {job.email ? ` · ${job.email}` : ''}
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              {!isSearching &&
+                searchInput.trim().length >= 2 &&
+                searchResults.length === 0 &&
+                !selectedJobId &&
+                !searchError && (
+                  <p style={{ marginTop: 12, color: '#666' }}>No jobs found.</p>
+                )}
+            </div>
+
+            {jobLoading && (
+              <div style={{ display: 'flex', justifyContent: 'center', padding: 24 }}>
+                <CircularLoader />
+              </div>
+            )}
+
+            {selectedJobId && selectedJob && !jobLoading && (
               <form
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
@@ -519,24 +637,21 @@ const EditJobPost = () => {
                   </div>
                 </div>
               </form>
-          )}
+            )}
 
-          {!selectedJobId && (
-            <div
-              className='text-center'
-              style={{ padding: '40px', color: '#666' }}
-            >
-              <p>
-                Please select a job from the dropdown above to edit its
-                information.
-              </p>
-            </div>
-          )}
-          {error && (
-            <div style={{ color: 'red', textAlign: 'center', marginTop: 10 }}>
-              {error}
-            </div>
-          )}
+            {!selectedJobId && !jobLoading && searchInput.trim().length < 2 && (
+              <div
+                className='text-center'
+                style={{ padding: '40px', color: '#666' }}
+              >
+                <p>Search for a job above to edit its information.</p>
+              </div>
+            )}
+            {error && (
+              <div style={{ color: 'red', textAlign: 'center', marginTop: 10 }}>
+                {error}
+              </div>
+            )}
           </FormProvider>
         </div>
       </div>
