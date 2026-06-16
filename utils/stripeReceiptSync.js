@@ -1,5 +1,7 @@
 import { createReceiptWithAllocatedNumber } from '@/utils/allocateReceiptNumber';
 import { isCheckoutSessionPaymentComplete } from '@/utils/checkoutPaymentStatus';
+import { activateUserAccessFromCheckoutSession } from '@/utils/activateUserAccessFromCheckout';
+import { deleteCached } from '@/utils/memory-cache';
 import { adminDb } from '@/utils/firebase-admin';
 import { getUserFieldsForReceipt } from '@/utils/receiptUserFields';
 import { buildBrandedReceiptPdfForInvoice } from '@/utils/buildBrandedReceiptPdfForInvoice';
@@ -292,9 +294,19 @@ export async function ensureReceiptFromCompletedCheckoutSession(
     };
   }
 
+  const userId =
+    session.metadata?.userId || session.client_reference_id || null;
+  const activation = await activateUserAccessFromCheckoutSession(
+    stripe,
+    session,
+  );
+  if (userId) {
+    deleteCached(`subscription-status:${userId}`);
+  }
+
   if (session.mode === 'payment') {
     await processOneTimeCheckoutReceipt(stripe, session);
-    return { ok: true, mode: 'payment' };
+    return { ok: true, mode: 'payment', activation };
   }
 
   if (session.mode === 'subscription') {
@@ -331,7 +343,7 @@ export async function ensureReceiptFromCompletedCheckoutSession(
     }
 
     await processPaidInvoiceReceipt(stripe, invoice);
-    return { ok: true, mode: 'subscription' };
+    return { ok: true, mode: 'subscription', activation };
   }
 
   return { ok: false, reason: 'unknown_mode', mode: session.mode };

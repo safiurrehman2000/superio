@@ -1,12 +1,9 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { adminDb } from "@/utils/firebase-admin";
-import {
-  expireOneTimeAccessIfNeeded,
-  getOneTimeAccessEndMs,
-  hasActiveOneTimeAccess,
-} from "@/utils/expireOneTimeAccess";
+import { expireOneTimeAccessIfNeeded } from "@/utils/expireOneTimeAccess";
 import { getCached, setCached } from "@/utils/memory-cache";
+import { resolveEmployerAccess } from "@/utils/resolveEmployerAccess";
 import {
   isFirestoreQuotaError,
   quotaExceededResponse,
@@ -40,73 +37,34 @@ export async function POST(request) {
   if (!userDoc.exists) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
+
   const userData = userDoc.data();
-  const { stripeSubscriptionId, oneTimeAccessUntil } = userData;
 
   try {
+    const access = await resolveEmployerAccess(
+      adminDb,
+      stripe,
+      userId,
+      userData,
+    );
+
     let payload;
 
-    if (!stripeSubscriptionId) {
-      if (hasActiveOneTimeAccess(userData)) {
-        const oneTimeEnd = getOneTimeAccessEndMs(oneTimeAccessUntil);
-        const status = userData.subscriptionStatus || "one_time_active";
-        let planName = "One-time package";
-        if (userData.planId) {
-          const pkgDoc = await adminDb
-            .collection("pricingPackages")
-            .doc(userData.planId)
-            .get();
-          if (pkgDoc.exists) {
-            const pkg = pkgDoc.data();
-            planName = pkg.packageType || pkg.name || planName;
-          }
-        }
-        payload = {
-          active: true,
-          status,
-          accessType: status === "admin_active" ? "admin" : "one_time",
-          current_period_end: Math.floor(oneTimeEnd / 1000),
-          message: "Plan access is active",
-          planName,
-        };
-      } else {
-        await expireOneTimeAccessIfNeeded(adminDb, userId, userData);
-
-        payload = {
-          active: false,
-          message: "No active subscription",
-        };
-      }
-    } else {
-      const subscription = await stripe.subscriptions.retrieve(
-        stripeSubscriptionId,
-      );
-
-      const { current_period_end, billing_cycle_anchor, status, plan, items } =
-        subscription;
-      let planName =
-        plan?.nickname ||
-        items?.data?.[0]?.plan?.nickname ||
-        plan?.id ||
-        items?.data?.[0]?.plan?.id ||
-        "";
-      let periodEnd = current_period_end;
-      if (!periodEnd && billing_cycle_anchor) {
-        periodEnd = billing_cycle_anchor + 30 * 24 * 60 * 60;
-      }
-
-      if (periodEnd && periodEnd !== userData.subscriptionPeriodEnd) {
-        await adminDb.collection("users").doc(userId).update({
-          subscriptionPeriodEnd: periodEnd,
-        });
-      }
-
+    if (access.active) {
       payload = {
         active: true,
-        current_period_end: periodEnd,
-        status,
-        accessType: "subscription",
-        planName,
+        current_period_end: access.current_period_end,
+        status: access.status,
+        accessType: access.accessType,
+        planName: access.planName,
+        planId: access.planId,
+        message: "Plan access is active",
+      };
+    } else {
+      await expireOneTimeAccessIfNeeded(adminDb, userId, userData);
+      payload = {
+        active: false,
+        message: access.message || "No active subscription",
       };
     }
 

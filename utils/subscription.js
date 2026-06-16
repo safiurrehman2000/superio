@@ -111,9 +111,14 @@ export const validateJobPostingPermission = async (userId) => {
   }
 
   if (subscriptionData.remainingJobs <= 0) {
+    const limitMessage =
+      subscriptionData.jobLimit === 0
+        ? 'Uw pakket is actief, maar het aantal toegestane vacatures kon niet worden bepaald. Klik op "Status vernieuwen" of neem contact op met support.'
+        : `U heeft uw limiet voor vacatureplaatsing bereikt (${subscriptionData.jobLimit} vacatures). Upgrade uw abonnement om meer vacatures te plaatsen.`;
+
     return {
       canPost: false,
-      message: `U heeft uw limiet voor vacatureplaatsing bereikt (${subscriptionData.jobLimit} vacatures). Upgrade uw abonnement om meer vacatures te plaatsen.`,
+      message: limitMessage,
       subscriptionData,
     };
   }

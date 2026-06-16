@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
-import { adminDb } from "@/utils/firebase-admin";
 import { isCheckoutSessionPaymentComplete } from "@/utils/checkoutPaymentStatus";
-import { reactivateArchivedEmployerJobs } from "@/utils/expireOneTimeAccess";
+import { activateUserAccessFromCheckoutSession } from "@/utils/activateUserAccessFromCheckout";
+import { deleteCached } from "@/utils/memory-cache";
 import { processOneTimeCheckoutReceipt } from "@/utils/stripeReceiptSync";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
@@ -11,38 +11,25 @@ export async function POST(request) {
   const { sessionId } = await request.json();
 
   try {
-    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    const session = await stripe.checkout.sessions.retrieve(sessionId, {
+      expand: ["subscription"],
+    });
 
     if (isCheckoutSessionPaymentComplete(session)) {
       const userId =
         session.metadata?.userId || session.client_reference_id || null;
-      const planId = session.metadata?.planId || null;
 
-      if (session.mode === "payment") {
-        const accessStart = new Date();
-        const accessUntil = new Date(
-          accessStart.getTime() + 30 * 24 * 60 * 60 * 1000,
-        );
-        await adminDb.collection("users").doc(userId).update({
-          subscriptionStatus: "one_time_active",
-          planId,
-          subscriptionUpdatedAt: accessStart,
-          subscriptionStartDate: accessStart,
-          oneTimePurchaseAt: accessStart,
-          oneTimeAccessUntil: accessUntil,
-        });
-        await reactivateArchivedEmployerJobs(adminDb, userId);
-        try {
-          await processOneTimeCheckoutReceipt(stripe, session);
-        } catch (receiptErr) {
-          console.error("check-session: one-time receipt failed", receiptErr);
+      if (userId) {
+        await activateUserAccessFromCheckoutSession(stripe, session);
+        deleteCached(`subscription-status:${userId}`);
+
+        if (session.mode === "payment") {
+          try {
+            await processOneTimeCheckoutReceipt(stripe, session);
+          } catch (receiptErr) {
+            console.error("check-session: one-time receipt failed", receiptErr);
+          }
         }
-      } else {
-        await adminDb.collection("users").doc(userId).update({
-          subscriptionStatus: "active",
-          planId,
-          subscriptionUpdatedAt: new Date(),
-        });
       }
     }
 

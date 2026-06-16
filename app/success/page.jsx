@@ -25,6 +25,12 @@ export default function SuccessPage() {
       if (!user || cancelled) return;
 
       try {
+        await fetch("/api/check-session", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sessionId }),
+        });
+
         const token = await user.getIdToken();
         const res = await fetch("/api/sync-checkout-receipt", {
           method: "POST",
@@ -40,7 +46,7 @@ export default function SuccessPage() {
           console.warn("sync-checkout-receipt:", res.status, data);
         }
       } catch (e) {
-        console.warn("sync-checkout-receipt failed", e);
+        console.warn("checkout activation failed", e);
       }
     })();
 
