@@ -1,23 +1,19 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { adminDb } from '@/utils/firebase-admin';
-import {
-  expireOneTimeAccessIfNeeded,
-  getOneTimeAccessEndMs,
-  hasActiveOneTimeAccess as userHasActiveOneTimeAccess,
-} from '@/utils/expireOneTimeAccess';
+import { expireOneTimeAccessIfNeeded } from '@/utils/expireOneTimeAccess';
+import { computeJobPostingLimits } from '@/utils/computeJobPostingLimits';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export async function POST(request) {
-  const { userId, jobData } = await request.json();
+  const { userId } = await request.json();
 
   if (!userId) {
     return NextResponse.json({ error: 'Missing userId' }, { status: 400 });
   }
 
   try {
-    // Fetch user to get current subscriptionId
     const userDoc = await adminDb.collection('users').doc(userId).get();
     if (!userDoc.exists) {
       return NextResponse.json(
@@ -30,10 +26,14 @@ export async function POST(request) {
     }
 
     const userData = userDoc.data();
-    const { stripeSubscriptionId, planId, oneTimeAccessUntil } = userData;
-    const hasActiveOneTimeAccess = userHasActiveOneTimeAccess(userData);
+    const result = await computeJobPostingLimits(
+      adminDb,
+      stripe,
+      userId,
+      userData,
+    );
 
-    if (!stripeSubscriptionId && !hasActiveOneTimeAccess) {
+    if (!result.active) {
       await expireOneTimeAccessIfNeeded(adminDb, userId, userData);
       return NextResponse.json({
         canPost: false,
@@ -42,118 +42,14 @@ export async function POST(request) {
       });
     }
 
-    // Verify subscription is active in Stripe and get job posting limits
-    let subscription;
-    let stripePriceId;
-
-    if (stripeSubscriptionId) {
-      try {
-        subscription =
-          await stripe.subscriptions.retrieve(stripeSubscriptionId);
-        if (
-          subscription.status !== 'active' &&
-          subscription.status !== 'trialing'
-        ) {
-          return NextResponse.json({
-            canPost: false,
-            message:
-              'Your subscription is not active. Please check your subscription status.',
-          });
-        }
-        stripePriceId = subscription.items.data[0]?.price?.id;
-      } catch (stripeError) {
-        console.error('Stripe subscription error:', stripeError);
-        return NextResponse.json({
-          canPost: false,
-          message:
-            'Unable to verify subscription status. Please contact support.',
-        });
-      }
-    }
-    let jobLimit = 0;
-
-    if (stripePriceId) {
-      const packagesRef = adminDb.collection('pricingPackages');
-      const pkgQuery = await packagesRef
-        .where('stripePriceId', '==', stripePriceId)
-        .get();
-
-      if (!pkgQuery.empty) {
-        const packageData = pkgQuery.docs[0].data();
-        jobLimit = extractJobLimitFromPackage(packageData);
-      }
-    }
-
-    // If we couldn't find the package by stripePriceId, try using planId
-    if (jobLimit === 0 && planId) {
-      const packageRef = adminDb.collection('pricingPackages').doc(planId);
-      const packageDoc = await packageRef.get();
-
-      if (packageDoc.exists) {
-        const packageData = packageDoc.data();
-        jobLimit = extractJobLimitFromPackage(packageData);
-      }
-    }
-
-    // Count current active jobs for this user
-    const jobsQuery = await adminDb
-      .collection('jobs')
-      .where('employerId', '==', userId)
-      .where('status', '==', 'active')
-      .get();
-
-    // Get user's subscription start date to determine which jobs to count
-    const subscriptionStartDate =
-      userData.subscriptionStartDate || userData.subscriptionUpdatedAt;
-
-    let jobsPosted = 0;
-
-    if (subscriptionStartDate) {
-      // Only count jobs posted AFTER the current subscription started
-      const subscriptionStartTime = subscriptionStartDate.toDate
-        ? subscriptionStartDate.toDate()
-        : new Date(subscriptionStartDate);
-
-      jobsQuery.forEach((jobDoc) => {
-        const jobData = jobDoc.data();
-        const jobCreatedAt = jobData.createdAt
-          ? jobData.createdAt.toDate
-            ? jobData.createdAt.toDate()
-            : new Date(jobData.createdAt)
-          : new Date(0);
-
-        // Only count jobs created after the subscription started
-        if (jobCreatedAt >= subscriptionStartTime) {
-          jobsPosted++;
-        }
-      });
-    } else {
-      // Fallback: count all active jobs if no subscription start date
-      jobsPosted = jobsQuery.size;
-    }
-
-    const remainingJobs = Math.max(0, jobLimit - jobsPosted);
-
-    if (remainingJobs <= 0) {
-      return NextResponse.json({
-        canPost: false,
-        message: `You have reached your job posting limit (${jobLimit} jobs). Please upgrade your subscription to post more jobs.`,
-        jobLimit,
-        jobsPosted,
-        remainingJobs,
-      });
-    }
-
     return NextResponse.json({
-      canPost: true,
-      message: `You can post ${remainingJobs} more job(s) with your current subscription.`,
-      jobLimit,
-      jobsPosted,
-      remainingJobs,
-      accessType: stripeSubscriptionId ? 'subscription' : 'one_time',
-      oneTimeAccessUntil: hasActiveOneTimeAccess
-        ? new Date(getOneTimeAccessEndMs(oneTimeAccessUntil)).toISOString()
-        : null,
+      canPost: result.canPost,
+      message: result.message,
+      jobLimit: result.jobLimit,
+      jobsPosted: result.jobsPosted,
+      remainingJobs: result.remainingJobs,
+      accessType: result.accessType,
+      oneTimeAccessUntil: result.oneTimeAccessUntil,
     });
   } catch (error) {
     console.error('Error validating job posting:', error);
@@ -164,36 +60,5 @@ export async function POST(request) {
       },
       { status: 500 },
     );
-  }
-}
-
-// Helper function to extract job limit from package data
-function extractJobLimitFromPackage(packageData) {
-  // First try to get from jobPosts field if it exists
-  if (packageData.jobPosts) {
-    return parseInt(packageData.jobPosts);
-  }
-
-  // Extract from features array (e.g., "30 job posting" -> 30)
-  if (packageData.features && Array.isArray(packageData.features)) {
-    for (const feature of packageData.features) {
-      const match = feature.match(/(\d+)\s+job\s+posting/i);
-      if (match) {
-        return parseInt(match[1]);
-      }
-    }
-  }
-
-  // Default mapping based on package type
-  const packageType = packageData.packageType?.toLowerCase();
-  switch (packageType) {
-    case 'basic':
-      return 30;
-    case 'standard':
-      return 40;
-    case 'extended':
-      return 50;
-    default:
-      return 0; // No subscription or unknown package
   }
 }

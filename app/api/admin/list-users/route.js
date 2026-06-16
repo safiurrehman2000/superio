@@ -1,14 +1,39 @@
 import { adminDb } from '@/utils/firebase-admin';
+import admin from 'firebase-admin';
 import {
   authenticateAdmin,
   createAuthErrorResponse,
 } from '@/utils/admin-auth-middleware';
+import {
+  isFirestoreQuotaError,
+  quotaExceededResponse,
+} from '@/utils/firestore-errors';
+
+const MAX_SCAN = 250;
 
 function toMillis(value) {
   if (!value) return 0;
   if (typeof value?.toMillis === 'function') return value.toMillis();
   if (typeof value?.toDate === 'function') return value.toDate().getTime();
   return new Date(value).getTime() || 0;
+}
+
+function mapUserDoc(doc) {
+  const userData = doc.data();
+  return {
+    id: doc.id,
+    uid: doc.id,
+    email: userData.email || '',
+    userType: userData.userType || '',
+    name: userData.name || '',
+    company_name: userData.company_name || '',
+    phone: userData.phone || userData.phone_number || '',
+    createdAt: userData.createdAt?.toDate?.() || userData.createdAt,
+    subscriptionStatus: userData.subscriptionStatus || 'none',
+    planId: userData.planId || null,
+    isFirstTime: userData.isFirstTime ?? true,
+    hasPostedJob: userData.hasPostedJob || false,
+  };
 }
 
 /**
@@ -29,30 +54,18 @@ export async function GET(request) {
     const search = (searchParams.get('search') || '').trim().toLowerCase();
     const status = searchParams.get('status');
 
-    // Fetch all profiles (includes docs missing createdAt/email index fields)
-    const snapshot = await adminDb.collection('users').get();
-
-    let users = snapshot.docs.map((doc) => {
-      const userData = doc.data();
-      return {
-        id: doc.id,
-        uid: doc.id,
-        email: userData.email || '',
-        userType: userData.userType || '',
-        name: userData.name || '',
-        company_name: userData.company_name || '',
-        phone: userData.phone || userData.phone_number || '',
-        createdAt: userData.createdAt?.toDate?.() || userData.createdAt,
-        subscriptionStatus: userData.subscriptionStatus || 'none',
-        planId: userData.planId || null,
-        isFirstTime: userData.isFirstTime ?? true,
-        hasPostedJob: userData.hasPostedJob || false,
-      };
-    });
+    let queryRef = adminDb.collection('users');
 
     if (userType) {
-      users = users.filter((u) => u.userType === userType);
+      queryRef = queryRef.where('userType', '==', userType);
     }
+
+    const snapshot = await queryRef
+      .orderBy(admin.firestore.FieldPath.documentId())
+      .limit(MAX_SCAN)
+      .get();
+
+    let users = snapshot.docs.map(mapUserDoc);
 
     if (status) {
       users = users.filter((u) => u.subscriptionStatus === status);
@@ -73,6 +86,7 @@ export async function GET(request) {
     const totalPages = Math.max(1, Math.ceil(totalUsers / limit));
     const offset = (page - 1) * limit;
     const pageUsers = users.slice(offset, offset + limit);
+    const hitScanCap = snapshot.size >= MAX_SCAN;
 
     return Response.json({
       success: true,
@@ -85,10 +99,14 @@ export async function GET(request) {
           limit,
           hasNextPage: page < totalPages,
           hasPrevPage: page > 1,
+          scanCapped: hitScanCap,
         },
       },
     });
   } catch (error) {
+    if (isFirestoreQuotaError(error)) {
+      return quotaExceededResponse();
+    }
     console.error('Error in admin list users:', error);
     return Response.json(
       {

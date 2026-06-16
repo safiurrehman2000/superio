@@ -4,8 +4,12 @@ import { useGetUserById } from "@/APIs/auth/database";
 import { formatString } from "@/utils/constants";
 import { useEffect } from "react";
 
-const CompanyInfo = ({ logoFn, companyId }) => {
-  const { data, loading, error } = useGetUserById(companyId);
+const CompanyInfo = ({ logoFn, companyId, companyData = null }) => {
+  const shouldFetch = Boolean(companyId && !companyData);
+  const { data: fetchedData, loading, error } = useGetUserById(
+    shouldFetch ? companyId : null,
+  );
+  const data = companyData || fetchedData;
 
   useEffect(() => {
     if (data?.logo) {
@@ -13,11 +17,10 @@ const CompanyInfo = ({ logoFn, companyId }) => {
     }
   }, [data, logoFn]);
 
-  if (loading) return <div>Loading company info...</div>;
-  if (error) return <div>Error: {error}</div>;
-  if (!data) return <div>No company data found</div>;
+  if (!companyData && loading) return <div>Loading company info...</div>;
+  if (!companyData && error) return null;
+  if (!data) return null;
 
-  // Fallback values
   const primaryIndustry = data?.company_type?.[0]?.value
     ? formatString(data.company_type[0].value)
     : "Not specified";
@@ -27,10 +30,6 @@ const CompanyInfo = ({ logoFn, companyId }) => {
       <li>
         Primary industry: <span>{primaryIndustry}</span>
       </li>
-      {/* <li>
-       Social media:
-       <Social />
-     </li> */}
     </ul>
   );
 };

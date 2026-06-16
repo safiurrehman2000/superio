@@ -26,35 +26,85 @@ export function receiptCreatedToDate(created) {
 }
 
 /**
- * Next receipt number for the calendar year of `createdDate`: `2026/1`, `2026/2`, …
- *
- * @param {Date} [createdDate]
+ * @param {import('firebase-admin/firestore').Transaction} tx
+ * @param {unknown} createdDate
  * @returns {Promise<{ year: number, sequence: number, receiptNumber: string }>}
  */
-export async function allocateReceiptNumber(createdDate = new Date()) {
-  const year = createdDate.getFullYear();
+export async function allocateReceiptNumberInTransaction(tx, createdDate) {
+  const date = receiptCreatedToDate(createdDate);
+  const year = date.getFullYear();
   const seqRef = adminDb.collection('receiptSequences').doc(String(year));
+  const seqSnap = await tx.get(seqRef);
+  const last = seqSnap.exists ? Number(seqSnap.data()?.lastSequence || 0) : 0;
+  const sequence = last + 1;
 
-  const sequence = await adminDb.runTransaction(async (tx) => {
-    const snap = await tx.get(seqRef);
-    const last = snap.exists ? Number(snap.data()?.lastSequence || 0) : 0;
-    const next = last + 1;
-    tx.set(
-      seqRef,
-      {
-        lastSequence: next,
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      },
-      { merge: true },
-    );
-    return next;
-  });
+  tx.set(
+    seqRef,
+    {
+      lastSequence: sequence,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    },
+    { merge: true },
+  );
 
   return {
     year,
     sequence,
     receiptNumber: `${year}/${sequence}`,
   };
+}
+
+/**
+ * Next receipt number for the calendar year of `createdDate`: `2026/1`, `2026/2`, …
+ * Prefer {@link createReceiptWithAllocatedNumber} so numbers are not consumed when
+ * receipt creation is skipped or fails.
+ *
+ * @param {Date} [createdDate]
+ * @returns {Promise<{ year: number, sequence: number, receiptNumber: string }>}
+ */
+export async function allocateReceiptNumber(createdDate = new Date()) {
+  return adminDb.runTransaction(async (tx) =>
+    allocateReceiptNumberInTransaction(tx, createdDate),
+  );
+}
+
+/**
+ * Allocate the next receipt number and create the receipt doc in one transaction.
+ * If the doc already exists, no new number is consumed.
+ *
+ * @param {string} receiptDocId
+ * @param {Record<string, unknown>} receiptFields fields without `receiptNumber`
+ * @param {unknown} createdDate
+ * @returns {Promise<{ created: boolean, receiptNumber: string | null }>}
+ */
+export async function createReceiptWithAllocatedNumber(
+  receiptDocId,
+  receiptFields,
+  createdDate,
+) {
+  const docRef = adminDb.collection('receipts').doc(receiptDocId);
+
+  return adminDb.runTransaction(async (tx) => {
+    const snap = await tx.get(docRef);
+    if (snap.exists) {
+      return {
+        created: false,
+        receiptNumber: snap.data()?.receiptNumber ?? null,
+      };
+    }
+
+    const { receiptNumber } = await allocateReceiptNumberInTransaction(
+      tx,
+      createdDate,
+    );
+
+    tx.create(docRef, {
+      ...receiptFields,
+      receiptNumber,
+    });
+
+    return { created: true, receiptNumber };
+  });
 }
 
 /** @param {string} receiptNumber e.g. `2026/3` */
@@ -87,23 +137,10 @@ export async function ensureReceiptNumberOnDocument(receiptDocId) {
       return data.receiptNumber;
     }
 
-    const createdDate = receiptCreatedToDate(data.created);
-    const year = createdDate.getFullYear();
-    const seqRef = adminDb.collection('receiptSequences').doc(String(year));
-    const seqSnap = await tx.get(seqRef);
-    const last = seqSnap.exists ? Number(seqSnap.data()?.lastSequence || 0) : 0;
-    const next = last + 1;
-
-    tx.set(
-      seqRef,
-      {
-        lastSequence: next,
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      },
-      { merge: true },
+    const { receiptNumber } = await allocateReceiptNumberInTransaction(
+      tx,
+      receiptCreatedToDate(data.created),
     );
-
-    const receiptNumber = `${year}/${next}`;
     tx.update(docRef, { receiptNumber });
     return receiptNumber;
   });

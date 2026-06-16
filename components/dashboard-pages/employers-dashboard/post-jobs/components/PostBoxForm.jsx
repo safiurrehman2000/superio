@@ -167,8 +167,11 @@ const PostBoxForm = () => {
           selector.user.uid,
         );
         setJobPostingPermission(permission);
+        setError(null);
       } else {
-        setError('Failed to refresh subscription status');
+        setError(
+          result.message || 'Failed to refresh subscription status',
+        );
       }
     } catch (error) {
       setError('Error refreshing subscription status');

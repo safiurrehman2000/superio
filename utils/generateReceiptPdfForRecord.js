@@ -5,9 +5,39 @@ import {
 } from '@/utils/allocateReceiptNumber';
 import { buildBrandedReceiptPdfForInvoice } from '@/utils/buildBrandedReceiptPdfForInvoice';
 import { buildBrandedReceiptPdfForOneTimeSession } from '@/utils/buildBrandedReceiptPdfForOneTimeSession';
+import { buildBrandedReceiptPdfForReceiptRecord } from '@/utils/buildBrandedReceiptPdfForReceiptRecord';
 import { uploadBrandedReceiptPdf } from '@/utils/uploadBrandedReceiptPdf';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+const stripe = process.env.STRIPE_SECRET_KEY
+  ? new Stripe(process.env.STRIPE_SECRET_KEY)
+  : null;
+
+function cacheReceiptPdfInBackground({ userId, storageKey, pdfBuffer }) {
+  if (
+    !process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET ||
+    process.env.RECEIPT_SKIP_STORAGE_CACHE === 'true'
+  ) {
+    return;
+  }
+
+  void uploadBrandedReceiptPdf({
+    userId,
+    invoiceId: storageKey,
+    pdfBuffer,
+  }).catch((cacheErr) => {
+    console.error(
+      'generateReceiptPdfForRecord: storage cache failed',
+      cacheErr?.message || cacheErr,
+    );
+  });
+}
+
+function assertPdfBuffer(buffer) {
+  if (!buffer?.length) {
+    throw new Error('Generated PDF buffer is empty');
+  }
+  return buffer;
+}
 
 /**
  * @param {Record<string, unknown>} receiptData Firestore receipt document fields
@@ -31,64 +61,56 @@ export async function generateReceiptPdfForRecord(receiptData, options = {}) {
 
   const filename = receiptPdfFilename(receiptNumber);
   const storageKey = receiptNumber.replace(/\//g, '-');
+  let buffer = null;
 
-  if (checkoutSessionId && !invoiceId) {
-    const sessionFull = await stripe.checkout.sessions.retrieve(checkoutSessionId, {
-      expand: ['customer', 'customer.tax_ids'],
-    });
-    const buffer = await buildBrandedReceiptPdfForOneTimeSession(
-      sessionFull,
-      planId,
-      userId,
+  if (checkoutSessionId && !invoiceId && stripe) {
+    try {
+      const sessionFull = await stripe.checkout.sessions.retrieve(
+        String(checkoutSessionId),
+        {
+          expand: ['customer', 'customer.tax_ids'],
+        },
+      );
+      buffer = await buildBrandedReceiptPdfForOneTimeSession(
+        sessionFull,
+        planId,
+        userId,
+        receiptNumber,
+      );
+    } catch (sessionErr) {
+      console.warn(
+        'generateReceiptPdfForRecord: checkout session PDF failed, using receipt record fallback',
+        sessionErr?.message || sessionErr,
+      );
+    }
+  }
+
+  if (!buffer && invoiceId && stripe) {
+    try {
+      const inv = await stripe.invoices.retrieve(String(invoiceId));
+      buffer = await buildBrandedReceiptPdfForInvoice(
+        inv,
+        planId,
+        userId,
+        receiptNumber,
+      );
+    } catch (invoiceErr) {
+      console.warn(
+        'generateReceiptPdfForRecord: invoice PDF failed, using receipt record fallback',
+        invoiceErr?.message || invoiceErr,
+      );
+    }
+  }
+
+  if (!buffer) {
+    buffer = await buildBrandedReceiptPdfForReceiptRecord(
+      receiptData,
       receiptNumber,
     );
-    if (!buffer?.length) {
-      throw new Error('Generated PDF buffer is empty');
-    }
-
-    const bucketName = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
-    if (bucketName) {
-      try {
-        await uploadBrandedReceiptPdf({
-          userId,
-          invoiceId: storageKey,
-          pdfBuffer: buffer,
-        });
-      } catch (cacheErr) {
-        console.error('generateReceiptPdfForRecord: storage cache failed', cacheErr);
-      }
-    }
-
-    return { buffer, filename };
   }
 
-  if (!invoiceId) {
-    throw new Error('No invoice or checkout session on receipt');
-  }
-
-  const inv = await stripe.invoices.retrieve(invoiceId);
-  const buffer = await buildBrandedReceiptPdfForInvoice(
-    inv,
-    planId,
-    userId,
-    receiptNumber,
-  );
-  if (!buffer?.length) {
-    throw new Error('Generated PDF buffer is empty');
-  }
-
-  const bucketName = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
-  if (bucketName) {
-    try {
-      await uploadBrandedReceiptPdf({
-        userId,
-        invoiceId: storageKey,
-        pdfBuffer: buffer,
-      });
-    } catch (cacheErr) {
-      console.error('generateReceiptPdfForRecord: storage cache failed', cacheErr);
-    }
-  }
+  assertPdfBuffer(buffer);
+  cacheReceiptPdfInBackground({ userId, storageKey, pdfBuffer: buffer });
 
   return { buffer, filename };
 }

@@ -30,9 +30,25 @@ export async function POST(request) {
 
     const sanitizedJobData = sanitizeFormData(jobData, fieldTypes);
 
+    let companyName = sanitizedJobData.company_name || null;
+    let logo = null;
+    if (sanitizedJobData.employerId) {
+      const employerDoc = await adminDb
+        .collection("users")
+        .doc(sanitizedJobData.employerId)
+        .get();
+      if (employerDoc.exists) {
+        const employerData = employerDoc.data();
+        companyName = companyName || employerData.company_name || null;
+        logo = employerData.logo ?? null;
+      }
+    }
+
     // Add the job to Firestore
     const jobRef = await adminDb.collection("jobs").add({
       ...sanitizedJobData,
+      companyName,
+      logo,
       createdAt: Date.now(),
       status: "active",
     });

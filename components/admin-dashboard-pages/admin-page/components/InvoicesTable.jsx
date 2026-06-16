@@ -67,7 +67,7 @@ export default function InvoicesTable() {
       const query = new URLSearchParams({
         page: String(targetPage),
         limit: String(limit),
-        scanLimit: "1000",
+        scanLimit: "200",
       });
       if (filters.search.trim()) query.set("search", filters.search.trim());
       if (filters.currency.trim()) query.set("currency", filters.currency.trim());
@@ -117,7 +117,9 @@ export default function InvoicesTable() {
       );
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || "Could not open PDF");
+        throw new Error(
+          err.detail || err.error || `Could not open PDF (${res.status})`,
+        );
       }
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);

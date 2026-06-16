@@ -3,6 +3,7 @@
 import {
   checkIfJobSaved,
   createJobAlert,
+  getSavedJobIdsForUser,
   useGetJobListingPaginated,
   useSaveJob,
   useUnsaveJob,
@@ -64,6 +65,8 @@ const FilterJobBox = () => {
     error,
     totalItems,
     totalPages,
+    hasNextPage,
+    totalCountKnown,
     currentPage: serverCurrentPage,
   } = useGetJobListingPaginated(paginationParams);
 
@@ -79,19 +82,12 @@ const FilterJobBox = () => {
         }),
       );
 
-      // Check saved status for all jobs on current page
+      // Check saved status for all jobs on current page (single batched query)
       if (selector?.user?.uid) {
-        const checkSavedStatus = async () => {
-          const savedIds = new Set();
-          for (const job of jobs) {
-            const isSaved = await checkIfJobSaved(selector.user.uid, job.id);
-            if (isSaved) {
-              savedIds.add(job.id);
-            }
-          }
-          setSavedJobIds(savedIds);
-        };
-        checkSavedStatus();
+        getSavedJobIdsForUser(
+          selector.user.uid,
+          jobs.map((job) => job.id),
+        ).then(setSavedJobIds);
       }
     }
   }, [
@@ -372,8 +368,15 @@ const FilterJobBox = () => {
         <div className='ls-switcher job-list-controls'>
           <div className='showing-result'>
             <div className='text'>
-              Showing <strong>{content?.length || 0}</strong> of{' '}
-              <strong>{totalItems || 0}</strong> jobs
+              Showing <strong>{content?.length || 0}</strong>
+              {totalCountKnown ? (
+                <>
+                  {' '}
+                  of <strong>{totalItems}</strong> jobs
+                </>
+              ) : (
+                <> jobs</>
+              )}
             </div>
           </div>
 
@@ -414,7 +417,7 @@ const FilterJobBox = () => {
 
         <div className='row job-list-results'>{content}</div>
 
-        {totalPages > 1 && (
+        {(totalPages > 1 || hasNextPage || pagination.currentPage > 1) && (
           <div className='ls-pagination job-list-pagination'>
             <ul className='pagination-list'>
               {/* Previous Page Button */}
@@ -427,27 +430,43 @@ const FilterJobBox = () => {
                 </button>
               </li>
 
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                (page) => (
-                  <li
-                    key={page}
-                    className={pagination.currentPage === page ? 'active' : ''}
-                  >
-                    <button onClick={() => handlePageChange(page)}>
-                      {page}
-                    </button>
-                  </li>
-                ),
+              {totalCountKnown ? (
+                Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                  (page) => (
+                    <li
+                      key={page}
+                      className={pagination.currentPage === page ? 'active' : ''}
+                    >
+                      <button onClick={() => handlePageChange(page)}>
+                        {page}
+                      </button>
+                    </li>
+                  ),
+                )
+              ) : (
+                <li className='active'>
+                  <button type='button'>{pagination.currentPage}</button>
+                </li>
               )}
 
               <li
                 className={
-                  pagination.currentPage === totalPages ? 'disabled' : ''
+                  totalCountKnown
+                    ? pagination.currentPage === totalPages
+                      ? 'disabled'
+                      : ''
+                    : !hasNextPage
+                      ? 'disabled'
+                      : ''
                 }
               >
                 <button
                   onClick={() => handlePageChange(pagination.currentPage + 1)}
-                  disabled={pagination.currentPage === totalPages}
+                  disabled={
+                    totalCountKnown
+                      ? pagination.currentPage === totalPages
+                      : !hasNextPage
+                  }
                 >
                   <i className='fa fa-angle-right'></i>
                 </button>

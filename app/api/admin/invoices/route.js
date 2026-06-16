@@ -3,6 +3,35 @@ import {
   authenticateAdmin,
   createAuthErrorResponse,
 } from "@/utils/admin-auth-middleware";
+import {
+  isFirestoreQuotaError,
+  quotaExceededResponse,
+} from "@/utils/firestore-errors";
+
+const BATCH_SIZE = 100;
+
+async function batchGetUsers(userIds) {
+  const usersMap = {};
+  const uniqueIds = [...new Set(userIds.filter(Boolean))];
+
+  for (let i = 0; i < uniqueIds.length; i += BATCH_SIZE) {
+    const chunk = uniqueIds.slice(i, i + BATCH_SIZE);
+    const refs = chunk.map((userId) => adminDb.collection("users").doc(userId));
+    const snaps = await adminDb.getAll(...refs);
+
+    snaps.forEach((snap) => {
+      if (snap.exists) {
+        const userData = snap.data();
+        usersMap[snap.id] = {
+          email: userData.email || null,
+          company_name: userData.company_name || null,
+        };
+      }
+    });
+  }
+
+  return usersMap;
+}
 
 export async function GET(request) {
   try {
@@ -15,7 +44,7 @@ export async function GET(request) {
     const pageParam = Number.parseInt(searchParams.get("page") || "1", 10);
     const limitParam = Number.parseInt(searchParams.get("limit") || "10", 10);
     const scanLimitParam = Number.parseInt(
-      searchParams.get("scanLimit") || "500",
+      searchParams.get("scanLimit") || "200",
       10,
     );
     const search = (searchParams.get("search") || "").trim().toLowerCase();
@@ -28,8 +57,8 @@ export async function GET(request) {
       ? Math.min(Math.max(limitParam, 1), 100)
       : 10;
     const scanLimit = Number.isFinite(scanLimitParam)
-      ? Math.min(Math.max(scanLimitParam, 50), 2000)
-      : 500;
+      ? Math.min(Math.max(scanLimitParam, 50), 500)
+      : 200;
 
     const fromMs = dateFrom ? new Date(dateFrom).getTime() : null;
     const toMs = dateTo ? new Date(dateTo).getTime() : null;
@@ -40,52 +69,52 @@ export async function GET(request) {
       .limit(scanLimit)
       .get();
 
-    const userIds = new Set();
     const invoices = receiptsSnapshot.docs.map((doc) => {
       const data = doc.data();
-      if (data.userId) {
-        userIds.add(data.userId);
-      }
       return {
         id: doc.id,
         ...data,
       };
     });
 
-    const usersMap = {};
-    await Promise.all(
-      [...userIds].map(async (userId) => {
-        try {
-          const userDoc = await adminDb.collection("users").doc(userId).get();
-          if (userDoc.exists) {
-            const userData = userDoc.data();
-            usersMap[userId] = {
-              email: userData.email || null,
-              company_name: userData.company_name || null,
-            };
-          }
-        } catch (error) {
-          console.warn("Failed to resolve user for invoice list:", userId, error);
-        }
-      }),
-    );
+    const missingUserIds = [
+      ...new Set(
+        invoices
+          .filter((invoice) => invoice.userId && !invoice.userEmail)
+          .map((invoice) => invoice.userId),
+      ),
+    ];
+
+    const usersMap = missingUserIds.length
+      ? await batchGetUsers(missingUserIds)
+      : {};
 
     const enrichedInvoices = invoices
-      .map((invoice) => ({
-        ...invoice,
-        user: usersMap[invoice.userId] || null,
-        referenceId:
-          invoice.receiptNumber ||
-          invoice.invoiceId ||
-          invoice.checkoutSessionId ||
-          null,
-        receiptTypeLabel:
-          invoice.type === "one_time"
-            ? "One-time"
-            : invoice.type === "invoice"
-              ? "Subscription"
-              : invoice.type || "—",
-      }))
+      .map((invoice) => {
+        const userFromReceipt =
+          invoice.userEmail || invoice.userCompanyName
+            ? {
+                email: invoice.userEmail || null,
+                company_name: invoice.userCompanyName || null,
+              }
+            : usersMap[invoice.userId] || null;
+
+        return {
+          ...invoice,
+          user: userFromReceipt,
+          referenceId:
+            invoice.receiptNumber ||
+            invoice.invoiceId ||
+            invoice.checkoutSessionId ||
+            null,
+          receiptTypeLabel:
+            invoice.type === "one_time"
+              ? "One-time"
+              : invoice.type === "invoice"
+                ? "Subscription"
+                : invoice.type || "—",
+        };
+      })
       .filter((invoice) => {
         const createdMs = invoice?.created?.toDate
           ? invoice.created.toDate().getTime()
@@ -146,6 +175,9 @@ export async function GET(request) {
       },
     });
   } catch (error) {
+    if (isFirestoreQuotaError(error)) {
+      return quotaExceededResponse();
+    }
     console.error("Error listing admin invoices:", error);
     return Response.json(
       {

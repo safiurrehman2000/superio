@@ -8,7 +8,7 @@ import { TbBookmark, TbBookmarkFilled } from 'react-icons/tb';
 
 import {
   checkIfJobApplied,
-  checkIfJobSaved,
+  getJobBookmarkAndApplicationStatus,
   useSaveJob,
   useUnsaveJob,
   useJobViewIncrement,
@@ -33,13 +33,22 @@ export default function JobClient({ job }) {
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [bookmarkLoading, setBookmarkLoading] = useState(false);
   const [hasApplied, setHasApplied] = useState(false);
-  const [logo, setLogo] = useState(null);
+  const [logo, setLogo] = useState(() => {
+    if (!job?.logo) return null;
+    return job.logo.startsWith('data:image')
+      ? job.logo
+      : `data:image/jpeg;base64,${job.logo}`;
+  });
 
   useEffect(() => {
     if (!selector?.user?.uid) return;
 
-    checkIfJobSaved(selector.user.uid, job.id).then(setIsBookmarked);
-    checkIfJobApplied(selector.user.uid, job.id).then(setHasApplied);
+    getJobBookmarkAndApplicationStatus(selector.user.uid, job.id).then(
+      ({ isSaved, isApplied }) => {
+        setIsBookmarked(isSaved);
+        setHasApplied(isApplied);
+      },
+    );
   }, [selector?.user?.uid, job.id]);
 
   const toggleBookmark = async () => {
@@ -218,6 +227,7 @@ export default function JobClient({ job }) {
                       </div>
                       <ApplyJobModalContent
                         onApplicationSuccess={handleApplicationSuccess}
+                        initialHasApplied={hasApplied}
                       />
                     </div>
                   </div>
@@ -239,7 +249,9 @@ export default function JobClient({ job }) {
                           }}
                         />
                       </div>
-                      <h5 className='company-name'>{job.company}</h5>
+                      <h5 className='company-name'>
+                        {job.company || job.companyName || 'De Flexi Jobber'}
+                      </h5>
                       <a
                         href={`/company-profile/${job.employerId}`}
                         className='profile-link'
@@ -251,6 +263,14 @@ export default function JobClient({ job }) {
                     <CompnayInfo
                       logoFn={logoGetter}
                       companyId={job.employerId}
+                      companyData={
+                        job.employerCompanyType || job.logo
+                          ? {
+                              logo: job.logo || null,
+                              company_type: job.employerCompanyType || null,
+                            }
+                          : null
+                      }
                     />
 
                     {[job.address, job.postalCode, job.location].some(

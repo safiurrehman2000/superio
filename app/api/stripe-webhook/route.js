@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { adminDb } from '@/utils/firebase-admin';
+import { isCheckoutSessionPaymentComplete } from '@/utils/checkoutPaymentStatus';
 import {
   processOneTimeCheckoutReceipt,
   processPaidInvoiceReceipt,
@@ -128,6 +129,7 @@ export async function POST(request) {
             ? null
             : (planId ?? null),
           subscriptionUpdatedAt: new Date(),
+          subscriptionPeriodEnd: subscription.current_period_end || null,
           ...(planId &&
             planId !== prevPlanId && {
               subscriptionStartDate: new Date(),
@@ -198,6 +200,7 @@ export async function POST(request) {
           const latestSub = subscriptions.data[0];
           await adminDb.collection('users').doc(userId).update({
             stripeSubscriptionId: latestSub.id,
+            subscriptionPeriodEnd: latestSub.current_period_end || null,
           });
           console.log(
             'Patched missing stripeSubscriptionId for user (via checkout.session.completed)',
@@ -211,7 +214,7 @@ export async function POST(request) {
     if (
       userId &&
       session.mode === 'payment' &&
-      session.payment_status === 'paid'
+      isCheckoutSessionPaymentComplete(session)
     ) {
       const accessStart = new Date();
       const accessUntil = new Date(
@@ -284,9 +287,10 @@ export async function POST(request) {
           stripeSubscriptionId: subscriptionId,
           subscriptionStatus: status,
           planId: planId ?? null,
-          subscriptionUpdatedAt: new Date(), // This resets the job count
-          subscriptionStartDate: new Date(), // Track when this subscription started
-          isFirstTime: false, // Mark onboarding as complete after subscription
+          subscriptionUpdatedAt: new Date(),
+          subscriptionPeriodEnd: subscription.current_period_end || null,
+          subscriptionStartDate: new Date(),
+          isFirstTime: false,
         });
       console.log(
         'stripeSubscriptionId and planId set for user',
@@ -347,6 +351,7 @@ export async function POST(request) {
           const latestSub = subscriptions.data[0];
           await adminDb.collection('users').doc(userId).update({
             stripeSubscriptionId: latestSub.id,
+            subscriptionPeriodEnd: latestSub.current_period_end || null,
           });
           console.log(
             'Patched missing stripeSubscriptionId for user (via customer.created)',

@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSelector } from "react-redux";
 import { auth } from "@/utils/firebase";
+import { isCheckoutSessionPaymentComplete } from "@/utils/checkoutPaymentStatus";
 import OnboardOrderCompleted from "./components/OnboardOrderCompleted";
 
 export default function page() {
@@ -52,7 +53,7 @@ export default function page() {
           });
 
           const data = await response.json();
-          if (data.session && data.session.payment_status === "paid") {
+          if (data.session && isCheckoutSessionPaymentComplete(data.session)) {
             console.log("Stripe session verified successfully");
             setIsAuthorized(true);
             try {

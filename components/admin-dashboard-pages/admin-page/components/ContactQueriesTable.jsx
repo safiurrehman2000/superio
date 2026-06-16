@@ -19,11 +19,14 @@ export default function ContactQueriesTable() {
       }
 
       const token = await currentUser.getIdToken();
-      const response = await fetch("/api/admin/contact-queries", {
-        headers: {
-          Authorization: `Bearer ${token}`,
+      const response = await fetch(
+        `/api/admin/contact-queries?limit=50&page=1&status=${encodeURIComponent(statusFilter)}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         },
-      });
+      );
 
       if (!response.ok) {
         throw new Error("Failed to fetch contact queries");
@@ -45,7 +48,8 @@ export default function ContactQueriesTable() {
 
   useEffect(() => {
     fetchQueries();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [statusFilter]);
 
   const handleStatusUpdate = async (queryId, newStatus) => {
     try {

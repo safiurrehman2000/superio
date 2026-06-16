@@ -13,6 +13,7 @@ import {
 import { debounce } from "@/utils/constants";
 import { errorToast } from "@/utils/toast";
 import { truncateFileName } from "@/utils/resumeHelperFunctions";
+import { batchFetchDocsByIds } from "@/utils/batchFetchByIds";
 import { ResumeModal } from "@/components/dashboard-pages/employers-dashboard/all-applicants/components/ResumeModal";
 import styles from "./admin-tables.module.scss";
 
@@ -31,6 +32,7 @@ export default function ApplicationsTable() {
   const debounceRef = useRef();
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedResume, setSelectedResume] = useState(null);
+  const [resumeLoadingId, setResumeLoadingId] = useState(null);
 
   useEffect(() => {
     debounceRef.current = debounce((val) => setSearch(val), 500);
@@ -54,66 +56,27 @@ export default function ApplicationsTable() {
         docs = docs.slice(0, PAGE_SIZE);
       }
 
-      let appsList = docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      let appsList = docs.map((docSnap) => ({
+        id: docSnap.id,
+        ...docSnap.data(),
+      }));
 
-      // Fetch candidate and job info for each application
-      const candidateIds = Array.from(
-        new Set(appsList.map((a) => a.candidateId).filter(Boolean))
-      );
-      const jobIds = Array.from(
-        new Set(appsList.map((a) => a.jobId).filter(Boolean))
-      );
-      let candidatesMap = {};
-      let jobsMap = {};
+      const candidateIds = [
+        ...new Set(appsList.map((a) => a.candidateId).filter(Boolean)),
+      ];
+      const jobIds = [...new Set(appsList.map((a) => a.jobId).filter(Boolean))];
 
-      // Batch fetch candidates
-      for (let i = 0; i < candidateIds.length; i += 10) {
-        const batch = candidateIds.slice(i, i + 10);
-        const q = query(collection(db, "users"));
-        const snap = await getDocs(q);
-        snap.docs.forEach((doc) => {
-          if (batch.includes(doc.id)) candidatesMap[doc.id] = doc.data();
-        });
-      }
+      const [candidatesMap, jobsMap] = await Promise.all([
+        batchFetchDocsByIds(db, "users", candidateIds),
+        batchFetchDocsByIds(db, "jobs", jobIds),
+      ]);
 
-      // Batch fetch jobs
-      for (let i = 0; i < jobIds.length; i += 10) {
-        const batch = jobIds.slice(i, i + 10);
-        const q = query(collection(db, "jobs"));
-        const snap = await getDocs(q);
-        snap.docs.forEach((doc) => {
-          if (batch.includes(doc.id)) jobsMap[doc.id] = doc.data();
-        });
-      }
+      appsList = appsList.map((app) => ({
+        ...app,
+        candidate: candidatesMap[app.candidateId] || {},
+        job: jobsMap[app.jobId] || {},
+      }));
 
-      // Attach candidate and job info
-      appsList = await Promise.all(
-        appsList.map(async (app) => {
-          let resume = {};
-          if (app.resumeId && app.candidateId) {
-            const resumeDocRef = doc(
-              db,
-              "users",
-              app.candidateId,
-              "resumes",
-              app.resumeId
-            );
-            const resumeSnapshot = await getDoc(resumeDocRef);
-            if (resumeSnapshot.exists()) {
-              resume = resumeSnapshot.data();
-            }
-          }
-
-          return {
-            ...app,
-            candidate: candidatesMap[app.candidateId] || {},
-            job: jobsMap[app.jobId] || {},
-            resume,
-          };
-        })
-      );
-
-      // Client-side search filter (since we need to search across joined data)
       if (search) {
         const s = search.toLowerCase();
         appsList = appsList.filter(
@@ -121,7 +84,7 @@ export default function ApplicationsTable() {
             (a.candidate.name && a.candidate.name.toLowerCase().includes(s)) ||
             (a.candidate.email &&
               a.candidate.email.toLowerCase().includes(s)) ||
-            (a.job.title && a.job.title.toLowerCase().includes(s))
+            (a.job.title && a.job.title.toLowerCase().includes(s)),
         );
       }
 
@@ -129,13 +92,11 @@ export default function ApplicationsTable() {
       setFirstDoc(docs[0]);
       setLastDoc(docs[docs.length - 1]);
 
-      // Update pagination info only when navigating
       if (direction === "next") {
         setCurrentPage((prev) => prev + 1);
       } else if (direction === "prev") {
         setCurrentPage((prev) => Math.max(1, prev - 1));
       }
-      // If direction is null (initial load), don't change the page number
     } catch (error) {
       console.error("Error fetching applications:", error);
       errorToast("Error loading applications");
@@ -169,9 +130,23 @@ export default function ApplicationsTable() {
     debounceRef.current(e.target.value);
   };
 
-  const handleViewResume = (resume) => {
-    setSelectedResume(resume?.fileData ? resume : null);
-    setModalOpen(true);
+  const handleViewResume = async (app) => {
+    if (!app?.resumeId || !app?.candidateId) return;
+
+    setResumeLoadingId(app.id);
+    try {
+      const resumeSnapshot = await getDoc(
+        doc(db, "users", app.candidateId, "resumes", app.resumeId),
+      );
+      const resume = resumeSnapshot.exists() ? resumeSnapshot.data() : null;
+      setSelectedResume(resume?.fileData ? resume : null);
+      setModalOpen(true);
+    } catch (error) {
+      console.error("Error loading resume:", error);
+      errorToast("Could not load resume");
+    } finally {
+      setResumeLoadingId(null);
+    }
   };
 
   return (
@@ -216,17 +191,19 @@ export default function ApplicationsTable() {
                 <td>{app.candidate.email || "-"}</td>
                 <td>{app.job.title || "-"}</td>
                 <td>
-                  {app.resume?.fileName ? (
+                  {app.resumeId ? (
                     <button
                       type="button"
-                      onClick={() => handleViewResume(app.resume)}
+                      onClick={() => handleViewResume(app)}
                       className={styles["admin-table-btn"]}
-                      style={{ padding: "6px 12px", fontSize: "0.9rem", maxWidth: "200px" }}
-                      title={app.resume.fileName}
+                      style={{
+                        padding: "6px 12px",
+                        fontSize: "0.9rem",
+                        maxWidth: "200px",
+                      }}
+                      disabled={resumeLoadingId === app.id}
                     >
-                      <span className={styles["truncated-filename"]}>
-                        {truncateFileName(app.resume.fileName, 24)}
-                      </span>
+                      {resumeLoadingId === app.id ? "Loading..." : "View resume"}
                     </button>
                   ) : (
                     "-"
@@ -262,7 +239,6 @@ export default function ApplicationsTable() {
         </tbody>
       </table>
 
-      {/* Pagination Controls */}
       <div className={styles["admin-table-actions"]}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           <button

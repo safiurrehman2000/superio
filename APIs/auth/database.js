@@ -149,16 +149,19 @@ export const useUpdateUserInfo = () => {
 
 export const useGetUserById = (userId) => {
   const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(Boolean(userId));
   const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchUser = async () => {
-      try {
-        if (!userId) {
-          throw new Error("User ID is required");
-        }
+      if (!userId) {
+        setData(null);
+        setError(null);
+        setLoading(false);
+        return;
+      }
 
+      try {
         setLoading(true);
         const userRef = doc(db, "users", userId);
         const userSnap = await getDoc(userRef);

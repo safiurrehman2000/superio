@@ -25,7 +25,7 @@ function getCompanyName(job) {
 export async function generateMetadata({ params }) {
   const job = await getJobByIdServer(params.id);
 
-  if (!job) {
+  if (!job || job.__quotaError) {
     return {
       title: "Vacature niet gevonden",
       robots: { index: false, follow: false },
@@ -58,6 +58,25 @@ export async function generateMetadata({ params }) {
 
 export default async function JobPage({ params }) {
   const job = await getJobByIdServer(params.id);
+
+  if (job?.__quotaError) {
+    return (
+      <>
+        <DefaulHeader2 />
+        <MobileMenu />
+        <section className="ls-section style-three">
+          <div className="auto-container">
+            <p>
+              Vacature tijdelijk niet beschikbaar door database-limieten. Probeer
+              het later opnieuw.
+            </p>
+          </div>
+        </section>
+        <FooterDefault footerStyle="alternate5" />
+      </>
+    );
+  }
+
   if (!job) return <p>Vacature niet gevonden</p>;
 
   return (
