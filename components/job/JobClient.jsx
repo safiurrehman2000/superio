@@ -19,6 +19,7 @@ import JobDetailsDescriptions from '@/components/job-single-pages/shared-compone
 import SocialTwo from '@/components/job-single-pages/social/SocialTwo';
 import CompnayInfo from '@/components/job-single-pages/shared-components/CompanyInfo';
 import CircularLoader from '@/components/circular-loading/CircularLoading';
+import JobDistance from '@/components/job/JobDistance';
 import { errorToast } from '@/utils/toast';
 import { formatJobTypesDisplay, formatString } from '@/utils/constants';
 import { useJobTypes } from '@/utils/hooks/useOptionsFromFirebase';
@@ -130,6 +131,7 @@ export default function JobClient({ job }) {
                             .filter(Boolean)
                             .join(', ') || formatString(job.location)}
                         </li>
+                        <JobDistance job={job} />
                         <li>
                           <span className='icon flaticon-clock-3'></span>
                           {new Date(job.createdAt).toLocaleDateString()}

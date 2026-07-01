@@ -9,6 +9,7 @@ const initialState = {
   selectedCategory: "",
   selectedJobType: "",
   selectedDatePosted: "",
+  maxDistanceKm: 0,
   sortOrder: "",
   pagination: {
     currentPage: 1,
@@ -64,6 +65,10 @@ const newJobsSlice = createSlice({
       state.paginationParams.datePosted = action.payload;
       state.paginationParams.page = 1; // Reset to first page when filtering
     },
+    setMaxDistanceKm: (state, action) => {
+      const value = Number(action.payload) || 0;
+      state.maxDistanceKm = value;
+    },
     setSortOrder: (state, action) => {
       state.sortOrder = action.payload;
       state.paginationParams.sortOrder = action.payload;
@@ -96,6 +101,7 @@ const newJobsSlice = createSlice({
       state.selectedCategory = "";
       state.selectedJobType = "";
       state.selectedDatePosted = "";
+      state.maxDistanceKm = 0;
       state.sortOrder = "";
       state.filteredJobs = state.jobs;
 
@@ -122,6 +128,7 @@ export const {
   setSelectedCategory,
   setSelectedJobType,
   setSelectedDatePosted,
+  setMaxDistanceKm,
   setSortOrder,
   setPagination,
   setPaginationParams,

@@ -26,6 +26,7 @@ const Index = () => {
       gender: selector.user?.gender || "",
       age: selector.user?.age || "",
       profile_visibility: selector.user?.profile_visibility || "",
+      postal_code: selector.user?.postal_code || "",
       description: selector.user?.description || "",
     },
   });

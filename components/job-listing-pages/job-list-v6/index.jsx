@@ -1,4 +1,8 @@
+"use client";
+
+import { useSelector } from "react-redux";
 import FooterDefault from "../../../components/footer/common-footer";
+import { CandidateLocationProvider } from "@/utils/hooks/CandidateLocationContext";
 import LoginPopup from "../../common/form/login/LoginPopup";
 import DefaulHeader2 from "../../header/DefaulHeader2";
 import MobileMenu from "../../header/MobileMenu";
@@ -6,8 +10,10 @@ import FilterJobBox from "./FilterJobBox";
 import JobSearchForm from "./JobSearchForm";
 
 const index = () => {
+  const userType = useSelector((store) => store.user?.userType);
+
   return (
-    <>
+    <CandidateLocationProvider autoRequest={userType !== "Employer"}>
       <LoginPopup />
       {/* End Login Popup Modal */}
 
@@ -43,7 +49,7 @@ const index = () => {
 
       <FooterDefault footerStyle="alternate5" />
       {/* <!-- End Main Footer --> */}
-    </>
+    </CandidateLocationProvider>
   );
 };
 

@@ -376,6 +376,11 @@ export const sanitizeFormData = (formData, fieldTypes) => {
       return [];
     },
     company_location: sanitizeText,
+    postal_code: (value) => {
+      if (value == null) return null;
+      const digits = String(value).replace(/\D/g, "").slice(0, 4);
+      return digits.length === 4 ? digits : null;
+    },
     // Special sanitizer for user IDs and other identifiers
     userid: (value) =>
       typeof value === "string" && value.length > 0 ? value : null,

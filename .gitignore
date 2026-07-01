@@ -43,4 +43,7 @@ next-env.d.ts
 
 certificates
 
+# claude code — local permissions (not shared)
+.claude/settings.local.json
+
 /WARP.mdfirebase-debug.log

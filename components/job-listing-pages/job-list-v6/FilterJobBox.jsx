@@ -29,13 +29,19 @@ import { errorToast, successToast } from '@/utils/toast';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { TbBookmark, TbBookmarkFilled } from 'react-icons/tb';
 import { useDispatch, useSelector } from 'react-redux';
 import ListingShowing from '../components/ListingShowing';
 import JobAlertModal from './JobAlertModal';
 import './jobList.css';
 import JobListSkeleton from './JobListSkeleton';
+import JobDistance from '@/components/job/JobDistance';
+import { useCandidateLocationScoped } from '@/utils/hooks/CandidateLocationContext';
+import {
+  coordsForPostalCode,
+  haversineKm,
+} from '@/utils/distance';
 
 const FilterJobBox = () => {
   const router = useRouter();
@@ -56,10 +62,26 @@ const FilterJobBox = () => {
     selectedCategory,
     selectedJobType,
     selectedDatePosted,
+    maxDistanceKm,
     sortOrder,
     pagination,
     paginationParams,
   } = useSelector((state) => state.newJob);
+
+  const { coords: candidateCoords } = useCandidateLocationScoped();
+
+  const distanceFilterActive = maxDistanceKm > 0;
+
+  const visibleJobs = useMemo(() => {
+    if (!filteredJobs) return filteredJobs;
+    if (!distanceFilterActive || !candidateCoords) return filteredJobs;
+    return filteredJobs.filter((job) => {
+      const jc = coordsForPostalCode(job?.postalCode);
+      if (!jc) return false;
+      const km = haversineKm(candidateCoords, jc);
+      return km != null && km <= maxDistanceKm;
+    });
+  }, [filteredJobs, distanceFilterActive, candidateCoords, maxDistanceKm]);
 
   // Use the new paginated hook with Redux state
   const {
@@ -165,12 +187,13 @@ const FilterJobBox = () => {
     selectedCategory ||
     selectedJobType ||
     selectedDatePosted ||
+    maxDistanceKm ||
     sortOrder ||
     (filteredJobs && allJobs && filteredJobs.length !== allJobs.length) ||
     pagination.itemsPerPage !== 20;
 
   // Render job cards
-  const content = filteredJobs?.map((item, index) => {
+  const content = visibleJobs?.map((item, index) => {
     const logoSrc = item?.logo
       ? item.logo.startsWith('data:image')
         ? item.logo
@@ -284,6 +307,7 @@ const FilterJobBox = () => {
                     .join(', ') || formatString(item?.location)}
                 </li> */}
                 {/* location info */}
+                <JobDistance job={item} compact />
                 <li>
                   <span className='icon flaticon-clock-3'></span>{' '}
                   {formatJobDate(item?.createdAt)}
@@ -418,6 +442,16 @@ const FilterJobBox = () => {
             </select>
           </div>
         </div>
+
+        {distanceFilterActive && !candidateCoords && (
+          <div
+            className='alert alert-warning'
+            style={{ marginBottom: 16 }}
+          >
+            We hebben je locatie nodig om op afstand te filteren. Sta locatie
+            toe of vul je postcode in bij je profiel.
+          </div>
+        )}
 
         <div className='row job-list-results'>{content}</div>
 

@@ -93,6 +93,7 @@ export const useUpdateUserInfo = () => {
         gender: "gender",
         age: "age",
         profile_visibility: "profile_visibility",
+        postal_code: "postal_code",
         description: "description",
 
         // Employer fields

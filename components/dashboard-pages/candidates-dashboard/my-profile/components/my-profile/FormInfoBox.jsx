@@ -84,6 +84,16 @@ const FormInfoBox = () => {
         />
       </div>
 
+      {/* <!-- Input --> */}
+      <div className="form-group col-lg-6 col-md-12">
+        <InputField
+          label="Postcode"
+          name="postal_code"
+          placeholder="9000"
+          fieldType="Text"
+        />
+      </div>
+
       {/* <!-- About Company --> */}
       <div className="form-group col-lg-12 col-md-12">
         <TextAreaField label="Beschrijving" name="description" />
